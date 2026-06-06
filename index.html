@@ -1365,6 +1365,7 @@
     cardShown: false,
     atom: null,
     t2: null,
+    lastTs: 0,
     tracks: [
       { id: 'dialogo1',   begin: beginTrack0, cue: cueTrack0 },
       { id: 'dialogo1_1', begin: beginTrack1, cue: cueTrack1 },
@@ -1397,10 +1398,23 @@
 
   function m1Loop(ts) {
     const sec = document.getElementById('section1');
-    if (!sec || !sec.classList.contains('active')) { M1.raf = 0; return; }
+    if (!sec || !sec.classList.contains('active')) { M1.raf = 0; M1.lastTs = 0; return; }
 
     const a = m1El();
-    const tt = a ? a.currentTime : 0;
+    let dt = M1.lastTs ? (ts - M1.lastTs) : 16;
+    M1.lastTs = ts;
+    if (dt > 60) dt = 60;
+
+    // a faixa 2 usa um relógio próprio: continua após o fim do áudio (12s),
+    // permitindo o evento de 16s. As demais seguem o currentTime do áudio.
+    let tt;
+    if (M1.idx === 2 && M1.t2) {
+      if (a && (!a.paused || a.ended)) M1.t2.clock += dt / 1000;
+      tt = M1.t2.clock;
+    } else {
+      tt = a ? a.currentTime : 0;
+    }
+
     M1.tracks[M1.idx].cue(tt);
     if (M1.atom && M1.atom.active) drawAtom(ts);
 
@@ -1486,7 +1500,7 @@
     const arr = document.getElementById('m1-arrow');    if (arr) arr.classList.remove('in');
     const el  = document.getElementById('m1-eletrica'); if (el)  el.classList.remove('in');
     const eq  = document.getElementById('m1-energia');  if (eq)  eq.classList.remove('pulse');
-    M1.t2 = { pulsed: false, arrow: false, eletrica: false };
+    M1.t2 = { pulsed: false, arrow: false, eletrica: false, clock: 0 };
   }
 
   function cueTrack2(tt) {
