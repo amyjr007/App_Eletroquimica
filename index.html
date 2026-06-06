@@ -833,6 +833,8 @@
       opacity: 0; transform: translateX(-18px);
       transition: opacity .6s ease, transform .6s ease;
       transform-origin: left center;
+      pointer-events: auto;
+      cursor: pointer;
     }
     .energia-label.in { opacity: 1; transform: translateX(0); }
     .energia-label span {
@@ -1466,10 +1468,25 @@
     } else if (i === 2) {
       beginTrack2();                       // garante energia visível + estado t2
       const s = M1.t2;
-      s.pulsed = true; s.arrow = true; s.eletrica = true;
+      s.pulsed = true; s.arrow = true; s.eletrica = true; s.done = true;
       document.getElementById('m1-arrow').classList.add('in');
       document.getElementById('m1-eletrica').classList.add('in');
     }
+  }
+
+  /* replay rápido (ao tocar em "Energia química" após o áudio): pulsa → seta → elétrica */
+  function m1ReplayEnergy() {
+    const eq  = document.getElementById('m1-energia');
+    const arr = document.getElementById('m1-arrow');
+    const el  = document.getElementById('m1-eletrica');
+    arr.classList.remove('in');
+    el.classList.remove('in');
+    eq.classList.remove('pulse');
+    void eq.offsetWidth;                   // reflow → permite reiniciar as animações
+    eq.classList.add('pulse');
+    eq.addEventListener('animationend', () => eq.classList.remove('pulse'), { once: true });
+    setTimeout(() => arr.classList.add('in'), 220);
+    setTimeout(() => el.classList.add('in'), 460);
   }
 
   /* ── Faixa 0: definição (digitação sincronizada com o áudio) ── */
@@ -1543,7 +1560,7 @@
     const arr = document.getElementById('m1-arrow');    if (arr) arr.classList.remove('in');
     const el  = document.getElementById('m1-eletrica'); if (el)  el.classList.remove('in');
     const eq  = document.getElementById('m1-energia');  if (eq)  eq.classList.remove('pulse');
-    M1.t2 = { pulsed: false, arrow: false, eletrica: false, clock: 0 };
+    M1.t2 = { pulsed: false, arrow: false, eletrica: false, clock: 0, done: false };
   }
 
   function cueTrack2(tt) {
@@ -1799,6 +1816,23 @@
       atom.shootIdx = ((atom.shootIdx == null ? -1 : atom.shootIdx) + 1) % atom.electrons.length;
       shootElectron(atom.electrons[atom.shootIdx], cv);
       startM1Loop();
+    });
+  })();
+
+  // ao terminar o dialogo1.2, libera o toque interativo em "Energia química"
+  (function () {
+    const a = document.getElementById('dialogo1_2');
+    if (a) a.addEventListener('ended', () => { if (M1.t2) M1.t2.done = true; });
+  })();
+
+  // tocar em "Energia química" (após o áudio) → replay rápido da sequência
+  (function () {
+    const eq = document.getElementById('m1-energia');
+    if (!eq) return;
+    eq.addEventListener('pointerdown', (ev) => {
+      if (!M1.t2 || !M1.t2.done) return;
+      ev.stopPropagation();
+      m1ReplayEnergy();
     });
   })();
   // garante o texto completo ao final da definição
