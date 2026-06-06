@@ -886,6 +886,31 @@
       50%  { opacity: 1; text-shadow: 0 0 20px rgba(0,229,255,.95), 0 0 34px rgba(125,249,255,.6); }
       100% { opacity: 1; text-shadow: 0 0 14px rgba(0,229,255,.7); }
     }
+    /* ── Módulo 1: pilhas e baterias ── */
+    .m1-batteries {
+      position: absolute;
+      bottom: 228px;
+      left: 0; right: 0;
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      gap: 18px;
+      pointer-events: none;
+      z-index: 7;
+      opacity: 0;
+      transform: scale(0) rotate(-10deg);
+      filter: drop-shadow(0 0 14px rgba(0,229,255,.7)) drop-shadow(0 0 8px rgba(255,210,63,.5));
+    }
+    .m1-batteries.in {
+      animation: batteryPop .42s cubic-bezier(.2,.6,.3,1.55) forwards;
+    }
+    @keyframes batteryPop {
+      0%   { opacity: 0; transform: scale(0) rotate(-10deg); filter: brightness(6) drop-shadow(0 0 20px #fff); }
+      55%  { opacity: 1; transform: scale(1.22) rotate(2deg); filter: brightness(2.5) drop-shadow(0 0 14px #00e5ff); }
+      78%  { transform: scale(.94) rotate(-1deg); filter: brightness(1.4); }
+      100% { opacity: 1; transform: scale(1) rotate(0deg); filter: brightness(1) drop-shadow(0 0 10px rgba(0,229,255,.6)); }
+    }
+
     .def-box {
       background: rgba(0,229,255,.04);
       border: 1px solid rgba(0,229,255,.25);
@@ -1128,6 +1153,38 @@
     </div>
   </div>
 
+  <!-- pilhas e baterias: aparecem a 7.4s no dialogo1.2 -->
+  <div class="m1-batteries" id="m1-batteries">
+    <div style="transform:rotate(-9deg) translateY(6px)">
+      <svg viewBox="0 0 22 54" width="22" height="54" aria-hidden="true">
+        <rect x="1" y="9" width="20" height="42" rx="4" fill="#181825" stroke="#00e5ff" stroke-width="1.6"/>
+        <rect x="7" y="3" width="8" height="8" rx="3" fill="#00e5ff"/>
+        <rect x="1" y="49" width="20" height="3" rx="2" fill="#4a6580"/>
+        <path d="M14 17 L9 29 L13 29 L10 43 L17 27 L13 27 Z" fill="#ffd23f"/>
+      </svg>
+    </div>
+    <div>
+      <svg viewBox="0 0 38 50" width="38" height="50" aria-hidden="true">
+        <rect x="1" y="12" width="36" height="36" rx="5" fill="#181825" stroke="#00e5ff" stroke-width="1.6"/>
+        <rect x="1" y="5" width="36" height="10" rx="4" fill="#111" stroke="#00e5ff" stroke-width="1.4"/>
+        <circle cx="12" cy="8.5" r="4.5" fill="#00e5ff"/>
+        <line x1="10.5" y1="8.5" x2="13.5" y2="8.5" stroke="#000" stroke-width="1.6"/>
+        <line x1="12" y1="7" x2="12" y2="10" stroke="#000" stroke-width="1.6"/>
+        <circle cx="26" cy="8.5" r="4.5" fill="#4a6580"/>
+        <line x1="23.5" y1="8.5" x2="28.5" y2="8.5" stroke="#fff" stroke-width="1.6"/>
+        <path d="M23 20 L16 34 L21 34 L17 46 L26 30 L21 30 Z" fill="#ffd23f"/>
+      </svg>
+    </div>
+    <div style="transform:rotate(9deg) translateY(6px)">
+      <svg viewBox="0 0 22 54" width="22" height="54" aria-hidden="true">
+        <rect x="1" y="9" width="20" height="42" rx="4" fill="#181825" stroke="#00e5ff" stroke-width="1.6"/>
+        <rect x="7" y="3" width="8" height="8" rx="3" fill="#00e5ff"/>
+        <rect x="1" y="49" width="20" height="3" rx="2" fill="#4a6580"/>
+        <path d="M14 17 L9 29 L13 29 L10 43 L17 27 L13 27 Z" fill="#ffd23f"/>
+      </svg>
+    </div>
+  </div>
+
   <audio id="dialogo1"   src="audio/dialogo1.mp3"   preload="auto"></audio>
   <audio id="dialogo1_1" src="audio/dialogo1.1.mp3" preload="auto"></audio>
   <audio id="dialogo1_2" src="audio/dialogo1.2.mp3" preload="auto"></audio>
@@ -1364,6 +1421,11 @@
   /* ═══════════ Módulo 1 — sequência de áudios + cues ═══════════ */
   const DEF_TEXT = 'A eletroquímica é a parte da físico-química que estuda as relações entre a eletricidade e as substâncias químicas.';
 
+  /* vibração háptica — chama navigator.vibrate se disponível */
+  function buzz(pattern) {
+    try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (_) {}
+  }
+
   const M1 = {
     idx: 0,
     raf: 0,
@@ -1386,6 +1448,7 @@
     const btn = document.getElementById('m1-play');
     if (!a || !btn) return;
     if (a.paused) {
+      buzz(20);
       if (a.currentTime < 0.15) M1.tracks[M1.idx].begin();   // início "limpo" da faixa
       a.play().catch(() => {});
       btn.textContent = '⏸'; btn.classList.add('playing');
@@ -1436,6 +1499,7 @@
 
   /* segurar o botão → pula para a próxima faixa, deixando a atual no estado final */
   function m1Skip() {
+    buzz([50, 20, 80]);
     const a = m1El();
     if (a) a.pause();
     finalizeTrack(M1.idx);
@@ -1468,9 +1532,11 @@
     } else if (i === 2) {
       beginTrack2();                       // garante energia visível + estado t2
       const s = M1.t2;
-      s.pulsed = true; s.arrow = true; s.eletrica = true; s.done = true;
+      s.pulsed = true; s.arrow = true; s.eletrica = true; s.batteries = true; s.done = true;
       document.getElementById('m1-arrow').classList.add('in');
       document.getElementById('m1-eletrica').classList.add('in');
+      const bat = document.getElementById('m1-batteries');
+      if (bat) { bat.classList.remove('in'); void bat.offsetWidth; bat.classList.add('in'); }
     }
   }
 
@@ -1512,10 +1578,10 @@
 
   /* ── Faixa 1: átomos (núcleo + elétrons + energia química) ── */
   const M1_ORBITS = [
-    { tilt:   0, rx: 215, ry: 80, speed:  0.0195 },
-    { tilt:  45, rx: 215, ry: 80, speed: -0.0172 },
-    { tilt:  90, rx: 215, ry: 80, speed:  0.0218 },
-    { tilt: 135, rx: 215, ry: 80, speed: -0.0155 }
+    { tilt:   0, rx: 215, ry: 80, speed:  0.0273 },
+    { tilt:  45, rx: 215, ry: 80, speed: -0.0241 },
+    { tilt:  90, rx: 215, ry: 80, speed:  0.0305 },
+    { tilt: 135, rx: 215, ry: 80, speed: -0.0217 }
   ];
   const ELECTRON_CUES = [10.8, 13.2, 15.2, 17.0];   // último em 17s
 
@@ -1538,17 +1604,19 @@
 
   function cueTrack1(tt) {
     const atom = M1.atom; if (!atom) return;
-    if (tt >= 6.8 && !atom.atomosShown) {                    // "Átomos"
+    if (tt >= 6.8 && !atom.atomosShown) {
       atom.atomosShown = true;
       document.getElementById('m1-atomos').classList.add('in');
+      buzz(25);
     }
-    if (tt >= 9.5 && !atom.nucleus) atom.nucleus = true;      // núcleo (4 prótons)
-    atom.electrons.forEach((e, i) => {                        // elétrons, um a um
-      if (!e.revealed && tt >= ELECTRON_CUES[i]) { e.revealed = true; e.revealT = 0; }
+    if (tt >= 9.5 && !atom.nucleus) { atom.nucleus = true; buzz(45); }
+    atom.electrons.forEach((e, i) => {
+      if (!e.revealed && tt >= ELECTRON_CUES[i]) { e.revealed = true; e.revealT = 0; buzz(18); }
     });
-    if (tt >= 20.4 && !atom.energiaShown) {                   // "energia química"
+    if (tt >= 20.4 && !atom.energiaShown) {
       atom.energiaShown = true;
       document.getElementById('m1-energia').classList.add('in');
+      buzz(35);
     }
   }
 
@@ -1560,7 +1628,9 @@
     const arr = document.getElementById('m1-arrow');    if (arr) arr.classList.remove('in');
     const el  = document.getElementById('m1-eletrica'); if (el)  el.classList.remove('in');
     const eq  = document.getElementById('m1-energia');  if (eq)  eq.classList.remove('pulse');
-    M1.t2 = { pulsed: false, arrow: false, eletrica: false, clock: 0, done: false };
+    const bat = document.getElementById('m1-batteries');
+    if (bat) bat.classList.remove('in');
+    M1.t2 = { pulsed: false, arrow: false, eletrica: false, batteries: false, clock: 0, done: false };
   }
 
   function cueTrack2(tt) {
@@ -1571,16 +1641,26 @@
       const eq = document.getElementById('m1-energia');
       eq.classList.add('pulse');
       eq.addEventListener('animationend', () => eq.classList.remove('pulse'), { once: true });
+      buzz([25, 60, 25]);
     }
     // 5.6s — seta entra da esquerda para a direita
     if (tt >= 5.6 && !s.arrow) {
       s.arrow = true;
       document.getElementById('m1-arrow').classList.add('in');
+      buzz(30);
     }
     // 6s — "Energia elétrica" entra com efeito elétrico
     if (tt >= 6 && !s.eletrica) {
       s.eletrica = true;
       document.getElementById('m1-eletrica').classList.add('in');
+      buzz([20, 30, 50]);
+    }
+    // 7.4s — pilhas e baterias aparecem acima da seta (entrada dramática)
+    if (tt >= 7.4 && !s.batteries) {
+      s.batteries = true;
+      const bat = document.getElementById('m1-batteries');
+      if (bat) { bat.classList.remove('in'); void bat.offsetWidth; bat.classList.add('in'); }
+      buzz([80, 20, 60]);
     }
   }
 
@@ -1792,6 +1872,7 @@
     const en = document.getElementById('m1-energia'); if (en) { en.classList.remove('in'); en.classList.remove('pulse'); }
     const arr = document.getElementById('m1-arrow');    if (arr) arr.classList.remove('in');
     const elt = document.getElementById('m1-eletrica'); if (elt) elt.classList.remove('in');
+    const bat = document.getElementById('m1-batteries'); if (bat) bat.classList.remove('in');
     M1.t2 = null;
     const cv = document.getElementById('m1-atom');
     if (cv) { cv.classList.remove('in'); cv.getContext('2d').clearRect(0, 0, cv.width, cv.height); }
@@ -1846,6 +1927,7 @@
       const atom = M1.atom;
       if (!atom || !atom.active) return;
       if (!atom.electrons.every(e => e.revealed)) return;   // só com o átomo completo
+      buzz(70);
       atom.shootIdx = ((atom.shootIdx == null ? -1 : atom.shootIdx) + 1) % atom.electrons.length;
       shootElectron(atom.electrons[atom.shootIdx], cv);
       startM1Loop();
@@ -1872,6 +1954,7 @@
       if (ev.clientX >= r.left - pad && ev.clientX <= r.right + pad &&
           ev.clientY >= r.top  - pad && ev.clientY <= r.bottom + pad) {
         ev.stopPropagation();
+        buzz(25);
         m1ReplayEnergy();
       }
     });
