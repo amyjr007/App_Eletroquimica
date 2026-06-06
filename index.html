@@ -1859,13 +1859,21 @@
   })();
 
   // tocar em "Energia química" (após o áudio) → replay rápido da sequência
+  // usa delegação no #section1 com hit-test manual para garantir funcionamento no Android
   (function () {
-    const eq = document.getElementById('m1-energia');
-    if (!eq) return;
-    eq.addEventListener('pointerdown', (ev) => {
+    const screen = document.getElementById('section1');
+    if (!screen) return;
+    screen.addEventListener('pointerdown', (ev) => {
       if (!M1.t2 || !M1.t2.done) return;
-      ev.stopPropagation();
-      m1ReplayEnergy();
+      const eq = document.getElementById('m1-energia');
+      if (!eq || !eq.classList.contains('in')) return;
+      const r = eq.getBoundingClientRect();
+      const pad = 16; // área de toque extra ao redor do texto
+      if (ev.clientX >= r.left - pad && ev.clientX <= r.right + pad &&
+          ev.clientY >= r.top  - pad && ev.clientY <= r.bottom + pad) {
+        ev.stopPropagation();
+        m1ReplayEnergy();
+      }
     });
   })();
   // garante o texto completo ao final da definição
