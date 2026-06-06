@@ -1713,24 +1713,56 @@
     return 1 - u * u * (3 - 2 * u);
   }
 
-  /* elétron "atirado" pra fora e de volta à órbita (3s), com rastro próprio */
+  /* elétron "atirado": surto de energia → sai da tela em altíssima velocidade → volta e normaliza */
   function drawShotElectron(g, e, cx, cy, dt) {
-    const T = 3000;
+    const T = 2200, OUT = 170, HOLD = 480;   // ms: lançamento / fora da tela / início do retorno
     e.shotT += dt;
-    if (e.shotT >= T) { e.shot = false; e.hist = []; drawOrbitElectron(g, e, cx, cy); return; }
-    const disp = shotDisp(e.shotT / T) * e.shotMax;
+    const t = e.shotT;
+    if (t >= T) { e.shot = false; e.hist = []; drawOrbitElectron(g, e, cx, cy); return; }
+
+    // deslocamento radial (shotMax leva o elétron pra fora da tela)
+    let disp;
+    if (t < OUT) {
+      const u = t / OUT;
+      disp = e.shotMax * (1 - Math.pow(1 - u, 3));     // ease-out: arranque altíssimo
+    } else if (t < HOLD) {
+      disp = e.shotMax;                                 // fora da tela
+    } else {
+      const u = (t - HOLD) / (T - HOLD);
+      disp = e.shotMax * (1 - u * u * (3 - 2 * u));      // retorno suave (normaliza)
+    }
+
     const base = orbitGlobalPos(e, cx, cy);
     const x = base.x + e.shotDir.x * disp;
     const y = base.y + e.shotDir.y * disp;
+
+    // surto de energia no ponto de lançamento (anel + flash, ~320ms)
+    if (t < 320 && e.shotOrigin) {
+      const s = t / 320;
+      const r = 6 + 52 * s;
+      g.beginPath(); g.arc(e.shotOrigin.x, e.shotOrigin.y, r, 0, Math.PI * 2);
+      g.strokeStyle = `rgba(255,255,190,${0.85 * (1 - s)})`;
+      g.lineWidth = 1 + 3 * (1 - s);
+      g.shadowColor = 'rgba(255,240,0,.9)'; g.shadowBlur = 16; g.stroke(); g.shadowBlur = 0;
+      const fr = 7 + 20 * (1 - s);
+      const fg = g.createRadialGradient(e.shotOrigin.x, e.shotOrigin.y, 0, e.shotOrigin.x, e.shotOrigin.y, fr);
+      fg.addColorStop(0, `rgba(255,255,225,${0.75 * (1 - s)})`);
+      fg.addColorStop(1, 'rgba(255,240,0,0)');
+      g.beginPath(); g.arc(e.shotOrigin.x, e.shotOrigin.y, fr, 0, Math.PI * 2);
+      g.fillStyle = fg; g.fill();
+    }
+
+    // rastro / linha de velocidade (histórico das posições reais)
     if (!e.hist) e.hist = [];
     e.hist.push([x, y]);
-    if (e.hist.length > 18) e.hist.shift();
+    if (e.hist.length > 22) e.hist.shift();
     for (let i = 0; i < e.hist.length; i++) {
       const p = e.hist[i], a = (i + 1) / e.hist.length;
-      g.beginPath(); g.arc(p[0], p[1], 1 + 5 * a, 0, Math.PI * 2);
-      g.fillStyle = `rgba(255,240,0,${0.5 * a})`;
+      g.beginPath(); g.arc(p[0], p[1], 1 + 5.5 * a, 0, Math.PI * 2);
+      g.fillStyle = `rgba(255,240,0,${0.45 * a})`;
       g.shadowColor = 'rgba(255,240,0,.8)'; g.shadowBlur = 8 * a; g.fill(); g.shadowBlur = 0;
     }
+
     drawElectronHead(g, x, y, 1);
   }
 
@@ -1741,7 +1773,8 @@
     let dx = base.x - cx, dy = base.y - cy;
     const len = Math.hypot(dx, dy) || 1;
     e.shotDir = { x: dx / len, y: dy / len };
-    e.shotMax = 140;
+    e.shotMax = 620;                       // o suficiente para sair da tela em qualquer direção
+    e.shotOrigin = { x: base.x, y: base.y };
     e.shotT = 0;
     e.shot = true;
     e.hist = [];
