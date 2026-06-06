@@ -1048,7 +1048,7 @@
   </div>
 
   <div class="energia-label" id="m1-energia">
-    <span class="l1">energia</span>
+    <span class="l1">Energia</span>
     <span class="l2">química</span>
   </div>
 
@@ -1364,10 +1364,10 @@
 
   /* ── Faixa 1: átomos (núcleo + elétrons + energia química) ── */
   const M1_ORBITS = [
-    { tilt:   0, rx: 215, ry: 80, speed:  0.0100 },
-    { tilt:  45, rx: 215, ry: 80, speed: -0.0088 },
-    { tilt:  90, rx: 215, ry: 80, speed:  0.0112 },
-    { tilt: 135, rx: 215, ry: 80, speed: -0.0079 }
+    { tilt:   0, rx: 215, ry: 80, speed:  0.0150 },
+    { tilt:  45, rx: 215, ry: 80, speed: -0.0132 },
+    { tilt:  90, rx: 215, ry: 80, speed:  0.0168 },
+    { tilt: 135, rx: 215, ry: 80, speed: -0.0119 }
   ];
   const ELECTRON_CUES = [10.8, 13.2, 15.2, 17.0];   // último em 17s
 
@@ -1464,30 +1464,47 @@
       g.save();
       g.translate(cx, cy);
       g.rotate(o.tilt * Math.PI / 180);
-      g.globalAlpha = fade;
 
-      // órbita clássica (linha fraca)
-      g.beginPath();
-      g.ellipse(0, 0, o.rx, o.ry, 0, 0, Math.PI * 2);
-      g.strokeStyle = 'rgba(255,210,63,.16)'; g.lineWidth = 1.2; g.stroke();
+      const headX = Math.cos(e.ang) * o.rx, headY = Math.sin(e.ang) * o.ry;
 
-      // rastro (cometa)
+      // rastro fluido: fita afilada que segue a órbita, com gradiente cabeça→cauda
       const dir = o.speed >= 0 ? 1 : -1;
-      for (let s = 1; s <= 14; s++) {
-        const ta = e.ang - dir * s * 0.10;
-        const tx = Math.cos(ta) * o.rx, ty = Math.sin(ta) * o.ry;
-        g.beginPath();
-        g.arc(tx, ty, Math.max(0.5, 5 - s * 0.32), 0, Math.PI * 2);
-        g.fillStyle = `rgba(255,214,80,${(0.5 - s * 0.034) * fade})`;
-        g.fill();
+      const TAIL = 1.9;     // comprimento angular do rastro (rad)
+      const SEG  = 26;      // resolução da curva
+      const headW = 5;      // largura na cabeça (afila até 0 na cauda)
+      const left = [], right = [];
+      for (let s = 0; s <= SEG; s++) {
+        const f = s / SEG;                         // 0 = cabeça, 1 = cauda
+        const a = e.ang - dir * TAIL * f;
+        const px = Math.cos(a) * o.rx, py = Math.sin(a) * o.ry;
+        let tx = -o.rx * Math.sin(a), ty = o.ry * Math.cos(a);   // tangente
+        const tl = Math.hypot(tx, ty) || 1; tx /= tl; ty /= tl;
+        const nx = -ty, ny = tx;                                 // normal
+        const w = headW * (1 - f) * (1 - f);                     // afilamento suave
+        left.push([px + nx * w, py + ny * w]);
+        right.push([px - nx * w, py - ny * w]);
       }
+      const tailX = Math.cos(e.ang - dir * TAIL) * o.rx;
+      const tailY = Math.sin(e.ang - dir * TAIL) * o.ry;
+      g.beginPath();
+      g.moveTo(left[0][0], left[0][1]);
+      for (let s = 1; s < left.length; s++) g.lineTo(left[s][0], left[s][1]);
+      for (let s = right.length - 1; s >= 0; s--) g.lineTo(right[s][0], right[s][1]);
+      g.closePath();
+      const grad = g.createLinearGradient(headX, headY, tailX, tailY);
+      grad.addColorStop(0,   `rgba(255,228,120,${0.9 * fade})`);
+      grad.addColorStop(0.45,`rgba(255,210,63,${0.32 * fade})`);
+      grad.addColorStop(1,   'rgba(255,210,63,0)');
+      g.fillStyle = grad;
+      g.shadowColor = 'rgba(255,210,63,.6)'; g.shadowBlur = 8; g.fill(); g.shadowBlur = 0;
 
-      // elétron
-      const ex = Math.cos(e.ang) * o.rx, ey = Math.sin(e.ang) * o.ry;
-      const eg = g.createRadialGradient(ex, ey, 0, ex, ey, 8);
+      // elétron (cabeça)
+      const eg = g.createRadialGradient(headX, headY, 0, headX, headY, 8);
       eg.addColorStop(0, '#fff7d6'); eg.addColorStop(0.4, '#ffd23f'); eg.addColorStop(1, 'rgba(255,210,63,0)');
-      g.beginPath(); g.arc(ex, ey, 8, 0, Math.PI * 2);
+      g.globalAlpha = fade;
+      g.beginPath(); g.arc(headX, headY, 7.5, 0, Math.PI * 2);
       g.fillStyle = eg; g.shadowColor = '#ffd23f'; g.shadowBlur = 14; g.fill(); g.shadowBlur = 0;
+      g.globalAlpha = 1;
       g.restore();
     });
     g.globalAlpha = 1;
