@@ -811,28 +811,75 @@
     }
     .atom-canvas.in { display: block; }
 
-    .energia-label {
+    /* ── Módulo 1: fluxo de energia (química → elétrica) ── */
+    .energy-flow {
       position: absolute;
-      left: 20px;
-      bottom: 92px;
+      left: 0; right: 0;
+      bottom: 104px;
       display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 1px;
-      line-height: 1.05;
-      font-family: 'Orbitron', monospace;
-      font-weight: 700;
-      opacity: 0;
-      transform: translateX(-18px);
-      transition: opacity .6s ease, transform .6s ease;
+      align-items: center;
+      gap: 16px;
+      padding: 0 24px 0 20px;
       z-index: 6;
+      pointer-events: none;
+    }
+    .energia-label {
+      display: flex; flex-direction: column; align-items: flex-start;
+      gap: 1px; line-height: 1.05;
+      font-family: 'Orbitron', monospace; font-weight: 700;
+      opacity: 0; transform: translateX(-18px);
+      transition: opacity .6s ease, transform .6s ease;
+      transform-origin: left center;
     }
     .energia-label.in { opacity: 1; transform: translateX(0); }
     .energia-label span {
       font-size: clamp(.85rem, 2.4vw, 1.35rem);
-      color: var(--cyan);
-      letter-spacing: .12em;
+      color: var(--cyan); letter-spacing: .12em;
       text-shadow: 0 0 18px rgba(0,229,255,.5);
+    }
+    .energia-label.pulse { animation: pulse2 .62s ease; }
+    @keyframes pulse2 {
+      0%,40%,80%,100% { transform: scale(1); }
+      20%,60%         { transform: scale(1.16); }
+    }
+
+    /* seta (estilo bold: ticks + haste + triângulo) */
+    .energy-arrow {
+      flex-shrink: 0;
+      opacity: 0;
+      clip-path: inset(0 100% 0 0);
+      transition: opacity .25s ease, clip-path .6s cubic-bezier(.4,0,.2,1);
+      filter: drop-shadow(0 0 7px rgba(0,229,255,.45));
+    }
+    .energy-arrow.in { opacity: 1; clip-path: inset(0 0 0 0); }
+    .energy-arrow svg { width: clamp(64px, 13vw, 124px); height: auto; display: block; }
+
+    /* "Energia elétrica" — entrada elétrica (flicker neon) */
+    .eletrica-label {
+      margin-left: auto;
+      display: flex; flex-direction: column; align-items: flex-end;
+      gap: 1px; line-height: 1.05; text-align: right;
+      font-family: 'Orbitron', monospace; font-weight: 700;
+      opacity: 0;
+    }
+    .eletrica-label span {
+      font-size: clamp(.85rem, 2.4vw, 1.35rem);
+      color: #b3f0ff; letter-spacing: .12em;
+      text-shadow: 0 0 10px rgba(0,229,255,.6);
+    }
+    .eletrica-label.in { animation: electric-on 1s both; }
+    @keyframes electric-on {
+      0%   { opacity: 0; transform: translateX(10px) skewX(7deg); }
+      8%   { opacity: 1; }
+      10%  { opacity: .15; }
+      14%  { opacity: 1; transform: translateX(0) skewX(0); }
+      18%  { opacity: .3; }
+      22%  { opacity: 1; }
+      28%  { opacity: .5; }
+      33%  { opacity: 1; }
+      46%  { opacity: .75; }
+      50%  { opacity: 1; text-shadow: 0 0 20px rgba(0,229,255,.95), 0 0 34px rgba(125,249,255,.6); }
+      100% { opacity: 1; text-shadow: 0 0 14px rgba(0,229,255,.7); }
     }
     .def-box {
       background: rgba(0,229,255,.04);
@@ -1047,13 +1094,38 @@
     </div>
   </div>
 
-  <div class="energia-label" id="m1-energia">
-    <span class="l1">Energia</span>
-    <span class="l2">química</span>
+  <div class="energy-flow" id="m1-energyflow">
+    <div class="energia-label" id="m1-energia">
+      <span class="l1">Energia</span>
+      <span class="l2">química</span>
+    </div>
+
+    <div class="energy-arrow" id="m1-arrow" aria-hidden="true">
+      <svg viewBox="0 0 130 60">
+        <defs>
+          <linearGradient id="arrGrad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#00e5ff"/>
+            <stop offset="1" stop-color="#ffee00"/>
+          </linearGradient>
+        </defs>
+        <g fill="url(#arrGrad)">
+          <rect x="2"  y="18" width="7"  height="24" rx="1.5"/>
+          <rect x="14" y="18" width="7"  height="24" rx="1.5"/>
+          <rect x="27" y="22" width="46" height="16" rx="2"/>
+          <polygon points="66,8 122,30 66,52"/>
+        </g>
+      </svg>
+    </div>
+
+    <div class="eletrica-label" id="m1-eletrica">
+      <span class="l1">Energia</span>
+      <span class="l2">elétrica</span>
+    </div>
   </div>
 
   <audio id="dialogo1"   src="audio/dialogo1.mp3"   preload="auto"></audio>
   <audio id="dialogo1_1" src="audio/dialogo1.1.mp3" preload="auto"></audio>
+  <audio id="dialogo1_2" src="audio/dialogo1.2.mp3" preload="auto"></audio>
   <button class="btn-action" id="m1-play" onclick="m1Play()">▶</button>
 
 </div>
@@ -1292,9 +1364,11 @@
     raf: 0,
     cardShown: false,
     atom: null,
+    t2: null,
     tracks: [
       { id: 'dialogo1',   begin: beginTrack0, cue: cueTrack0 },
-      { id: 'dialogo1_1', begin: beginTrack1, cue: cueTrack1 }
+      { id: 'dialogo1_1', begin: beginTrack1, cue: cueTrack1 },
+      { id: 'dialogo1_2', begin: beginTrack2, cue: cueTrack2 }
     ]
   };
 
@@ -1401,6 +1475,38 @@
     if (tt >= 20.4 && !atom.energiaShown) {                   // "energia química"
       atom.energiaShown = true;
       document.getElementById('m1-energia').classList.add('in');
+    }
+  }
+
+  /* ── Faixa 2: química → seta → elétrica ── */
+  function beginTrack2() {
+    // átomo continua girando; "Energia química" já visível
+    document.getElementById('m1-energia').classList.add('in');
+    // reset dos elementos da faixa (para permitir reexecução)
+    const arr = document.getElementById('m1-arrow');    if (arr) arr.classList.remove('in');
+    const el  = document.getElementById('m1-eletrica'); if (el)  el.classList.remove('in');
+    const eq  = document.getElementById('m1-energia');  if (eq)  eq.classList.remove('pulse');
+    M1.t2 = { pulsed: false, arrow: false, eletrica: false };
+  }
+
+  function cueTrack2(tt) {
+    const s = M1.t2; if (!s) return;
+    // 4s — 2 pulsadas rápidas em "Energia química"
+    if (tt >= 4 && !s.pulsed) {
+      s.pulsed = true;
+      const eq = document.getElementById('m1-energia');
+      eq.classList.add('pulse');
+      eq.addEventListener('animationend', () => eq.classList.remove('pulse'), { once: true });
+    }
+    // 5.6s — seta entra da esquerda para a direita
+    if (tt >= 5.6 && !s.arrow) {
+      s.arrow = true;
+      document.getElementById('m1-arrow').classList.add('in');
+    }
+    // 16s — "Energia elétrica" entra com efeito elétrico
+    if (tt >= 16 && !s.eletrica) {
+      s.eletrica = true;
+      document.getElementById('m1-eletrica').classList.add('in');
     }
   }
 
@@ -1522,14 +1628,17 @@
     const card = document.getElementById('m1-defcard'); if (card) card.classList.remove('in');
     const typed = document.getElementById('m1-typed'); if (typed) typed.innerHTML = '';
     const at = document.getElementById('m1-atomos'); if (at) at.classList.remove('in');
-    const en = document.getElementById('m1-energia'); if (en) en.classList.remove('in');
+    const en = document.getElementById('m1-energia'); if (en) { en.classList.remove('in'); en.classList.remove('pulse'); }
+    const arr = document.getElementById('m1-arrow');    if (arr) arr.classList.remove('in');
+    const elt = document.getElementById('m1-eletrica'); if (elt) elt.classList.remove('in');
+    M1.t2 = null;
     const cv = document.getElementById('m1-atom');
     if (cv) { cv.classList.remove('in'); cv.getContext('2d').clearRect(0, 0, cv.width, cv.height); }
   }
 
   /* reset total ao (re)entrar no módulo */
   function m1Reset() {
-    ['dialogo1', 'dialogo1_1'].forEach(id => {
+    ['dialogo1', 'dialogo1_1', 'dialogo1_2'].forEach(id => {
       const a = document.getElementById(id);
       if (a) { a.pause(); a.currentTime = 0; }
     });
@@ -1541,7 +1650,7 @@
   }
 
   // listeners de fim de faixa
-  ['dialogo1', 'dialogo1_1'].forEach(id => {
+  ['dialogo1', 'dialogo1_1', 'dialogo1_2'].forEach(id => {
     const a = document.getElementById(id);
     if (a) a.addEventListener('ended', m1Ended);
   });
