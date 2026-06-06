@@ -642,6 +642,8 @@
     /* ── FAB Action Button ── */
     .btn-action {
       position: absolute;
+      -webkit-touch-callout: none;
+      touch-action: none;
       bottom: 14px;
       right: 14px;
       width: 54px;
@@ -1127,7 +1129,7 @@
   <audio id="dialogo1"   src="audio/dialogo1.mp3"   preload="auto"></audio>
   <audio id="dialogo1_1" src="audio/dialogo1.1.mp3" preload="auto"></audio>
   <audio id="dialogo1_2" src="audio/dialogo1.2.mp3" preload="auto"></audio>
-  <button class="btn-action" id="m1-play" onclick="m1Play()">▶</button>
+  <button class="btn-action" id="m1-play">▶</button>
 
 </div>
 
@@ -1430,6 +1432,46 @@
     if (M1.idx < M1.tracks.length - 1) M1.idx++;
   }
 
+  /* segurar o botão → pula para a próxima faixa, deixando a atual no estado final */
+  function m1Skip() {
+    const a = m1El();
+    if (a) a.pause();
+    finalizeTrack(M1.idx);
+    if (M1.idx < M1.tracks.length - 1) {
+      M1.idx++;
+      const next = m1El();
+      if (next) next.currentTime = 0;   // próxima faixa pronta desde o início
+    }
+    const btn = document.getElementById('m1-play');
+    if (btn) { btn.textContent = '▶'; btn.classList.remove('playing'); }
+    startM1Loop();   // mantém o átomo animando, se estiver ativo
+  }
+
+  /* aplica o estado final de uma faixa (como se o áudio tivesse tocado por completo) */
+  function finalizeTrack(i) {
+    if (i === 0) {
+      M1.cardShown = true;
+      document.getElementById('m1-defcard').classList.add('in');
+      document.getElementById('m1-typed').textContent = DEF_TEXT;
+    } else if (i === 1) {
+      beginTrack1();                       // garante def em fade-out + átomo criado
+      const atom = M1.atom;
+      atom.atomosShown = true;
+      document.getElementById('m1-atomos').classList.add('in');
+      atom.nucleus = true;
+      atom.nucleusT = 9999;                // núcleo em escala cheia
+      atom.electrons.forEach(e => { e.revealed = true; e.revealT = 9999; });
+      atom.energiaShown = true;
+      document.getElementById('m1-energia').classList.add('in');
+    } else if (i === 2) {
+      beginTrack2();                       // garante energia visível + estado t2
+      const s = M1.t2;
+      s.pulsed = true; s.arrow = true; s.eletrica = true;
+      document.getElementById('m1-arrow').classList.add('in');
+      document.getElementById('m1-eletrica').classList.add('in');
+    }
+  }
+
   /* ── Faixa 0: definição (digitação sincronizada com o áudio) ── */
   function beginTrack0() { m1ResetVisuals(); }
   function cueTrack0(tt) {
@@ -1669,6 +1711,28 @@
     const a = document.getElementById(id);
     if (a) a.addEventListener('ended', m1Ended);
   });
+
+  // toque = play/pause | segurar = pular para a próxima faixa
+  (function () {
+    const btn = document.getElementById('m1-play');
+    if (!btn) return;
+    const HOLD_MS = 500;
+    let holdTimer = null, held = false;
+    btn.addEventListener('pointerdown', (e) => {
+      held = false;
+      try { btn.setPointerCapture(e.pointerId); } catch (_) {}
+      holdTimer = setTimeout(() => { held = true; m1Skip(); }, HOLD_MS);
+    });
+    btn.addEventListener('pointerup', () => {
+      if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
+      if (held) { held = false; return; }   // foi "segurar" → já pulou
+      m1Play();                              // foi toque → play/pause
+    });
+    btn.addEventListener('pointercancel', () => {
+      if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
+      held = false;
+    });
+  })();
   // garante o texto completo ao final da definição
   (function () {
     const a = document.getElementById('dialogo1');
