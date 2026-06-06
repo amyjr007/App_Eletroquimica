@@ -910,8 +910,11 @@
       78%  { transform: scale(.94) rotate(-1deg); filter: brightness(1.4); }
       100% { opacity: 1; transform: scale(1) rotate(0deg); filter: brightness(1) drop-shadow(0 0 10px rgba(0,229,255,.6)); }
     }
-    /* batteries raised during track 3 */
-    .m1-batteries.t3-lift { bottom: 302px; transition: bottom .5s ease; }
+    /* batteries raised during track 3 — gain transform/opacity transition for zoom */
+    .m1-batteries.t3-lift {
+      bottom: 302px;
+      transition: transform .7s cubic-bezier(.25,.46,.45,.94), opacity .4s ease, bottom .5s ease;
+    }
 
     /* ── Módulo 1: backdrop de zoom (escurece + embaça o fundo) ── */
     #m1-zoom-backdrop {
@@ -934,18 +937,14 @@
     .m1-circuit-wrap {
       position: absolute;
       top: 60%; left: 50%;
-      transform: translate(-50%,-50%) scale(0.06);
-      transform-origin: center center;
+      transform: translate(-50%,-50%);
       opacity: 0;
       z-index: 10;
       pointer-events: none;
-      transition: opacity .45s ease, transform .45s cubic-bezier(.2,.6,.3,1.2);
+      transition: opacity .5s ease;
       width: 300px; height: 220px;
     }
-    .m1-circuit-wrap.in {
-      transform: translate(-50%,-50%) scale(1);
-      opacity: 1;
-    }
+    .m1-circuit-wrap.in { opacity: 1; }
     .m1-circuit-wrap canvas {
       position: absolute; top: 0; left: 0; display: block;
     }
@@ -2008,19 +2007,31 @@
     const back = document.getElementById('m1-zoom-backdrop');
     const bat  = document.getElementById('m1-batteries');
     const flow = document.getElementById('m1-energyflow');
+
     if (show) {
+      // 1) escurece fundo imediatamente
       if (back) back.classList.add('in');
-      if (bat)  bat.style.opacity  = '0';
       if (flow) flow.style.opacity = '0';
-      if (wrap) wrap.classList.add('in');
+      // 2) bateria cresce (câmera aproxima) e some
+      if (bat) {
+        bat.style.transformOrigin = 'center center';
+        bat.style.transform = 'scale(9)';
+        bat.style.opacity   = '0';
+      }
+      // 3) após a bateria encher a tela, circuito aparece
       if (M1.t3) M1.t3.circuitActive = true;
       startM1Loop();
+      setTimeout(() => { if (wrap) wrap.classList.add('in'); }, 480);
     } else {
+      // 1) circuito some
       if (wrap) wrap.classList.remove('in');
-      if (back) back.classList.remove('in');
-      if (bat)  bat.style.opacity  = '';
-      if (flow) flow.style.opacity = '';
       if (M1.t3) M1.t3.circuitActive = false;
+      // 2) bateria reaparece (câmera afasta)
+      setTimeout(() => {
+        if (bat) { bat.style.transform = ''; bat.style.opacity = ''; bat.style.transformOrigin = ''; }
+        if (flow) flow.style.opacity = '';
+        if (back) back.classList.remove('in');
+      }, 280);
     }
   }
 
@@ -2141,9 +2152,8 @@
     const arr = document.getElementById('m1-arrow');    if (arr) arr.classList.remove('in');
     const elt = document.getElementById('m1-eletrica'); if (elt) elt.classList.remove('in');
     const bat = document.getElementById('m1-batteries');
-    if (bat) { bat.classList.remove('in'); bat.classList.remove('t3-lift'); }
+    if (bat) { bat.classList.remove('in'); bat.classList.remove('t3-lift'); bat.style.transform = ''; bat.style.opacity = ''; bat.style.transformOrigin = ''; }
     const bflow = document.getElementById('m1-energyflow'); if (bflow) bflow.style.opacity = '';
-    if (bat) bat.style.opacity = '';
     const circ = document.getElementById('m1-circuit-wrap'); if (circ) circ.classList.remove('in');
     const back = document.getElementById('m1-zoom-backdrop'); if (back) back.classList.remove('in');
     const ccv  = document.getElementById('m1-circuit-canvas'); if (ccv) ccv.getContext('2d').clearRect(0,0,ccv.width,ccv.height);
