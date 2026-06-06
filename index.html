@@ -910,6 +910,59 @@
       78%  { transform: scale(.94) rotate(-1deg); filter: brightness(1.4); }
       100% { opacity: 1; transform: scale(1) rotate(0deg); filter: brightness(1) drop-shadow(0 0 10px rgba(0,229,255,.6)); }
     }
+    /* batteries raised during track 3 */
+    .m1-batteries.t3-lift { bottom: 302px; transition: bottom .5s ease; }
+
+    /* ── Módulo 1: circuito interno (zoom na pilha) ── */
+    .m1-circuit-wrap {
+      position: absolute;
+      top: 60%; left: 50%;
+      transform: translate(-50%,-50%) scale(0.06);
+      transform-origin: center center;
+      opacity: 0;
+      z-index: 10;
+      pointer-events: none;
+      transition: opacity .45s ease, transform .45s cubic-bezier(.2,.6,.3,1.2);
+      width: 300px; height: 220px;
+    }
+    .m1-circuit-wrap.in {
+      transform: translate(-50%,-50%) scale(1);
+      opacity: 1;
+    }
+    .m1-circuit-wrap canvas {
+      position: absolute; top: 0; left: 0; display: block;
+    }
+
+    /* ── Módulo 1: dispositivos portáteis ── */
+    .m1-devices {
+      position: absolute;
+      bottom: 362px; left: 0; right: 0;
+      display: flex; justify-content: center; align-items: flex-end;
+      gap: 18px; pointer-events: none; z-index: 7;
+    }
+    .m1-device {
+      font-size: 2rem; opacity: 0;
+      transform: translateY(30px) scale(.5);
+      transition: opacity .4s, transform .4s cubic-bezier(.2,.6,.3,1.5);
+    }
+    .m1-device.in { opacity: 1; transform: translateY(0) scale(1); }
+
+    /* ── Módulo 1: texto "espontâneo" ── */
+    #m1-espontaneo {
+      position: absolute;
+      bottom: 220px; left: 0; right: 0;
+      text-align: center;
+      font-family: 'Orbitron', monospace; font-weight: 700;
+      font-size: clamp(.72rem, 1.9vw, 1.05rem);
+      color: #ffd23f; letter-spacing: .12em;
+      text-shadow: 0 0 18px rgba(255,210,63,.75);
+      opacity: 0;
+      transform: translateX(-50px);
+      transition: opacity .5s ease, transform .5s cubic-bezier(.2,.6,.3,1.2);
+      pointer-events: none; z-index: 6;
+    }
+    #m1-espontaneo.in  { opacity: 1; transform: translateX(0); }
+    #m1-espontaneo.pulse { animation: pulse2 .55s ease; }
 
     .def-box {
       background: rgba(0,229,255,.04);
@@ -1185,9 +1238,51 @@
     </div>
   </div>
 
+  <!-- circuito interno da pilha (aparece no zoom) -->
+  <div class="m1-circuit-wrap" id="m1-circuit-wrap">
+    <svg viewBox="0 0 300 220" width="300" height="220" style="display:block">
+      <!-- container / célula -->
+      <rect x="12" y="32" width="276" height="178" rx="8" fill="#080f1c" stroke="#00e5ff" stroke-width="1.8"/>
+      <!-- eletrólito (região líquida) -->
+      <rect x="12" y="112" width="276" height="98" rx="0" fill="rgba(0,70,160,.22)"/>
+      <line x1="12" y1="112" x2="288" y2="112" stroke="#3388ff" stroke-width="1.4" stroke-dasharray="5,3"/>
+      <!-- cátodo (esq., cinza) -->
+      <rect x="54" y="42" width="34" height="134" rx="5" fill="#666" stroke="#999" stroke-width="1.2"/>
+      <!-- ânodo (dir., laranja) -->
+      <rect x="212" y="42" width="34" height="134" rx="5" fill="#b04c10" stroke="#e07030" stroke-width="1.2"/>
+      <!-- fios externos -->
+      <line x1="71" y1="42" x2="71" y2="14" stroke="#ccc" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="229" y1="42" x2="229" y2="14" stroke="#ccc" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="71" y1="14" x2="229" y2="14" stroke="#ccc" stroke-width="2.5" stroke-linecap="round"/>
+      <!-- terminais +/- -->
+      <text x="40" y="45" font-size="16" fill="#8cf" font-weight="bold" font-family="Inter,sans-serif">−</text>
+      <text x="251" y="45" font-size="16" fill="#f90" font-weight="bold" font-family="Inter,sans-serif">+</text>
+      <!-- rótulos -->
+      <text x="71"  y="213" font-size="9.5" fill="#aaa" text-anchor="middle" font-family="Inter,sans-serif">Catodo</text>
+      <text x="229" y="213" font-size="9.5" fill="#aaa" text-anchor="middle" font-family="Inter,sans-serif">Anodo</text>
+      <text x="150" y="213" font-size="9.5" fill="#3388ff" text-anchor="middle" font-family="Inter,sans-serif">Eletrólito</text>
+      <!-- setas de íons (estáticas) -->
+      <text x="150" y="136" font-size="9" fill="#66bbff" text-anchor="middle" font-family="Inter,sans-serif">Cátions ▶</text>
+      <text x="150" y="156" font-size="9" fill="#bb88ff" text-anchor="middle" font-family="Inter,sans-serif">◀ Ânions</text>
+    </svg>
+    <canvas id="m1-circuit-canvas" width="300" height="220"></canvas>
+  </div>
+
+  <!-- dispositivos portáteis (aparecem no zoom-out do dialogo1.3) -->
+  <div class="m1-devices" id="m1-devices">
+    <span class="m1-device" id="m1-dev-0">📱</span>
+    <span class="m1-device" id="m1-dev-1">💻</span>
+    <span class="m1-device" id="m1-dev-2">🎮</span>
+    <span class="m1-device" id="m1-dev-3">⌚</span>
+  </div>
+
+  <!-- texto espontâneo (aparece no tempo 15.8s do dialogo1.3) -->
+  <div id="m1-espontaneo">espontâneo</div>
+
   <audio id="dialogo1"   src="audio/dialogo1.mp3"   preload="auto"></audio>
   <audio id="dialogo1_1" src="audio/dialogo1.1.mp3" preload="auto"></audio>
   <audio id="dialogo1_2" src="audio/dialogo1.2.mp3" preload="auto"></audio>
+  <audio id="dialogo1_3" src="audio/dialogo1.3.mp3" preload="auto"></audio>
   <button class="btn-action" id="m1-play">▶</button>
 
 </div>
@@ -1436,7 +1531,8 @@
     tracks: [
       { id: 'dialogo1',   begin: beginTrack0, cue: cueTrack0 },
       { id: 'dialogo1_1', begin: beginTrack1, cue: cueTrack1 },
-      { id: 'dialogo1_2', begin: beginTrack2, cue: cueTrack2 }
+      { id: 'dialogo1_2', begin: beginTrack2, cue: cueTrack2 },
+      { id: 'dialogo1_3', begin: beginTrack3, cue: cueTrack3 }
     ]
   };
 
@@ -1479,14 +1575,18 @@
     if (M1.idx === 2 && M1.t2) {
       if (a && (!a.paused || a.ended)) M1.t2.clock += dt / 1000;
       tt = M1.t2.clock;
+    } else if (M1.idx === 3 && M1.t3) {
+      if (a && (!a.paused || a.ended)) M1.t3.clock += dt / 1000;
+      tt = M1.t3.clock;
     } else {
       tt = a ? a.currentTime : 0;
     }
 
     M1.tracks[M1.idx].cue(tt);
     if (M1.atom && M1.atom.active) drawAtom(ts);
+    if (M1.t3 && M1.t3.circuitActive) drawCircuit(ts);
 
-    const keep = (M1.atom && M1.atom.active) || (a && !a.paused);
+    const keep = (M1.atom && M1.atom.active) || (a && !a.paused) || (M1.t3 && M1.t3.circuitActive);
     M1.raf = keep ? requestAnimationFrame(m1Loop) : 0;
   }
 
@@ -1537,6 +1637,15 @@
       document.getElementById('m1-eletrica').classList.add('in');
       const bat = document.getElementById('m1-batteries');
       if (bat) { bat.classList.remove('in'); void bat.offsetWidth; bat.classList.add('in'); }
+    } else if (i === 3) {
+      beginTrack3();
+      const s = M1.t3;
+      s.zoom1 = true; s.zoomOut1 = true; s.espontaneo = true;
+      s.zoom2 = true; s.zoomOut2 = true; s.pulse3 = true; s.done = true;
+      setCircuitZoom(false);
+      setDevices(false);
+      const espon = document.getElementById('m1-espontaneo');
+      if (espon) espon.classList.add('in');
     }
   }
 
@@ -1860,6 +1969,142 @@
     e.hist = [];
   }
 
+  /* ── Faixa 3: zoom na pilha / circuito / dispositivos / espontâneo ── */
+  function beginTrack3() {
+    M1.t3 = { clock: 0, done: false, circuitActive: false,
+              zoom1: false, zoomOut1: false, espontaneo: false,
+              zoom2: false, zoomOut2: false, pulse3: false };
+    // ergue as pilhas pra abrir espaço para o texto "espontâneo"
+    const bat = document.getElementById('m1-batteries');
+    if (bat) bat.classList.add('t3-lift');
+    // garante energia e seta visíveis (continuam do track 2)
+    document.getElementById('m1-energia').classList.add('in');
+    document.getElementById('m1-arrow').classList.add('in');
+    document.getElementById('m1-eletrica').classList.add('in');
+  }
+
+  function setCircuitZoom(show) {
+    const wrap = document.getElementById('m1-circuit-wrap');
+    const bat  = document.getElementById('m1-batteries');
+    const flow = document.getElementById('m1-energyflow');
+    if (show) {
+      if (bat)  bat.style.opacity  = '0';
+      if (flow) flow.style.opacity = '0';
+      if (wrap) wrap.classList.add('in');
+      if (M1.t3) M1.t3.circuitActive = true;
+      startM1Loop();
+    } else {
+      if (wrap) wrap.classList.remove('in');
+      if (bat)  bat.style.opacity  = '';
+      if (flow) flow.style.opacity = '';
+      if (M1.t3) M1.t3.circuitActive = false;
+    }
+  }
+
+  function setDevices(show) {
+    for (let i = 0; i < 4; i++) {
+      const el = document.getElementById('m1-dev-' + i);
+      if (!el) continue;
+      if (show) { const d = i; setTimeout(() => el.classList.add('in'), d * 90); }
+      else el.classList.remove('in');
+    }
+  }
+
+  function cueTrack3(tt) {
+    const s = M1.t3; if (!s) return;
+    if (tt >= 1 && !s.zoom1) {
+      s.zoom1 = true; setCircuitZoom(true); buzz(40);
+    }
+    if (tt >= 8 && !s.zoomOut1) {
+      s.zoomOut1 = true; setCircuitZoom(false); setDevices(true); buzz(30);
+    }
+    if (tt >= 15.8 && !s.espontaneo) {
+      s.espontaneo = true;
+      const el = document.getElementById('m1-espontaneo');
+      if (el) el.classList.add('in');
+      buzz(30);
+    }
+    if (tt >= 18 && !s.zoom2) {
+      s.zoom2 = true; setDevices(false); setCircuitZoom(true); buzz(40);
+    }
+    if (tt >= 25 && !s.zoomOut2) {
+      s.zoomOut2 = true; setCircuitZoom(false); buzz(30);
+    }
+    if (tt >= 27 && !s.pulse3) {
+      s.pulse3 = true; s.done = true;
+      const el = document.getElementById('m1-espontaneo');
+      if (el) {
+        let count = 0;
+        const doPulse = () => {
+          if (count >= 3) return;
+          count++;
+          el.classList.remove('pulse'); void el.offsetWidth;
+          el.classList.add('pulse');
+          el.addEventListener('animationend', () => { el.classList.remove('pulse'); setTimeout(doPulse, 100); }, { once: true });
+        };
+        doPulse();
+      }
+      buzz([25, 80, 25, 80, 25]);
+    }
+  }
+
+  /* posição ao longo de um polígono de segmentos */
+  function posOnPath(pts, d) {
+    let rem = d;
+    for (let i = 0; i < pts.length - 1; i++) {
+      const dx = pts[i+1][0] - pts[i][0], dy = pts[i+1][1] - pts[i][1];
+      const len = Math.hypot(dx, dy);
+      if (rem <= len) {
+        const f = rem / len;
+        return [pts[i][0] + dx * f, pts[i][1] + dy * f];
+      }
+      rem -= len;
+    }
+    return pts[pts.length - 1].slice();
+  }
+
+  /* animação das partículas no circuito interno (elétrons no fio, íons no eletrólito) */
+  let circuitTs0 = 0;
+  function drawCircuit(ts) {
+    const cv = document.getElementById('m1-circuit-canvas');
+    if (!cv) return;
+    const g = cv.getContext('2d');
+    g.clearRect(0, 0, 300, 220);
+    if (!circuitTs0) circuitTs0 = ts;
+    const t = (ts - circuitTs0) / 1000;
+
+    // fio externo: elétrons saem do ânodo (229,42), sobem, cruzam para cátodo (71,42)
+    const wirePts = [[229,42],[229,14],[71,14],[71,42]];
+    const wireLen = 25 + 158 + 25; // 208
+    const ESPD = 48, N_E = 5, eGap = wireLen / N_E;
+    for (let i = 0; i < N_E; i++) {
+      const d = ((t * ESPD + i * eGap) % wireLen);
+      const [ex, ey] = posOnPath(wirePts, d);
+      const eg = g.createRadialGradient(ex, ey, 0, ex, ey, 5);
+      eg.addColorStop(0, '#fff'); eg.addColorStop(0.4, '#ffe844'); eg.addColorStop(1, 'rgba(255,240,0,0)');
+      g.beginPath(); g.arc(ex, ey, 4.5, 0, Math.PI*2);
+      g.fillStyle = eg; g.shadowColor = '#ffee00'; g.shadowBlur = 10; g.fill(); g.shadowBlur = 0;
+    }
+
+    // cátions (ciano) no eletrólito: movem-se para o cátodo (esq.)
+    for (let i = 0; i < 4; i++) {
+      const dx = ((t * 28 + i * 34) % 128);
+      const x = 215 - dx; const y = 128 + Math.sin(t * 1.5 + i * 2) * 5;
+      g.beginPath(); g.arc(x, y, 3.5, 0, Math.PI*2);
+      g.fillStyle = 'rgba(80,190,255,.88)';
+      g.shadowColor = '#00aaff'; g.shadowBlur = 7; g.fill(); g.shadowBlur = 0;
+    }
+
+    // ânions (violeta) no eletrólito: movem-se para o ânodo (dir.)
+    for (let i = 0; i < 4; i++) {
+      const dx = ((t * 26 + i * 34) % 128);
+      const x = 87 + dx; const y = 150 + Math.sin(t * 1.3 + i * 2 + 1) * 5;
+      g.beginPath(); g.arc(x, y, 3.5, 0, Math.PI*2);
+      g.fillStyle = 'rgba(180,80,255,.88)';
+      g.shadowColor = '#9900ff'; g.shadowBlur = 7; g.fill(); g.shadowBlur = 0;
+    }
+  }
+
   /* reset dos elementos visuais da sequência */
   function m1ResetVisuals() {
     M1.cardShown = false;
@@ -1872,15 +2117,22 @@
     const en = document.getElementById('m1-energia'); if (en) { en.classList.remove('in'); en.classList.remove('pulse'); }
     const arr = document.getElementById('m1-arrow');    if (arr) arr.classList.remove('in');
     const elt = document.getElementById('m1-eletrica'); if (elt) elt.classList.remove('in');
-    const bat = document.getElementById('m1-batteries'); if (bat) bat.classList.remove('in');
-    M1.t2 = null;
+    const bat = document.getElementById('m1-batteries');
+    if (bat) { bat.classList.remove('in'); bat.classList.remove('t3-lift'); }
+    const bflow = document.getElementById('m1-energyflow'); if (bflow) bflow.style.opacity = '';
+    if (bat) bat.style.opacity = '';
+    const circ = document.getElementById('m1-circuit-wrap'); if (circ) circ.classList.remove('in');
+    const ccv  = document.getElementById('m1-circuit-canvas'); if (ccv) ccv.getContext('2d').clearRect(0,0,ccv.width,ccv.height);
+    setDevices(false);
+    const espon = document.getElementById('m1-espontaneo'); if (espon) { espon.classList.remove('in'); espon.classList.remove('pulse'); }
+    M1.t2 = null; M1.t3 = null;
     const cv = document.getElementById('m1-atom');
     if (cv) { cv.classList.remove('in'); cv.getContext('2d').clearRect(0, 0, cv.width, cv.height); }
   }
 
   /* reset total ao (re)entrar no módulo */
   function m1Reset() {
-    ['dialogo1', 'dialogo1_1', 'dialogo1_2'].forEach(id => {
+    ['dialogo1', 'dialogo1_1', 'dialogo1_2', 'dialogo1_3'].forEach(id => {
       const a = document.getElementById(id);
       if (a) { a.pause(); a.currentTime = 0; }
     });
@@ -1892,7 +2144,7 @@
   }
 
   // listeners de fim de faixa
-  ['dialogo1', 'dialogo1_1', 'dialogo1_2'].forEach(id => {
+  ['dialogo1', 'dialogo1_1', 'dialogo1_2', 'dialogo1_3'].forEach(id => {
     const a = document.getElementById(id);
     if (a) a.addEventListener('ended', m1Ended);
   });
