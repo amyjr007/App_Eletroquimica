@@ -1,5 +1,5 @@
 /* Service Worker — Eletroquímica PWA */
-const CACHE = 'eletroquimica-v3';
+const CACHE = 'eletroquimica-v4';
 
 const ASSETS = [
   './',

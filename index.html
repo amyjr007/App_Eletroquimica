@@ -774,6 +774,66 @@
       vertical-align: text-bottom;
     }
     @keyframes caretBlink { 50% { opacity: 0; } }
+
+    /* ── Módulo 1: fase "Átomos" ── */
+    .def-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      width: 100%;
+      transition: opacity .6s ease, transform .6s ease;
+    }
+    .def-group.fade-out {
+      opacity: 0;
+      transform: translateY(34px);
+      pointer-events: none;
+    }
+    .atomos-label {
+      font-family: 'Orbitron', monospace;
+      font-size: clamp(1rem, 2.8vw, 1.7rem);
+      font-weight: 700;
+      letter-spacing: .14em;
+      color: #ffd23f;
+      text-shadow: 0 0 26px rgba(255,210,63,.55);
+      opacity: 0;
+      transform: translateY(-10px) scale(.85);
+      transition: opacity .55s cubic-bezier(.34,1.56,.64,1), transform .55s cubic-bezier(.34,1.56,.64,1);
+    }
+    .atomos-label.in { opacity: 1; transform: translateY(0) scale(1); }
+
+    .atom-canvas {
+      display: none;
+      width: 100%;
+      max-width: 520px;
+      height: auto;
+      margin-top: 4px;
+    }
+    .atom-canvas.in { display: block; }
+
+    .energia-label {
+      position: absolute;
+      left: 20px;
+      bottom: 92px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1px;
+      line-height: 1.05;
+      font-family: 'Orbitron', monospace;
+      font-weight: 700;
+      opacity: 0;
+      transform: translateX(-18px);
+      transition: opacity .6s ease, transform .6s ease;
+      z-index: 6;
+    }
+    .energia-label.in { opacity: 1; transform: translateX(0); }
+    .energia-label span {
+      font-size: clamp(.85rem, 2.4vw, 1.35rem);
+      color: var(--cyan);
+      letter-spacing: .12em;
+      text-shadow: 0 0 18px rgba(0,229,255,.5);
+    }
     .def-box {
       background: rgba(0,229,255,.04);
       border: 1px solid rgba(0,229,255,.25);
@@ -973,18 +1033,28 @@
 
   <div class="s1-body intro-body">
     <h2 class="intro-title">Introdução a Eletroquímica</h2>
+    <div class="atomos-label" id="m1-atomos">Átomos</div>
 
     <div class="intro-stage">
-      <div class="def-card" id="m1-defcard">
-        <span class="def-card-icon">📘</span>
-        <span class="def-card-label">Definição</span>
+      <div class="def-group" id="m1-defgroup">
+        <div class="def-card" id="m1-defcard">
+          <span class="def-card-icon">📘</span>
+          <span class="def-card-label">Definição</span>
+        </div>
+        <p class="def-typed" id="m1-typed"></p>
       </div>
-      <p class="def-typed" id="m1-typed"></p>
+      <canvas id="m1-atom" class="atom-canvas" width="600" height="460"></canvas>
     </div>
   </div>
 
-  <audio id="dialogo1" src="audio/dialogo1.mp3" preload="auto"></audio>
-  <button class="btn-action" id="m1-play" onclick="toggleDialogo1()">▶</button>
+  <div class="energia-label" id="m1-energia">
+    <span class="l1">energia</span>
+    <span class="l2">química</span>
+  </div>
+
+  <audio id="dialogo1"   src="audio/dialogo1.mp3"   preload="auto"></audio>
+  <audio id="dialogo1_1" src="audio/dialogo1.1.mp3" preload="auto"></audio>
+  <button class="btn-action" id="m1-play" onclick="m1Play()">▶</button>
 
 </div>
 
@@ -1190,6 +1260,9 @@
     if (current) current.classList.remove('active');
     const next = document.getElementById(id);
     next.classList.add('active');
+
+    // ao entrar no Módulo 1, recomeça a sequência do zero
+    if (id === 'section1' && typeof m1Reset === 'function') m1Reset();
   }
 
   /* Inicia o app: vai para o menu e toca o diálogo de abertura (após 1s) */
@@ -1211,75 +1284,253 @@
     goTo(id);
   }
 
-  /* Módulo 1 — play/pause do dialogo1 */
-  function toggleDialogo1() {
-    const a = document.getElementById('dialogo1');
+  /* ═══════════ Módulo 1 — sequência de áudios + cues ═══════════ */
+  const DEF_TEXT = 'A eletroquímica é a parte da físico-química que estuda as relações entre a eletricidade e as substâncias químicas.';
+
+  const M1 = {
+    idx: 0,
+    raf: 0,
+    cardShown: false,
+    atom: null,
+    tracks: [
+      { id: 'dialogo1',   begin: beginTrack0, cue: cueTrack0 },
+      { id: 'dialogo1_1', begin: beginTrack1, cue: cueTrack1 }
+    ]
+  };
+
+  function m1El() { return document.getElementById(M1.tracks[M1.idx].id); }
+
+  /* play/pause do botão de ação (avança a sequência) */
+  function m1Play() {
+    const a = m1El();
     const btn = document.getElementById('m1-play');
     if (!a || !btn) return;
     if (a.paused) {
+      if (a.currentTime < 0.15) M1.tracks[M1.idx].begin();   // início "limpo" da faixa
       a.play().catch(() => {});
-      btn.textContent = '⏸';
-      btn.classList.add('playing');
+      btn.textContent = '⏸'; btn.classList.add('playing');
+      startM1Loop();
     } else {
       a.pause();
-      btn.textContent = '▶';
-      btn.classList.remove('playing');
+      btn.textContent = '▶'; btn.classList.remove('playing');
     }
   }
-  // ao terminar, volta para o ícone de play
+
+  function startM1Loop() {
+    if (M1.raf) return;
+    M1.raf = requestAnimationFrame(m1Loop);
+  }
+
+  function m1Loop(ts) {
+    const sec = document.getElementById('section1');
+    if (!sec || !sec.classList.contains('active')) { M1.raf = 0; return; }
+
+    const a = m1El();
+    const tt = a ? a.currentTime : 0;
+    M1.tracks[M1.idx].cue(tt);
+    if (M1.atom && M1.atom.active) drawAtom(ts);
+
+    const keep = (M1.atom && M1.atom.active) || (a && !a.paused);
+    M1.raf = keep ? requestAnimationFrame(m1Loop) : 0;
+  }
+
+  /* fim de faixa → libera o botão e prepara a próxima */
+  function m1Ended() {
+    const btn = document.getElementById('m1-play');
+    if (btn) { btn.textContent = '▶'; btn.classList.remove('playing'); }
+    if (M1.idx < M1.tracks.length - 1) M1.idx++;
+  }
+
+  /* ── Faixa 0: definição (digitação sincronizada com o áudio) ── */
+  function beginTrack0() { m1ResetVisuals(); }
+  function cueTrack0(tt) {
+    const card  = document.getElementById('m1-defcard');
+    const typed = document.getElementById('m1-typed');
+    const a     = document.getElementById('dialogo1');
+    const CARD_AT = 4.2, TYPE_AT = 5.8;
+
+    if (tt >= CARD_AT && !M1.cardShown) { M1.cardShown = true; card.classList.add('in'); }
+    else if (tt < CARD_AT && M1.cardShown) { M1.cardShown = false; card.classList.remove('in'); }
+
+    if (tt >= TYPE_AT) {
+      const end  = a.duration || (TYPE_AT + 8);
+      const prog = Math.min(1, (tt - TYPE_AT) / Math.max(0.5, end - TYPE_AT));
+      const n    = Math.round(DEF_TEXT.length * prog);
+      typed.innerHTML = DEF_TEXT.slice(0, n) + (prog < 1 ? '<span class="caret">&nbsp;</span>' : '');
+    } else {
+      typed.innerHTML = '';
+    }
+  }
+
+  /* ── Faixa 1: átomos (núcleo + elétrons + energia química) ── */
+  const M1_ORBITS = [
+    { tilt:   0, rx: 215, ry: 80, speed:  0.0100 },
+    { tilt:  45, rx: 215, ry: 80, speed: -0.0088 },
+    { tilt:  90, rx: 215, ry: 80, speed:  0.0112 },
+    { tilt: 135, rx: 215, ry: 80, speed: -0.0079 }
+  ];
+  const ELECTRON_CUES = [10.8, 13.2, 15.2, 17.0];   // último em 17s
+
+  function beginTrack1() {
+    // some tudo de "Definição" pra baixo (fade out)
+    const grp = document.getElementById('m1-defgroup');
+    grp.classList.add('fade-out');
+    setTimeout(() => { if (grp.classList.contains('fade-out')) grp.style.display = 'none'; }, 650);
+
+    document.getElementById('m1-atom').classList.add('in');
+
+    M1.atom = {
+      active: true,
+      nucleus: false, nucleusT: 0,
+      atomosShown: false, energiaShown: false,
+      lastTs: 0,
+      electrons: M1_ORBITS.map((o, i) => ({ orbit: o, ang: i * 1.7, revealed: false, revealT: 0 }))
+    };
+  }
+
+  function cueTrack1(tt) {
+    const atom = M1.atom; if (!atom) return;
+    if (tt >= 6.8 && !atom.atomosShown) {                    // "Átomos"
+      atom.atomosShown = true;
+      document.getElementById('m1-atomos').classList.add('in');
+    }
+    if (tt >= 9.5 && !atom.nucleus) atom.nucleus = true;      // núcleo (4 prótons)
+    atom.electrons.forEach((e, i) => {                        // elétrons, um a um
+      if (!e.revealed && tt >= ELECTRON_CUES[i]) { e.revealed = true; e.revealT = 0; }
+    });
+    if (tt >= 20.4 && !atom.energiaShown) {                   // "energia química"
+      atom.energiaShown = true;
+      document.getElementById('m1-energia').classList.add('in');
+    }
+  }
+
+  function easeBack(t) {
+    const c = 1.7;
+    return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2);
+  }
+
+  function drawAtom(ts) {
+    const atom = M1.atom;
+    const cv = document.getElementById('m1-atom');
+    if (!atom || !cv) return;
+    const g = cv.getContext('2d');
+    const W = cv.width, H = cv.height, cx = W / 2, cy = H / 2;
+
+    let dt = atom.lastTs ? (ts - atom.lastTs) : 16;
+    atom.lastTs = ts;
+    if (dt > 60) dt = 60;
+
+    g.clearRect(0, 0, W, H);
+
+    // núcleo: 4 prótons (cor do tema) "jiggling"
+    if (atom.nucleus) {
+      atom.nucleusT += dt;
+      const pop = Math.min(1, atom.nucleusT / 320);
+      const scale = pop < 1 ? (0.3 + 0.7 * easeBack(pop)) : 1;
+      const t = ts / 1000;
+      const cluster = [[-9, -6], [9, -6], [-9, 8], [9, 8]];
+      const ng = g.createRadialGradient(cx, cy, 0, cx, cy, 48 * scale);
+      ng.addColorStop(0, 'rgba(0,229,255,.45)');
+      ng.addColorStop(1, 'rgba(0,229,255,0)');
+      g.fillStyle = ng; g.beginPath(); g.arc(cx, cy, 48 * scale, 0, Math.PI * 2); g.fill();
+
+      cluster.forEach((c, i) => {
+        const jx = Math.sin(t * (2.1 + i * 0.6) + i) * 2.6;
+        const jy = Math.cos(t * (1.8 + i * 0.5) + i * 1.3) * 2.6;
+        const px = cx + (c[0] + jx) * scale;
+        const py = cy + (c[1] + jy) * scale;
+        const r = 11 * scale;
+        const pg = g.createRadialGradient(px - r * 0.3, py - r * 0.3, 1, px, py, r);
+        pg.addColorStop(0, '#bdf3ff'); pg.addColorStop(0.45, '#00e5ff'); pg.addColorStop(1, '#0077a0');
+        g.beginPath(); g.arc(px, py, r, 0, Math.PI * 2);
+        g.fillStyle = pg; g.shadowColor = '#00e5ff'; g.shadowBlur = 12; g.fill(); g.shadowBlur = 0;
+        g.strokeStyle = 'rgba(255,255,255,.85)'; g.lineWidth = 1.6;
+        g.beginPath();
+        g.moveTo(px - 3.4, py); g.lineTo(px + 3.4, py);
+        g.moveTo(px, py - 3.4); g.lineTo(px, py + 3.4);
+        g.stroke();
+      });
+    }
+
+    // elétrons amarelos girando, com rastro; órbitas clássicas
+    const step = dt / 16.67;
+    atom.electrons.forEach((e) => {
+      if (!e.revealed) return;
+      e.revealT += dt;
+      e.ang += e.orbit.speed * step;
+      const fade = Math.min(1, e.revealT / 450);
+      const o = e.orbit;
+
+      g.save();
+      g.translate(cx, cy);
+      g.rotate(o.tilt * Math.PI / 180);
+      g.globalAlpha = fade;
+
+      // órbita clássica (linha fraca)
+      g.beginPath();
+      g.ellipse(0, 0, o.rx, o.ry, 0, 0, Math.PI * 2);
+      g.strokeStyle = 'rgba(255,210,63,.16)'; g.lineWidth = 1.2; g.stroke();
+
+      // rastro (cometa)
+      const dir = o.speed >= 0 ? 1 : -1;
+      for (let s = 1; s <= 14; s++) {
+        const ta = e.ang - dir * s * 0.10;
+        const tx = Math.cos(ta) * o.rx, ty = Math.sin(ta) * o.ry;
+        g.beginPath();
+        g.arc(tx, ty, Math.max(0.5, 5 - s * 0.32), 0, Math.PI * 2);
+        g.fillStyle = `rgba(255,214,80,${(0.5 - s * 0.034) * fade})`;
+        g.fill();
+      }
+
+      // elétron
+      const ex = Math.cos(e.ang) * o.rx, ey = Math.sin(e.ang) * o.ry;
+      const eg = g.createRadialGradient(ex, ey, 0, ex, ey, 8);
+      eg.addColorStop(0, '#fff7d6'); eg.addColorStop(0.4, '#ffd23f'); eg.addColorStop(1, 'rgba(255,210,63,0)');
+      g.beginPath(); g.arc(ex, ey, 8, 0, Math.PI * 2);
+      g.fillStyle = eg; g.shadowColor = '#ffd23f'; g.shadowBlur = 14; g.fill(); g.shadowBlur = 0;
+      g.restore();
+    });
+    g.globalAlpha = 1;
+  }
+
+  /* reset dos elementos visuais da sequência */
+  function m1ResetVisuals() {
+    M1.cardShown = false;
+    M1.atom = null;
+    const grp = document.getElementById('m1-defgroup');
+    if (grp) { grp.classList.remove('fade-out'); grp.style.display = 'flex'; }
+    const card = document.getElementById('m1-defcard'); if (card) card.classList.remove('in');
+    const typed = document.getElementById('m1-typed'); if (typed) typed.innerHTML = '';
+    const at = document.getElementById('m1-atomos'); if (at) at.classList.remove('in');
+    const en = document.getElementById('m1-energia'); if (en) en.classList.remove('in');
+    const cv = document.getElementById('m1-atom');
+    if (cv) { cv.classList.remove('in'); cv.getContext('2d').clearRect(0, 0, cv.width, cv.height); }
+  }
+
+  /* reset total ao (re)entrar no módulo */
+  function m1Reset() {
+    ['dialogo1', 'dialogo1_1'].forEach(id => {
+      const a = document.getElementById(id);
+      if (a) { a.pause(); a.currentTime = 0; }
+    });
+    M1.idx = 0;
+    if (M1.raf) { cancelAnimationFrame(M1.raf); M1.raf = 0; }
+    m1ResetVisuals();
+    const btn = document.getElementById('m1-play');
+    if (btn) { btn.textContent = '▶'; btn.classList.remove('playing'); }
+  }
+
+  // listeners de fim de faixa
+  ['dialogo1', 'dialogo1_1'].forEach(id => {
+    const a = document.getElementById(id);
+    if (a) a.addEventListener('ended', m1Ended);
+  });
+  // garante o texto completo ao final da definição
   (function () {
     const a = document.getElementById('dialogo1');
     if (a) a.addEventListener('ended', () => {
-      const btn = document.getElementById('m1-play');
-      if (btn) { btn.textContent = '▶'; btn.classList.remove('playing'); }
-    });
-  })();
-
-  /* ── Módulo 1: cues sincronizados com o áudio (dialogo1) ── */
-  (function () {
-    const audio = document.getElementById('dialogo1');
-    const card  = document.getElementById('m1-defcard');
-    const typed = document.getElementById('m1-typed');
-    if (!audio || !card || !typed) return;
-
-    const DEF_TEXT = 'A eletroquímica é a parte da físico-química que estuda as relações entre a eletricidade e as substâncias químicas.';
-    const CARD_AT  = 4.2;   // s — caixa "Definição" entra
-    const TYPE_AT  = 5.8;   // s — texto começa a ser digitado
-
-    let cardShown = false;
-    let raf = 0;
-
-    function render() {
-      const tt = audio.currentTime;
-
-      // 1) caixa "Definição"
-      if (tt >= CARD_AT && !cardShown) {
-        cardShown = true;
-        card.classList.add('in');
-      } else if (tt < CARD_AT && cardShown) {
-        cardShown = false;
-        card.classList.remove('in');
-      }
-
-      // 2) digitação proporcional ao áudio → termina junto com ele
-      if (tt >= TYPE_AT) {
-        const end  = audio.duration || (TYPE_AT + 8);
-        const prog = Math.min(1, (tt - TYPE_AT) / Math.max(0.5, end - TYPE_AT));
-        const n    = Math.round(DEF_TEXT.length * prog);
-        typed.innerHTML = DEF_TEXT.slice(0, n) +
-          (prog < 1 ? '<span class="caret">&nbsp;</span>' : '');
-      } else {
-        typed.innerHTML = '';
-      }
-
-      if (!audio.paused && !audio.ended) raf = requestAnimationFrame(render);
-    }
-
-    audio.addEventListener('play',  () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(render); });
-    audio.addEventListener('pause', () => { cancelAnimationFrame(raf); });
-    audio.addEventListener('ended', () => {
-      cancelAnimationFrame(raf);
-      typed.textContent = DEF_TEXT;   // garante o texto completo ao final
+      const typed = document.getElementById('m1-typed');
+      if (typed) typed.textContent = DEF_TEXT;
     });
   })();
 
