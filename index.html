@@ -872,9 +872,35 @@
       0%   { stroke-dashoffset: 60; }
       100% { stroke-dashoffset: 0; }
     }
+    /* ── Botão de instalação do PWA ── */
+    .pwa-install-btn {
+      position: fixed;
+      top: 16px; left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      gap: 8px;
+      font-family: 'Orbitron', monospace;
+      font-size: .8rem;
+      font-weight: 700;
+      letter-spacing: .08em;
+      color: #040d1a;
+      background: linear-gradient(135deg, #00e5ff, #0099cc);
+      border: none;
+      border-radius: 50px;
+      padding: 11px 24px;
+      cursor: pointer;
+      box-shadow: 0 0 26px rgba(0,229,255,.55), 0 4px 16px rgba(0,0,0,.4);
+      animation: pulse-border 3s ease-in-out infinite;
+    }
+    .pwa-install-btn:hover { filter: brightness(1.08); transform: translateX(-50%) scale(1.04); }
+    .pwa-install-btn:active { transform: translateX(-50%) scale(.97); }
   </style>
 </head>
 <body>
+
+<button id="pwa-install" class="pwa-install-btn" onclick="pwaInstall()">⬇&nbsp; Instalar app</button>
 
 <!-- ═══════════════════════ COVER ═══════════════════════ -->
 <div id="cover" class="screen active">
@@ -1858,6 +1884,29 @@
       navigator.serviceWorker.register('sw.js').catch(err => console.warn('SW falhou:', err));
     });
   }
+
+  /* ─── PWA: botão de instalação ─── */
+  let deferredPrompt = null;
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    const b = document.getElementById('pwa-install');
+    if (b) b.style.display = 'inline-flex';
+  });
+  function pwaInstall() {
+    const b = document.getElementById('pwa-install');
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.finally(() => {
+      deferredPrompt = null;
+      if (b) b.style.display = 'none';
+    });
+  }
+  window.addEventListener('appinstalled', () => {
+    const b = document.getElementById('pwa-install');
+    if (b) b.style.display = 'none';
+    deferredPrompt = null;
+  });
 </script>
 </body>
 </html>
