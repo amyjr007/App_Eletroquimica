@@ -1615,65 +1615,119 @@
       });
     }
 
-    // elétrons amarelos girando, com rastro; órbitas clássicas
+    // elétrons amarelos girando (ou "atirados" ao toque)
     const step = dt / 16.67;
     atom.electrons.forEach((e) => {
       if (!e.revealed) return;
       e.revealT += dt;
       e.ang += e.orbit.speed * step;
-      const fade = Math.min(1, e.revealT / 450);
-      const o = e.orbit;
-
-      g.save();
-      g.translate(cx, cy);
-      g.rotate(o.tilt * Math.PI / 180);
-
-      const headX = Math.cos(e.ang) * o.rx, headY = Math.sin(e.ang) * o.ry;
-
-      // rastro fluido: fita afilada que segue a órbita, com gradiente cabeça→cauda
-      const dir = o.speed >= 0 ? 1 : -1;
-      const TAIL = 1.9;     // comprimento angular do rastro (rad)
-      const SEG  = 26;      // resolução da curva
-      const headW = 5;      // largura na cabeça (afila até 0 na cauda)
-      const left = [], right = [];
-      for (let s = 0; s <= SEG; s++) {
-        const f = s / SEG;                         // 0 = cabeça, 1 = cauda
-        const a = e.ang - dir * TAIL * f;
-        const px = Math.cos(a) * o.rx, py = Math.sin(a) * o.ry;
-        let tx = -o.rx * Math.sin(a), ty = o.ry * Math.cos(a);   // tangente
-        const tl = Math.hypot(tx, ty) || 1; tx /= tl; ty /= tl;
-        const nx = -ty, ny = tx;                                 // normal
-        const w = headW * (1 - f) * (1 - f);                     // afilamento suave
-        left.push([px + nx * w, py + ny * w]);
-        right.push([px - nx * w, py - ny * w]);
-      }
-      const tailX = Math.cos(e.ang - dir * TAIL) * o.rx;
-      const tailY = Math.sin(e.ang - dir * TAIL) * o.ry;
-      g.beginPath();
-      g.moveTo(left[0][0], left[0][1]);
-      for (let s = 1; s < left.length; s++) g.lineTo(left[s][0], left[s][1]);
-      for (let s = right.length - 1; s >= 0; s--) g.lineTo(right[s][0], right[s][1]);
-      g.closePath();
-      const grad = g.createLinearGradient(headX, headY, tailX, tailY);
-      grad.addColorStop(0,    `rgba(255,255,170,${Math.min(1, 1.05 * fade)})`);
-      grad.addColorStop(0.4,  `rgba(255,240,0,${0.7 * fade})`);
-      grad.addColorStop(1,    'rgba(255,240,0,0)');
-      g.fillStyle = grad;
-      g.shadowColor = 'rgba(255,240,0,.95)'; g.shadowBlur = 16; g.fill(); g.shadowBlur = 0;
-
-      // elétron (cabeça) — amarelo neon
-      const eg = g.createRadialGradient(headX, headY, 0, headX, headY, 9);
-      eg.addColorStop(0,    '#ffffff');
-      eg.addColorStop(0.35, '#fff35a');
-      eg.addColorStop(0.7,  '#ffee00');
-      eg.addColorStop(1,    'rgba(255,240,0,0)');
-      g.globalAlpha = fade;
-      g.beginPath(); g.arc(headX, headY, 7.5, 0, Math.PI * 2);
-      g.fillStyle = eg; g.shadowColor = '#ffee00'; g.shadowBlur = 22; g.fill(); g.shadowBlur = 0;
-      g.globalAlpha = 1;
-      g.restore();
+      if (e.shot) drawShotElectron(g, e, cx, cy, dt);
+      else        drawOrbitElectron(g, e, cx, cy);
     });
     g.globalAlpha = 1;
+  }
+
+  /* cabeça do elétron (amarelo neon), reutilizada no modo orbital e atirado */
+  function drawElectronHead(g, x, y, alpha) {
+    const eg = g.createRadialGradient(x, y, 0, x, y, 9);
+    eg.addColorStop(0,    '#ffffff');
+    eg.addColorStop(0.35, '#fff35a');
+    eg.addColorStop(0.7,  '#ffee00');
+    eg.addColorStop(1,    'rgba(255,240,0,0)');
+    g.globalAlpha = alpha;
+    g.beginPath(); g.arc(x, y, 7.5, 0, Math.PI * 2);
+    g.fillStyle = eg; g.shadowColor = '#ffee00'; g.shadowBlur = 22; g.fill(); g.shadowBlur = 0;
+    g.globalAlpha = 1;
+  }
+
+  /* elétron na órbita, com rastro fluido (fita afilada) */
+  function drawOrbitElectron(g, e, cx, cy) {
+    const fade = Math.min(1, e.revealT / 450);
+    const o = e.orbit;
+    g.save();
+    g.translate(cx, cy);
+    g.rotate(o.tilt * Math.PI / 180);
+
+    const headX = Math.cos(e.ang) * o.rx, headY = Math.sin(e.ang) * o.ry;
+    const dir = o.speed >= 0 ? 1 : -1;
+    const TAIL = 1.9, SEG = 26, headW = 5;
+    const left = [], right = [];
+    for (let s = 0; s <= SEG; s++) {
+      const f = s / SEG;
+      const a = e.ang - dir * TAIL * f;
+      const px = Math.cos(a) * o.rx, py = Math.sin(a) * o.ry;
+      let tx = -o.rx * Math.sin(a), ty = o.ry * Math.cos(a);
+      const tl = Math.hypot(tx, ty) || 1; tx /= tl; ty /= tl;
+      const nx = -ty, ny = tx;
+      const w = headW * (1 - f) * (1 - f);
+      left.push([px + nx * w, py + ny * w]);
+      right.push([px - nx * w, py - ny * w]);
+    }
+    const tailX = Math.cos(e.ang - dir * TAIL) * o.rx;
+    const tailY = Math.sin(e.ang - dir * TAIL) * o.ry;
+    g.beginPath();
+    g.moveTo(left[0][0], left[0][1]);
+    for (let s = 1; s < left.length; s++) g.lineTo(left[s][0], left[s][1]);
+    for (let s = right.length - 1; s >= 0; s--) g.lineTo(right[s][0], right[s][1]);
+    g.closePath();
+    const grad = g.createLinearGradient(headX, headY, tailX, tailY);
+    grad.addColorStop(0,   `rgba(255,255,170,${Math.min(1, 1.05 * fade)})`);
+    grad.addColorStop(0.4, `rgba(255,240,0,${0.7 * fade})`);
+    grad.addColorStop(1,   'rgba(255,240,0,0)');
+    g.fillStyle = grad;
+    g.shadowColor = 'rgba(255,240,0,.95)'; g.shadowBlur = 16; g.fill(); g.shadowBlur = 0;
+
+    drawElectronHead(g, headX, headY, fade);
+    g.restore();
+  }
+
+  /* posição global (no canvas) do elétron sobre sua órbita */
+  function orbitGlobalPos(e, cx, cy) {
+    const o = e.orbit;
+    const ex = Math.cos(e.ang) * o.rx, ey = Math.sin(e.ang) * o.ry;
+    const tr = o.tilt * Math.PI / 180, c = Math.cos(tr), s = Math.sin(tr);
+    return { x: cx + ex * c - ey * s, y: cy + ex * s + ey * c };
+  }
+
+  /* curva do disparo: 0→1 rápido (sai) e 1→0 suave (volta), pico em ~32% */
+  function shotDisp(f) {
+    if (f < 0.32) { const u = f / 0.32; return 1 - (1 - u) * (1 - u); }
+    const u = (f - 0.32) / 0.68;
+    return 1 - u * u * (3 - 2 * u);
+  }
+
+  /* elétron "atirado" pra fora e de volta à órbita (3s), com rastro próprio */
+  function drawShotElectron(g, e, cx, cy, dt) {
+    const T = 3000;
+    e.shotT += dt;
+    if (e.shotT >= T) { e.shot = false; e.hist = []; drawOrbitElectron(g, e, cx, cy); return; }
+    const disp = shotDisp(e.shotT / T) * e.shotMax;
+    const base = orbitGlobalPos(e, cx, cy);
+    const x = base.x + e.shotDir.x * disp;
+    const y = base.y + e.shotDir.y * disp;
+    if (!e.hist) e.hist = [];
+    e.hist.push([x, y]);
+    if (e.hist.length > 18) e.hist.shift();
+    for (let i = 0; i < e.hist.length; i++) {
+      const p = e.hist[i], a = (i + 1) / e.hist.length;
+      g.beginPath(); g.arc(p[0], p[1], 1 + 5 * a, 0, Math.PI * 2);
+      g.fillStyle = `rgba(255,240,0,${0.5 * a})`;
+      g.shadowColor = 'rgba(255,240,0,.8)'; g.shadowBlur = 8 * a; g.fill(); g.shadowBlur = 0;
+    }
+    drawElectronHead(g, x, y, 1);
+  }
+
+  /* dispara um elétron: direção radial a partir da sua posição atual */
+  function shootElectron(e, cv) {
+    const cx = cv.width / 2, cy = cv.height / 2;
+    const base = orbitGlobalPos(e, cx, cy);
+    let dx = base.x - cx, dy = base.y - cy;
+    const len = Math.hypot(dx, dy) || 1;
+    e.shotDir = { x: dx / len, y: dy / len };
+    e.shotMax = 140;
+    e.shotT = 0;
+    e.shot = true;
+    e.hist = [];
   }
 
   /* reset dos elementos visuais da sequência */
@@ -1731,6 +1785,20 @@
     btn.addEventListener('pointercancel', () => {
       if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
       held = false;
+    });
+  })();
+
+  // tocar no átomo (completo) → atira o próximo elétron pra fora; volta em 3s
+  (function () {
+    const cv = document.getElementById('m1-atom');
+    if (!cv) return;
+    cv.addEventListener('pointerdown', () => {
+      const atom = M1.atom;
+      if (!atom || !atom.active) return;
+      if (!atom.electrons.every(e => e.revealed)) return;   // só com o átomo completo
+      atom.shootIdx = ((atom.shootIdx == null ? -1 : atom.shootIdx) + 1) % atom.electrons.length;
+      shootElectron(atom.electrons[atom.shootIdx], cv);
+      startM1Loop();
     });
   })();
   // garante o texto completo ao final da definição
