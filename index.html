@@ -1,0 +1,1845 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <!-- v2026-06-03-lab8 -->
+  <title>Eletroquímica — audiobook Interativo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:      #000000;
+      --surface: #000000;
+      --cyan:    #00e5ff;
+      --purple:  #7c3aed;
+      --orange:  #f97316;
+      --text:    #e2f3ff;
+      --muted:   #4a6580;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      width: 100%; height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    /* ─── SCREENS ─────────────────────────────────── */
+    .screen {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.55s cubic-bezier(.4,0,.2,1);
+    }
+    .screen.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    /* ═══════════════════════════════════════════════
+       COVER
+    ═══════════════════════════════════════════════ */
+    #cover {
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    #coverCanvas {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+    }
+
+    .cover-vignette {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at center, transparent 30%, var(--bg) 100%);
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .cover-content {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      text-align: center;
+      padding: 0 24px;
+    }
+
+    .cover-eyebrow {
+      font-family: 'Orbitron', monospace;
+      font-size: .65rem;
+      letter-spacing: .35em;
+      color: var(--cyan);
+      padding: 5px 18px;
+      border: 1px solid rgba(0,229,255,.3);
+      border-radius: 20px;
+      background: rgba(0,229,255,.05);
+      animation: pulse-border 3s ease-in-out infinite;
+    }
+    @keyframes pulse-border {
+      0%,100% { box-shadow: 0 0 0 0 rgba(0,229,255,.0); }
+      50%      { box-shadow: 0 0 0 6px rgba(0,229,255,.15); }
+    }
+
+    .cover-title {
+      font-family: 'Orbitron', monospace;
+      font-size: clamp(2.8rem, 8vw, 5.5rem);
+      font-weight: 900;
+      line-height: 1;
+      background: linear-gradient(135deg, #00e5ff 0%, #a78bfa 50%, #00e5ff 100%);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: shimmer 4s linear infinite;
+      filter: drop-shadow(0 0 40px rgba(0,229,255,.4));
+    }
+    @keyframes shimmer {
+      0%   { background-position: 0% center; }
+      100% { background-position: 200% center; }
+    }
+
+    .cover-divider {
+      width: 100px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+      margin: 4px 0;
+    }
+
+    .cover-subtitle {
+      font-family: 'Orbitron', monospace;
+      font-size: clamp(.85rem, 2vw, 1.15rem);
+      font-weight: 400;
+      color: rgba(226,243,255,.65);
+      letter-spacing: .18em;
+    }
+
+    .cover-author {
+      font-size: .8rem;
+      color: var(--muted);
+      letter-spacing: .12em;
+      margin-top: 4px;
+    }
+
+    /* ── Botão Iniciar ── */
+    .btn-start {
+      margin-top: 28px;
+      position: relative;
+      padding: 15px 52px;
+      font-family: 'Orbitron', monospace;
+      font-size: .9rem;
+      font-weight: 700;
+      letter-spacing: .15em;
+      color: #040d1a;
+      background: linear-gradient(135deg, #00e5ff, #0099cc);
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      overflow: hidden;
+      transition: transform .2s, box-shadow .2s;
+      box-shadow: 0 0 30px rgba(0,229,255,.45), 0 4px 20px rgba(0,0,0,.5);
+    }
+    .btn-start::before {
+      content: '';
+      position: absolute;
+      inset: -3px;
+      border-radius: 53px;
+      background: conic-gradient(var(--cyan), var(--purple), var(--cyan));
+      z-index: -1;
+      animation: spin-border 3s linear infinite;
+    }
+    @keyframes spin-border {
+      to { transform: rotate(360deg); }
+    }
+    .btn-start::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 50px;
+      background: linear-gradient(135deg, #00e5ff, #0099cc);
+    }
+    .btn-start span { position: relative; z-index: 1; }
+    .btn-start:hover { transform: scale(1.06); box-shadow: 0 0 55px rgba(0,229,255,.65), 0 8px 30px rgba(0,0,0,.5); }
+    .btn-start:active { transform: scale(.97); }
+
+    /* ═══════════════════════════════════════════════
+       MENU
+    ═══════════════════════════════════════════════ */
+    #menu {
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 40px;
+      padding: 40px 24px;
+    }
+
+    .menu-header { text-align: center; }
+
+    .menu-title {
+      font-family: 'Orbitron', monospace;
+      font-size: clamp(1.2rem, 3vw, 1.8rem);
+      font-weight: 700;
+      color: var(--cyan);
+    }
+    .menu-subtitle {
+      margin-top: 8px;
+      font-size: .9rem;
+      color: var(--muted);
+    }
+
+    .sections-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      width: 100%;
+      max-width: 920px;
+    }
+
+    .section-card {
+      background: var(--surface);
+      border: 1px solid rgba(255,255,255,.06);
+      border-radius: 22px;
+      padding: 36px 24px 28px;
+      cursor: pointer;
+      transition: transform .3s, box-shadow .3s, border-color .3s;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      text-align: center;
+    }
+
+    /* top glow */
+    .section-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      border-radius: 22px 22px 0 0;
+      opacity: 0;
+      transition: opacity .3s;
+    }
+    .section-card:hover::before { opacity: 1; }
+
+    /* glow overlay */
+    .section-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      border-radius: 22px;
+      transition: opacity .4s;
+    }
+    .section-card:hover::after { opacity: 1; }
+
+    .section-card:nth-child(1)::before { background: var(--cyan); }
+    .section-card:nth-child(1)::after  { background: radial-gradient(ellipse at 50% -10%, rgba(0,229,255,.12), transparent 65%); }
+    .section-card:nth-child(1):hover   { border-color: rgba(0,229,255,.4); transform: translateY(-6px); box-shadow: 0 20px 60px rgba(0,229,255,.12); }
+
+    .section-card:nth-child(2)::before { background: var(--purple); }
+    .section-card:nth-child(2)::after  { background: radial-gradient(ellipse at 50% -10%, rgba(124,58,237,.15), transparent 65%); }
+    .section-card:nth-child(2):hover   { border-color: rgba(124,58,237,.45); transform: translateY(-6px); box-shadow: 0 20px 60px rgba(124,58,237,.15); }
+
+    .section-card:nth-child(3)::before { background: var(--orange); }
+    .section-card:nth-child(3)::after  { background: radial-gradient(ellipse at 50% -10%, rgba(249,115,22,.12), transparent 65%); }
+    .section-card:nth-child(3):hover   { border-color: rgba(249,115,22,.4); transform: translateY(-6px); box-shadow: 0 20px 60px rgba(249,115,22,.12); }
+
+    .card-badge {
+      font-family: 'Orbitron', monospace;
+      font-size: .6rem;
+      letter-spacing: .25em;
+      padding: 4px 12px;
+      border-radius: 14px;
+      position: relative;
+      z-index: 1;
+    }
+    .section-card:nth-child(1) .card-badge { color: var(--cyan); background: rgba(0,229,255,.1); border: 1px solid rgba(0,229,255,.2); }
+    .section-card:nth-child(2) .card-badge { color: #a78bfa; background: rgba(124,58,237,.1); border: 1px solid rgba(124,58,237,.25); }
+    .section-card:nth-child(3) .card-badge { color: var(--orange); background: rgba(249,115,22,.1); border: 1px solid rgba(249,115,22,.2); }
+
+    .card-icon {
+      font-size: 3.2rem;
+      line-height: 1;
+      position: relative;
+      z-index: 1;
+    }
+
+    .card-title {
+      font-family: 'Orbitron', monospace;
+      font-size: .95rem;
+      font-weight: 700;
+      color: var(--text);
+      position: relative;
+      z-index: 1;
+    }
+
+    .card-enter {
+      margin-top: 10px;
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      transition: transform .2s;
+      position: relative;
+      z-index: 1;
+    }
+    .section-card:hover .card-enter { transform: translateX(4px); }
+    .section-card:nth-child(1) .card-enter { background: rgba(0,229,255,.1); color: var(--cyan); }
+    .section-card:nth-child(2) .card-enter { background: rgba(124,58,237,.1); color: #a78bfa; }
+    .section-card:nth-child(3) .card-enter { background: rgba(249,115,22,.1); color: var(--orange); }
+
+    /* ═══════════════════════════════════════════════
+       SECTION SLIDES
+    ═══════════════════════════════════════════════ */
+    .section-page { flex-direction: column; }
+
+    /* ── Top bar ── */
+    .slide-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 28px;
+      border-bottom: 1px solid rgba(255,255,255,.05);
+      background: rgba(4,13,26,.85);
+      backdrop-filter: blur(12px);
+      flex-shrink: 0;
+      z-index: 10;
+    }
+
+    .btn-back {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: none;
+      border: 1px solid rgba(255,255,255,.1);
+      color: var(--muted);
+      padding: 7px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: .82rem;
+      font-family: 'Inter', sans-serif;
+      transition: border-color .2s, color .2s;
+    }
+    .btn-back:hover { border-color: rgba(255,255,255,.3); color: var(--text); }
+
+    .topbar-label {
+      font-family: 'Orbitron', monospace;
+      font-size: .65rem;
+      letter-spacing: .25em;
+      color: var(--muted);
+    }
+
+    .topbar-dots { display: flex; gap: 8px; }
+    .tdot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.12);
+      transition: background .3s, box-shadow .3s;
+    }
+    .tdot.on { background: var(--accent-color); box-shadow: 0 0 8px var(--accent-color); }
+
+    /* ── Body ── */
+    .slide-body {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      overflow: hidden;
+    }
+
+    /* Left: visual */
+    .slide-visual {
+      display: flex;
+      flex-direction: column;
+      padding: 28px 32px;
+      gap: 20px;
+      border-right: 1px solid rgba(255,255,255,.05);
+      overflow: hidden;
+    }
+
+    .slide-title-row {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .section-chip {
+      font-family: 'Orbitron', monospace;
+      font-size: .6rem;
+      letter-spacing: .28em;
+      padding: 4px 14px;
+      border-radius: 14px;
+      display: inline-block;
+      width: fit-content;
+    }
+
+    .slide-title {
+      font-family: 'Orbitron', monospace;
+      font-size: clamp(1.4rem, 3vw, 2rem);
+      font-weight: 700;
+      line-height: 1.15;
+    }
+
+    /* Diagram frame */
+    .diagram-frame {
+      flex: 1;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.07);
+      background: rgba(0,0,0,.25);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 260px;
+    }
+
+    .df-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+      background-size: 36px 36px;
+    }
+
+    .df-corner {
+      position: absolute;
+      width: 22px; height: 22px;
+      border-width: 2px;
+      border-style: solid;
+      border-color: transparent;
+    }
+    .df-corner.tl { top: 14px; left: 14px; border-top-color: inherit; border-left-color: inherit; border-radius: 4px 0 0 0; }
+    .df-corner.tr { top: 14px; right: 14px; border-top-color: inherit; border-right-color: inherit; border-radius: 0 4px 0 0; }
+    .df-corner.bl { bottom: 14px; left: 14px; border-bottom-color: inherit; border-left-color: inherit; border-radius: 0 0 0 4px; }
+    .df-corner.br { bottom: 14px; right: 14px; border-bottom-color: inherit; border-right-color: inherit; border-radius: 0 0 4px 0; }
+
+    .diagram-svg { position: relative; z-index: 1; }
+
+    /* Right: panel */
+    .slide-panel {
+      display: flex;
+      flex-direction: column;
+      background: rgba(7,21,37,.7);
+    }
+
+    .panel-section-title {
+      padding: 22px 22px 16px;
+      border-bottom: 1px solid rgba(255,255,255,.05);
+      font-family: 'Orbitron', monospace;
+      font-size: .6rem;
+      letter-spacing: .25em;
+      color: var(--muted);
+    }
+
+    .narration-body {
+      flex: 1;
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      overflow-y: auto;
+    }
+
+    /* Empty content lines */
+    .content-lines {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .cline {
+      height: 3px;
+      border-radius: 2px;
+      opacity: .12;
+      background: var(--accent-color, var(--cyan));
+      animation: breathe 3s ease-in-out infinite;
+    }
+    @keyframes breathe {
+      0%,100% { opacity: .08; }
+      50%      { opacity: .2; }
+    }
+    .cline:nth-child(1) { width: 90%; animation-delay: 0s; }
+    .cline:nth-child(2) { width: 75%; animation-delay: .3s; }
+    .cline:nth-child(3) { width: 85%; animation-delay: .6s; }
+    .cline:nth-child(4) { width: 60%; animation-delay: .9s; }
+    .cline:nth-child(5) { width: 80%; animation-delay: 1.2s; }
+
+    .highlight-box {
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.07);
+      background: rgba(0,0,0,.2);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .hbox-label {
+      font-family: 'Orbitron', monospace;
+      font-size: .55rem;
+      letter-spacing: .2em;
+      color: var(--muted);
+    }
+    .hbox-lines {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .hline {
+      height: 3px;
+      border-radius: 2px;
+      background: rgba(255,255,255,.07);
+    }
+    .hline:nth-child(1) { width: 80%; }
+    .hline:nth-child(2) { width: 65%; }
+    .hline:nth-child(3) { width: 72%; }
+
+    /* ── Audio player ── */
+    .audio-player {
+      padding: 18px 22px 20px;
+      border-top: 1px solid rgba(255,255,255,.05);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .player-track {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+    .track-name { font-size: .82rem; font-weight: 500; }
+    .track-time { font-family: monospace; font-size: .75rem; color: var(--muted); }
+
+    .progress-bar {
+      height: 4px;
+      border-radius: 2px;
+      background: rgba(255,255,255,.08);
+      cursor: pointer;
+      position: relative;
+    }
+    .progress-fill {
+      height: 100%;
+      border-radius: 2px;
+      width: 0%;
+      background: var(--accent-color, var(--cyan));
+      transition: width .1s linear;
+      position: relative;
+    }
+    .progress-fill::after {
+      content: '';
+      position: absolute;
+      right: -4px; top: -4px;
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: var(--accent-color, var(--cyan));
+      box-shadow: 0 0 6px var(--accent-color, var(--cyan));
+      opacity: 0;
+      transition: opacity .2s;
+    }
+    .progress-bar:hover .progress-fill::after { opacity: 1; }
+
+    .player-controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+    .pc-btn {
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 1rem;
+      padding: 8px;
+      border-radius: 50%;
+      width: 38px; height: 38px;
+      display: flex; align-items: center; justify-content: center;
+      transition: color .2s, background .2s;
+    }
+    .pc-btn:hover { color: var(--text); background: rgba(255,255,255,.05); }
+    .pc-btn.big {
+      width: 52px; height: 52px;
+      font-size: 1.2rem;
+      border: 2px solid var(--accent-color, var(--cyan));
+      color: var(--accent-color, var(--cyan));
+      box-shadow: 0 0 16px rgba(0,0,0,.3);
+    }
+    .pc-btn.big:hover { background: rgba(255,255,255,.05); box-shadow: 0 0 20px var(--accent-color, var(--cyan)); }
+
+    /* ── Footer ── */
+    .slide-footer {
+      padding: 14px 28px;
+      border-top: 1px solid rgba(255,255,255,.05);
+      background: rgba(4,13,26,.85);
+      backdrop-filter: blur(12px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .fn-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: none;
+      border: 1px solid rgba(255,255,255,.1);
+      color: var(--muted);
+      padding: 9px 20px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: .82rem;
+      font-family: 'Inter', sans-serif;
+      transition: all .2s;
+    }
+    .fn-btn:hover { border-color: rgba(255,255,255,.25); color: var(--text); }
+    .fn-btn.next {
+      background: var(--accent-color, var(--cyan));
+      border-color: transparent;
+      color: #040d1a;
+      font-weight: 600;
+    }
+    .fn-btn.next:hover { filter: brightness(1.1); box-shadow: 0 0 20px rgba(0,229,255,.3); }
+    .fn-btn:disabled { opacity: .3; cursor: default; pointer-events: none; }
+
+    .page-counter {
+      font-family: 'Orbitron', monospace;
+      font-size: .7rem;
+      color: var(--muted);
+    }
+
+    /* ── FAB Action Button ── */
+    .btn-action {
+      position: absolute;
+      bottom: 32px;
+      right: 32px;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      border: none;
+      background: linear-gradient(135deg, #00e5ff, #0099cc);
+      color: #040d1a;
+      font-size: 1.5rem;
+      cursor: pointer;
+      box-shadow: 0 0 28px rgba(0,229,255,.5), 0 4px 20px rgba(0,0,0,.4);
+      transition: transform .2s, box-shadow .2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 20;
+    }
+    .btn-action:hover {
+      transform: scale(1.12);
+      box-shadow: 0 0 50px rgba(0,229,255,.75), 0 8px 30px rgba(0,0,0,.5);
+    }
+    .btn-action:active { transform: scale(.94); }
+    .btn-action.playing {
+      background: linear-gradient(135deg, #6b7785, #49545f);
+      color: #dbe4ec;
+      box-shadow: 0 0 22px rgba(120,140,160,.4), 0 4px 20px rgba(0,0,0,.45);
+    }
+    .btn-action.playing:hover {
+      box-shadow: 0 0 36px rgba(140,160,180,.55), 0 8px 30px rgba(0,0,0,.5);
+    }
+
+    /* ── Section 1 clean body ── */
+    .s1-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: flex-start;
+      padding: 44px 52px;
+      gap: 12px;
+      overflow: hidden;
+    }
+    .s1-title-row {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    /* ── Módulo 1: Introdução ── */
+    .intro-body {
+      align-items: center;
+      justify-content: flex-start;
+      gap: 14px;
+      padding: 14px 52px 44px;
+    }
+    .intro-title {
+      font-family: 'Orbitron', monospace;
+      font-size: clamp(.65rem, 1.6vw, 1.05rem);
+      font-weight: 700;
+      color: var(--cyan);
+      text-align: center;
+      letter-spacing: .04em;
+      text-shadow: 0 0 30px rgba(0,229,255,.35);
+    }
+    .intro-stage {
+      flex: 1;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 16px;
+    }
+
+    /* Caixa estilizada "Definição" */
+    .def-card {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 24px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, rgba(0,229,255,.12), rgba(124,58,237,.10));
+      border: 1px solid rgba(0,229,255,.4);
+      box-shadow: 0 0 40px rgba(0,229,255,.18), inset 0 1px 0 rgba(255,255,255,.08);
+      backdrop-filter: blur(6px);
+    }
+    .def-card.in {
+      display: inline-flex;
+      animation: defCardIn .85s cubic-bezier(.34,1.56,.64,1) both,
+                 defCardGlow 3s ease-in-out .9s infinite;
+    }
+    .def-card-icon { font-size: 1.35rem; filter: drop-shadow(0 0 12px rgba(0,229,255,.7)); }
+    .def-card-label {
+      font-family: 'Orbitron', monospace;
+      font-size: clamp(.8rem, 1.5vw, 1rem);
+      font-weight: 700;
+      letter-spacing: .18em;
+      background: linear-gradient(135deg, #00e5ff, #a78bfa);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    @keyframes defCardIn {
+      0%   { opacity: 0; transform: translateY(-42px) scale(.4) rotate(-8deg); filter: blur(8px); }
+      60%  { opacity: 1; filter: blur(0); }
+      100% { opacity: 1; transform: translateY(0) scale(1) rotate(0); }
+    }
+    @keyframes defCardGlow {
+      0%,100% { box-shadow: 0 0 30px rgba(0,229,255,.14), inset 0 1px 0 rgba(255,255,255,.08); }
+      50%     { box-shadow: 0 0 55px rgba(0,229,255,.28), inset 0 1px 0 rgba(255,255,255,.14); }
+    }
+
+    /* Texto digitado da definição */
+    .def-typed {
+      max-width: 700px;
+      font-size: clamp(1rem, 2.2vw, 1.35rem);
+      line-height: 1.7;
+      text-align: center;
+      color: rgba(226,243,255,.92);
+      min-height: 1.7em;
+    }
+    .def-typed .caret {
+      display: inline-block;
+      width: 2px;
+      background: var(--cyan);
+      margin-left: 1px;
+      box-shadow: 0 0 8px var(--cyan);
+      animation: caretBlink .8s steps(1) infinite;
+      vertical-align: text-bottom;
+    }
+    @keyframes caretBlink { 50% { opacity: 0; } }
+    .def-box {
+      background: rgba(0,229,255,.04);
+      border: 1px solid rgba(0,229,255,.25);
+      border-radius: 12px;
+      padding: 14px 20px;
+      max-width: 360px;
+      display: none;
+      flex-direction: column;
+      opacity: 0;
+      transform: translateX(-24px);
+      transition: opacity .55s cubic-bezier(.4,0,.2,1), transform .55s cubic-bezier(.4,0,.2,1);
+    }
+    @keyframes def-glow {
+      0%,100% { box-shadow: 0 0 20px rgba(0,229,255,.05), inset 0 1px 0 rgba(0,229,255,.08); }
+      50%      { box-shadow: 0 0 48px rgba(0,229,255,.14), inset 0 1px 0 rgba(0,229,255,.18); }
+    }
+    .def-box.s1-on { opacity:1; transform:translateX(0); animation:def-glow 3.2s ease-in-out infinite; }
+    .def-icon  { font-size:2rem; filter:drop-shadow(0 0 12px rgba(0,229,255,.6)); }
+    .def-heading { font-family:'Orbitron',monospace; font-size:.7rem; letter-spacing:.3em; color:var(--cyan); }
+    .def-text  { font-size:.85rem; line-height:1.55; color:rgba(226,243,255,.85); }
+    .def-text strong { color:var(--cyan); font-weight:600; }
+    .def-text em     { color:#a78bfa; font-style:normal; }
+    .def-pills { display:flex; gap:12px; flex-wrap:wrap; margin-top:4px; }
+    .def-pill  { display:flex; align-items:center; gap:8px; padding:8px 18px; border-radius:10px;
+                 font-size:.8rem; font-family:'Orbitron',monospace; letter-spacing:.08em; }
+    .def-pill.ox  { background:rgba(0,229,255,.08);   border:1px solid rgba(0,229,255,.22);   color:var(--cyan); }
+    .def-pill.red { background:rgba(167,139,250,.08); border:1px solid rgba(167,139,250,.22); color:#a78bfa; }
+    #s1-lab {
+      flex:1; width:100%;
+      display:none; align-items:flex-end; justify-content:center;
+      opacity:0; transition:opacity .6s ease;
+      position:relative;
+    }
+    #s1-lab.s1-on { opacity:1; }
+    #lab-canvas {
+      width:100%; max-width:1000px; height:auto;
+      border-radius:14px; touch-action:none; cursor:grab;
+    }
+    #lab-canvas:active { cursor:grabbing; }
+    .lab-hud {
+      position:absolute; top:8px; left:50%;
+      transform:translateX(-50%) translateY(-6px);
+      font-family:'Orbitron',monospace; font-size:.72rem; letter-spacing:.1em;
+      color:#bdecff; background:rgba(0,40,60,.6);
+      border:1px solid rgba(0,229,255,.35); padding:9px 22px; border-radius:30px;
+      backdrop-filter:blur(6px); box-shadow:0 0 22px rgba(0,229,255,.18);
+      opacity:0; transition:opacity .4s, transform .4s; pointer-events:none;
+      white-space:nowrap; z-index:5; text-align:center;
+    }
+    .lab-hud.on { opacity:1; transform:translateX(-50%) translateY(0); }
+
+    /* ── Section-specific accent colors ── */
+    #section1 { --accent-color: #00e5ff; }
+    #section2 { --accent-color: #a78bfa; }
+    #section3 { --accent-color: #f97316; }
+
+    #section1 .section-chip { color: #00e5ff; background: rgba(0,229,255,.1); border: 1px solid rgba(0,229,255,.22); }
+    #section1 .slide-title  { color: #00e5ff; text-shadow: 0 0 30px rgba(0,229,255,.3); }
+    #section1 .df-corner    { border-color: rgba(0,229,255,.45) !important; }
+    #section1 .fn-btn.next  { background: #00e5ff; }
+    #section1 .fn-btn.next:hover { box-shadow: 0 0 22px rgba(0,229,255,.5); }
+
+    #section2 .section-chip { color: #a78bfa; background: rgba(124,58,237,.1); border: 1px solid rgba(124,58,237,.25); }
+    #section2 .slide-title  { color: #a78bfa; text-shadow: 0 0 30px rgba(124,58,237,.3); }
+    #section2 .df-corner    { border-color: rgba(167,139,250,.5) !important; }
+    #section2 .fn-btn.next  { background: #a78bfa; }
+    #section2 .fn-btn.next:hover { box-shadow: 0 0 22px rgba(167,139,250,.5); }
+
+    #section3 .section-chip { color: #f97316; background: rgba(249,115,22,.1); border: 1px solid rgba(249,115,22,.22); }
+    #section3 .slide-title  { color: #f97316; text-shadow: 0 0 30px rgba(249,115,22,.3); }
+    #section3 .df-corner    { border-color: rgba(249,115,22,.5) !important; }
+    #section3 .fn-btn.next  { background: #f97316; }
+    #section3 .fn-btn.next:hover { box-shadow: 0 0 22px rgba(249,115,22,.5); }
+
+    /* ── Diagram SVG Animations ── */
+    @keyframes orbit1 {
+      to { transform: rotate(360deg); }
+    }
+    @keyframes orbit2 {
+      to { transform: rotate(-360deg); }
+    }
+    @keyframes electron-pulse {
+      0%,100% { r: 5; opacity: 1; }
+      50%      { r: 7; opacity: .7; }
+    }
+    @keyframes transfer-arrow {
+      0%   { opacity: 0; transform: translateX(-10px); }
+      50%  { opacity: 1; transform: translateX(0); }
+      100% { opacity: 0; transform: translateX(10px); }
+    }
+    @keyframes bubble-rise {
+      0%   { transform: translateY(0)  scale(1);   opacity: .7; }
+      100% { transform: translateY(-80px) scale(.3); opacity: 0; }
+    }
+    @keyframes current-flow {
+      0%   { stroke-dashoffset: 60; }
+      100% { stroke-dashoffset: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════ COVER ═══════════════════════ -->
+<div id="cover" class="screen active">
+  <canvas id="coverCanvas"></canvas>
+  <div class="cover-vignette"></div>
+
+  <div class="cover-content">
+    <div class="cover-eyebrow">Winnerysfdusydfusfuds</div>
+
+    <h1 class="cover-title">ELETROQUÍMICA</h1>
+    <div class="cover-divider"></div>
+    <p class="cover-subtitle">Pilhas Interativas</p>
+    <p class="cover-author">Designed by Amauri Junior</p>
+
+    <audio id="dialogo0" src="audio/dialogo0.mp3" preload="auto"></audio>
+    <button class="btn-start" onclick="startApp()">
+      <span>▶&nbsp;&nbsp;INICIAR</span>
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════════════════ MENU ═══════════════════════ -->
+<div id="menu" class="screen">
+  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:40px;width:100%;padding:40px 24px;">
+
+    <div class="menu-header">
+      <h2 class="menu-title">Selecione um Módulo</h2>
+      <p class="menu-subtitle">Escolha por onde deseja começar</p>
+    </div>
+
+    <div class="sections-grid">
+
+      <div class="section-card" onclick="selectModule('section1')">
+        <div class="card-badge">MÓDULO 01</div>
+        <div class="card-icon">⚡</div>
+        <div class="card-title">Oxi-Redução</div>
+        <div class="card-enter">→</div>
+      </div>
+
+      <div class="section-card" onclick="selectModule('section2')">
+        <div class="card-badge">MÓDULO 02</div>
+        <div class="card-icon">🔋</div>
+        <div class="card-title">Pilhas</div>
+        <div class="card-enter">→</div>
+      </div>
+
+      <div class="section-card" onclick="selectModule('section3')">
+        <div class="card-badge">MÓDULO 03</div>
+        <div class="card-icon">⚗️</div>
+        <div class="card-title">Eletrólise</div>
+        <div class="card-enter">→</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ SECTION 1: (em branco) ═══════════════════ -->
+<div id="section1" class="screen section-page">
+
+  <div class="slide-topbar">
+    <button class="btn-back" onclick="goTo('menu')">← Módulos</button>
+    <span class="topbar-label">MÓDULO 01</span>
+    <div class="topbar-dots">
+      <div class="tdot on"></div>
+      <div class="tdot"></div>
+      <div class="tdot"></div>
+    </div>
+  </div>
+
+  <div class="s1-body intro-body">
+    <h2 class="intro-title">Introdução a Eletroquímica</h2>
+
+    <div class="intro-stage">
+      <div class="def-card" id="m1-defcard">
+        <span class="def-card-icon">📘</span>
+        <span class="def-card-label">Definição</span>
+      </div>
+      <p class="def-typed" id="m1-typed"></p>
+    </div>
+  </div>
+
+  <audio id="dialogo1" src="audio/dialogo1.mp3" preload="auto"></audio>
+  <button class="btn-action" id="m1-play" onclick="toggleDialogo1()">▶</button>
+
+</div>
+
+<!-- ═══════════════════ SECTION 2: (recebeu o lab de Oxi-Redução) ═══════════════════ -->
+<div id="section2" class="screen section-page">
+
+  <div class="slide-topbar">
+    <button class="btn-back" onclick="goTo('menu')">← Módulos</button>
+    <span class="topbar-label">MÓDULO 01 — OXI-REDUÇÃO</span>
+    <div class="topbar-dots">
+      <div class="tdot on"></div>
+      <div class="tdot"></div>
+      <div class="tdot"></div>
+    </div>
+  </div>
+
+  <div class="s1-body">
+    <span class="section-chip">MÓDULO 01</span>
+    <div class="s1-title-row">
+      <h2 class="slide-title">Oxi-Redução</h2>
+      <div class="def-box" id="s1-def">
+        <p class="def-text">
+          É um processo químico em que ocorrem <strong>transferência de elétrons</strong>
+          entre <em>espécies químicas</em> em contato.
+        </p>
+      </div>
+    </div>
+
+    <div id="s1-lab">
+      <div id="s1-hud" class="lab-hud"></div>
+      <canvas id="lab-canvas" width="1100" height="500"></canvas>
+    </div>
+  </div>
+
+  <button class="btn-action" id="s1-action" onclick="onS1Action()">▶</button>
+
+</div>
+
+<!-- ═══════════════════ SECTION 3: Eletrólise ═══════════════════ -->
+<div id="section3" class="screen section-page">
+
+  <div class="slide-topbar">
+    <button class="btn-back" onclick="goTo('menu')">← Módulos</button>
+    <span class="topbar-label">MÓDULO 03 — ELETRÓLISE</span>
+    <div class="topbar-dots">
+      <div class="tdot on"></div>
+      <div class="tdot"></div>
+      <div class="tdot"></div>
+    </div>
+  </div>
+
+  <div class="slide-body">
+
+    <div class="slide-visual">
+      <div class="slide-title-row">
+        <span class="section-chip">MÓDULO 03</span>
+        <h2 class="slide-title">Eletrólise</h2>
+      </div>
+
+      <div class="diagram-frame">
+        <div class="df-grid"></div>
+        <div class="df-corner tl"></div>
+        <div class="df-corner tr"></div>
+        <div class="df-corner bl"></div>
+        <div class="df-corner br"></div>
+
+        <!-- SVG: Célula eletrolítica -->
+        <svg class="diagram-svg" width="480" height="240" viewBox="0 0 480 240">
+          <defs>
+            <radialGradient id="gBatt" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#f97316" stop-opacity=".9"/>
+              <stop offset="100%" stop-color="#7c2d12" stop-opacity=".5"/>
+            </radialGradient>
+            <filter id="glow3">
+              <feGaussianBlur stdDeviation="3.5" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+
+          <!-- Power source (battery) -->
+          <rect x="200" y="10" width="80" height="36" rx="8" fill="url(#gBatt)" filter="url(#glow3)"/>
+          <text x="240" y="32" text-anchor="middle" font-family="Orbitron,monospace" font-size="10"
+            fill="#040d1a" font-weight="700">FONTE</text>
+          <!-- +/- poles -->
+          <text x="190" y="30" text-anchor="middle" font-family="monospace" font-size="14"
+            fill="#f97316" font-weight="700">–</text>
+          <text x="292" y="30" text-anchor="middle" font-family="monospace" font-size="14"
+            fill="#f97316" font-weight="700">+</text>
+
+          <!-- Wires from power source to electrodes -->
+          <path d="M200 28 L150 28 L150 65" fill="none" stroke="#f97316" stroke-width="2"
+            stroke-dasharray="6 3" style="animation: current-flow 1.2s linear infinite;"/>
+          <path d="M280 28 L330 28 L330 65" fill="none" stroke="#f97316" stroke-width="2"
+            stroke-dasharray="6 3" style="animation: current-flow 1.2s linear infinite;"/>
+
+          <!-- Main container (trough) -->
+          <rect x="80" y="65" width="320" height="155" rx="8" fill="rgba(10,30,60,.75)"
+            stroke="#f97316" stroke-width="1.5" stroke-opacity=".4"/>
+          <!-- Liquid -->
+          <rect x="84" y="105" width="312" height="111" rx="0 0 6 6" fill="rgba(8,20,45,.9)"/>
+
+          <!-- Electrode Left (cathode –) -->
+          <rect x="136" y="68" width="26" height="120" rx="5" fill="#a78bfa" fill-opacity=".7"
+            filter="url(#glow3)"/>
+          <text x="149" y="62" text-anchor="middle" font-family="Orbitron,monospace" font-size="8"
+            fill="#a78bfa" font-weight="700">CÁTODO</text>
+          <text x="149" y="52" text-anchor="middle" font-family="monospace" font-size="13"
+            fill="#a78bfa" font-weight="700">–</text>
+
+          <!-- Electrode Right (anode +) -->
+          <rect x="318" y="68" width="26" height="120" rx="5" fill="#f97316" fill-opacity=".7"
+            filter="url(#glow3)"/>
+          <text x="331" y="62" text-anchor="middle" font-family="Orbitron,monospace" font-size="8"
+            fill="#f97316" font-weight="700">ÂNODO</text>
+          <text x="331" y="52" text-anchor="middle" font-family="monospace" font-size="13"
+            fill="#f97316" font-weight="700">+</text>
+
+          <!-- Bubbles cathode -->
+          <circle cx="155" cy="155" r="5" fill="#a78bfa" fill-opacity=".55">
+            <animate attributeName="cy" values="175;90" dur="1.8s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values=".6;0" dur="1.8s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="142" cy="165" r="3.5" fill="#a78bfa" fill-opacity=".45">
+            <animate attributeName="cy" values="185;95" dur="2.2s" repeatCount="indefinite" begin="0.5s"/>
+            <animate attributeName="opacity" values=".5;0" dur="2.2s" repeatCount="indefinite" begin="0.5s"/>
+          </circle>
+          <!-- Bubbles anode -->
+          <circle cx="327" cy="155" r="5" fill="#f97316" fill-opacity=".55">
+            <animate attributeName="cy" values="175;90" dur="2s" repeatCount="indefinite" begin="0.3s"/>
+            <animate attributeName="opacity" values=".6;0" dur="2s" repeatCount="indefinite" begin="0.3s"/>
+          </circle>
+          <circle cx="340" cy="170" r="3" fill="#f97316" fill-opacity=".45">
+            <animate attributeName="cy" values="190;100" dur="1.6s" repeatCount="indefinite" begin="0.8s"/>
+            <animate attributeName="opacity" values=".5;0" dur="1.6s" repeatCount="indefinite" begin="0.8s"/>
+          </circle>
+
+          <!-- Electrolyte label -->
+          <text x="240" y="195" text-anchor="middle" font-family="Orbitron,monospace" font-size="8"
+            fill="rgba(255,255,255,.3)" letter-spacing="2">ELETRÓLITO</text>
+        </svg>
+      </div>
+    </div>
+
+    <div class="slide-panel">
+      <div class="panel-section-title">NARRAÇÃO</div>
+      <div class="narration-body">
+        <div class="content-lines">
+          <div class="cline"></div>
+          <div class="cline"></div>
+          <div class="cline"></div>
+          <div class="cline"></div>
+          <div class="cline"></div>
+        </div>
+        <div class="highlight-box">
+          <span class="hbox-label">CONCEITO-CHAVE</span>
+          <div class="hbox-lines">
+            <div class="hline"></div>
+            <div class="hline"></div>
+            <div class="hline"></div>
+          </div>
+        </div>
+        <div class="content-lines">
+          <div class="cline"></div>
+          <div class="cline"></div>
+          <div class="cline"></div>
+        </div>
+      </div>
+      <div class="audio-player">
+        <div class="player-track">
+          <span class="track-name">Módulo 03 — Eletrólise</span>
+          <span class="track-time" id="t3-time">0:00 / 0:00</span>
+        </div>
+        <div class="progress-bar" id="pb3">
+          <div class="progress-fill" id="pf3"></div>
+        </div>
+        <div class="player-controls">
+          <button class="pc-btn" title="–15s">↩ 15</button>
+          <button class="pc-btn big" id="play3" onclick="togglePlay(3)">▶</button>
+          <button class="pc-btn" title="+15s">15 ↪</button>
+          <button class="pc-btn" title="Velocidade">1×</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-footer">
+    <button class="fn-btn" onclick="goTo('section2')">← Pilhas</button>
+    <span class="page-counter">1 / 1</span>
+    <button class="fn-btn next" onclick="goTo('menu')">Módulos ⊞</button>
+  </div>
+</div>
+
+<!-- ══════════════════════ SCRIPTS ══════════════════════ -->
+<script>
+  /* ─── Navigation ─── */
+  function goTo(id) {
+    // ao trocar de tela, cessa qualquer diálogo em reprodução
+    document.querySelectorAll('audio').forEach(a => a.pause());
+    const m1btn = document.getElementById('m1-play');
+    if (m1btn) { m1btn.textContent = '▶'; m1btn.classList.remove('playing'); }
+
+    const current = document.querySelector('.screen.active');
+    if (current) current.classList.remove('active');
+    const next = document.getElementById(id);
+    next.classList.add('active');
+  }
+
+  /* Inicia o app: vai para o menu e toca o diálogo de abertura (após 1s) */
+  let d0Timer = null;
+  function startApp() {
+    goTo('menu');
+    const d0 = document.getElementById('dialogo0');
+    if (d0) {
+      d0.currentTime = 0;
+      clearTimeout(d0Timer);
+      d0Timer = setTimeout(() => d0.play().catch(() => {}), 1000);
+    }
+  }
+
+  /* Seleciona um módulo: interrompe o diálogo de abertura e navega */
+  function selectModule(id) {
+    const d0 = document.getElementById('dialogo0');
+    if (d0) { clearTimeout(d0Timer); d0.pause(); }
+    goTo(id);
+  }
+
+  /* Módulo 1 — play/pause do dialogo1 */
+  function toggleDialogo1() {
+    const a = document.getElementById('dialogo1');
+    const btn = document.getElementById('m1-play');
+    if (!a || !btn) return;
+    if (a.paused) {
+      a.play().catch(() => {});
+      btn.textContent = '⏸';
+      btn.classList.add('playing');
+    } else {
+      a.pause();
+      btn.textContent = '▶';
+      btn.classList.remove('playing');
+    }
+  }
+  // ao terminar, volta para o ícone de play
+  (function () {
+    const a = document.getElementById('dialogo1');
+    if (a) a.addEventListener('ended', () => {
+      const btn = document.getElementById('m1-play');
+      if (btn) { btn.textContent = '▶'; btn.classList.remove('playing'); }
+    });
+  })();
+
+  /* ── Módulo 1: cues sincronizados com o áudio (dialogo1) ── */
+  (function () {
+    const audio = document.getElementById('dialogo1');
+    const card  = document.getElementById('m1-defcard');
+    const typed = document.getElementById('m1-typed');
+    if (!audio || !card || !typed) return;
+
+    const DEF_TEXT = 'A eletroquímica é a parte da físico-química que estuda as relações entre a eletricidade e as substâncias químicas.';
+    const CARD_AT  = 4.2;   // s — caixa "Definição" entra
+    const TYPE_AT  = 5.8;   // s — texto começa a ser digitado
+
+    let cardShown = false;
+    let raf = 0;
+
+    function render() {
+      const tt = audio.currentTime;
+
+      // 1) caixa "Definição"
+      if (tt >= CARD_AT && !cardShown) {
+        cardShown = true;
+        card.classList.add('in');
+      } else if (tt < CARD_AT && cardShown) {
+        cardShown = false;
+        card.classList.remove('in');
+      }
+
+      // 2) digitação proporcional ao áudio → termina junto com ele
+      if (tt >= TYPE_AT) {
+        const end  = audio.duration || (TYPE_AT + 8);
+        const prog = Math.min(1, (tt - TYPE_AT) / Math.max(0.5, end - TYPE_AT));
+        const n    = Math.round(DEF_TEXT.length * prog);
+        typed.innerHTML = DEF_TEXT.slice(0, n) +
+          (prog < 1 ? '<span class="caret">&nbsp;</span>' : '');
+      } else {
+        typed.innerHTML = '';
+      }
+
+      if (!audio.paused && !audio.ended) raf = requestAnimationFrame(render);
+    }
+
+    audio.addEventListener('play',  () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(render); });
+    audio.addEventListener('pause', () => { cancelAnimationFrame(raf); });
+    audio.addEventListener('ended', () => {
+      cancelAnimationFrame(raf);
+      typed.textContent = DEF_TEXT;   // garante o texto completo ao final
+    });
+  })();
+
+  /* ─── Cover Canvas ─── */
+  const canvas = document.getElementById('coverCanvas');
+  const ctx    = canvas.getContext('2d');
+
+  let W, H, stars = [], particles = [], t = 0;
+
+  function resize() {
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+    buildStars();
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  function buildStars() {
+    stars = [];
+    for (let i = 0; i < 220; i++) {
+      stars.push({
+        x: Math.random() * W,
+        y: Math.random() * H,
+        r: Math.random() * 1.4 + 0.2,
+        a: Math.random(),
+        spd: Math.random() * 0.006 + 0.002,
+        phase: Math.random() * Math.PI * 2
+      });
+    }
+  }
+
+  /* Atom config */
+  const ORBITS = [
+    { rx: 140, ry: 50, tilt: 0,   speed: .008 },
+    { rx: 140, ry: 50, tilt: 60,  speed: -.006 },
+    { rx: 140, ry: 50, tilt: 120, speed: .005 },
+  ];
+  const electronAngles = [0, Math.PI * .66, Math.PI * 1.33];
+
+  /* Floating charge particles */
+  function spawnParticle() {
+    const side  = Math.random() > .5 ? 1 : -1;
+    const chars = ['e⁻', '+', '–', 'e⁻'];
+    particles.push({
+      x: W/2 + side * (160 + Math.random()*180),
+      y: H/2 + (Math.random() - .5) * 200,
+      vx: (Math.random() - .5) * .6,
+      vy: -(Math.random() * 1 + .3),
+      a: .8,
+      char: chars[Math.floor(Math.random()*chars.length)],
+      color: Math.random() > .5 ? '#00e5ff' : '#a78bfa'
+    });
+  }
+
+  let lastSpawn = 0;
+
+  function drawFrame(ts) {
+    t = ts * .001;
+    ctx.clearRect(0, 0, W, H);
+
+    /* BG gradient */
+    const bg = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, W * .7);
+    bg.addColorStop(0,   'rgba(10,20,50,.95)');
+    bg.addColorStop(.5,  'rgba(4,10,30,.98)');
+    bg.addColorStop(1,   'rgba(2,6,18,1)');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, W, H);
+
+    /* Stars */
+    stars.forEach(s => {
+      const a = s.a * (.4 + .6 * Math.sin(t * s.spd * 80 + s.phase));
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(180,220,255,${a})`;
+      ctx.fill();
+    });
+
+    /* Orbit rings */
+    const cx = W / 2, cy = H / 2;
+    ORBITS.forEach(o => {
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(o.tilt * Math.PI / 180);
+      ctx.beginPath();
+      ctx.ellipse(0, 0, o.rx, o.ry, 0, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(0,229,255,.12)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.restore();
+    });
+
+    /* Nucleus glow */
+    const ng = ctx.createRadialGradient(cx, cy, 0, cx, cy, 48);
+    ng.addColorStop(0,   'rgba(0,229,255,.95)');
+    ng.addColorStop(.4,  'rgba(0,180,255,.6)');
+    ng.addColorStop(1,   'rgba(0,100,200,0)');
+    ctx.beginPath();
+    ctx.arc(cx, cy, 48, 0, Math.PI * 2);
+    ctx.fillStyle = ng;
+    ctx.fill();
+
+    /* Nucleus core */
+    ctx.beginPath();
+    ctx.arc(cx, cy, 18, 0, Math.PI * 2);
+    ctx.fillStyle = '#00e5ff';
+    ctx.shadowBlur = 20;
+    ctx.shadowColor = '#00e5ff';
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    /* Electrons */
+    ORBITS.forEach((o, i) => {
+      electronAngles[i] += o.speed;
+      const angle = electronAngles[i];
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(o.tilt * Math.PI / 180);
+      const ex = Math.cos(angle) * o.rx;
+      const ey = Math.sin(angle) * o.ry;
+
+      /* Trail */
+      for (let k = 1; k <= 6; k++) {
+        const ta = angle - k * .15;
+        const tx2 = Math.cos(ta) * o.rx;
+        const ty2 = Math.sin(ta) * o.ry;
+        ctx.beginPath();
+        ctx.arc(tx2, ty2, 3 - k*.35, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(0,229,255,${.18 - k*.025})`;
+        ctx.fill();
+      }
+
+      /* Electron */
+      const eg = ctx.createRadialGradient(ex, ey, 0, ex, ey, 7);
+      eg.addColorStop(0, 'rgba(255,255,255,1)');
+      eg.addColorStop(.4, 'rgba(0,229,255,.9)');
+      eg.addColorStop(1, 'rgba(0,229,255,0)');
+      ctx.beginPath();
+      ctx.arc(ex, ey, 7, 0, Math.PI * 2);
+      ctx.fillStyle = eg;
+      ctx.fill();
+      ctx.restore();
+    });
+
+    /* Floating charge labels */
+    if (ts - lastSpawn > 900) { spawnParticle(); lastSpawn = ts; }
+    particles.forEach((p, i) => {
+      p.x += p.vx; p.y += p.vy; p.a -= .003;
+      ctx.font = '13px Orbitron, monospace';
+      ctx.fillStyle = p.color.replace(')', `,${p.a})`).replace('rgb', 'rgba');
+      ctx.fillText(p.char, p.x, p.y);
+      if (p.a <= 0) particles.splice(i, 1);
+    });
+
+    /* Horizontal scan line */
+    const scan = (Math.sin(t * .7) * .5 + .5);
+    const sy = cy + (scan - .5) * H * 1.2;
+    const sl = ctx.createLinearGradient(0, sy - 2, 0, sy + 2);
+    sl.addColorStop(0,   'rgba(0,229,255,0)');
+    sl.addColorStop(.5,  'rgba(0,229,255,.07)');
+    sl.addColorStop(1,   'rgba(0,229,255,0)');
+    ctx.fillStyle = sl;
+    ctx.fillRect(0, sy - 2, W, 4);
+
+    requestAnimationFrame(drawFrame);
+  }
+  requestAnimationFrame(drawFrame);
+
+  /* ─── Section 1 state machine ─── */
+  let s1State = 0;
+
+  function onS1Action() {
+    if (s1State >= 2) return;
+    s1State++;
+
+    const defEl = document.getElementById('s1-def');
+    const labEl = document.getElementById('s1-lab');
+
+    if (s1State === 1) {
+      defEl.style.display = 'flex';
+      requestAnimationFrame(() => defEl.classList.add('s1-on'));
+    } else {
+      defEl.classList.remove('s1-on');
+      setTimeout(() => { defEl.style.display = 'none'; }, 500);
+      labEl.style.display = 'flex';
+      requestAnimationFrame(() => {
+        labEl.classList.add('s1-on');
+        initLab();
+      });
+      document.getElementById('s1-action').style.display = 'none';
+    }
+  }
+
+  /* ═══════════ Interactive Oxi-Redução Lab ═══════════ */
+  const LAB = {
+    listeners:false, cv:null, ctx:null, hud:null,
+    W:1100, H:500, tableTop:380,
+    phase:'place', collisions:0, overlapPrev:false,
+    bars:{}, order:[],
+    beaker:{ x:650, y:150, w:160, h:230, liquidTop:200 },
+    drag:null, pointer:{x:0,y:0},
+    electrons:[], sparks:[], deposits:[], corrosion:null, lastG:null,
+    contactActive:false, contactAccum:0,
+    eleTimer:0, depTimer:0, glow:0, lastTs:0, raf:0
+  };
+
+  function initLab(){
+    const cv = document.getElementById('lab-canvas');
+    LAB.cv = cv; LAB.ctx = cv.getContext('2d');
+    LAB.W = cv.width; LAB.H = cv.height;
+    LAB.hud = document.getElementById('s1-hud');
+
+    LAB.bars.zn = { metal:'Zn', x:235, y:230, w:56, h:150, vx:0, vy:0 };
+    LAB.bars.cu = { metal:'Cu', x:430, y:230, w:56, h:150, vx:0, vy:0 };
+    LAB.order = [LAB.bars.zn, LAB.bars.cu];
+
+    LAB.collisions=0; LAB.overlapPrev=false;
+    LAB.electrons=[]; LAB.sparks=[]; LAB.deposits=[]; LAB.corrosion=null; LAB.lastG=null;
+    LAB.contactActive=false; LAB.contactAccum=0;
+    LAB.eleTimer=0; LAB.depTimer=0; LAB.glow=0; LAB.drag=null; LAB.lastTs=0;
+
+    if(!LAB.listeners) addLabListeners(cv);
+    setPhase('place');
+    cancelAnimationFrame(LAB.raf);
+    LAB.raf = requestAnimationFrame(labLoop);
+  }
+
+  function setPhase(ph){
+    LAB.phase = ph;
+    const msg = {
+      place:'Arraste as lâminas pela bancada',
+      dip:'Mergulhe a lâmina de zinco no sulfato de cobre',
+      touch:'Encoste as duas lâminas',
+      peak:'Agora afaste as lâminas',
+      done:'O cobre se depositou e o zinco foi corroído'
+    }[ph] || '';
+    if(LAB.hud){ LAB.hud.textContent = msg; LAB.hud.classList.toggle('on', !!msg); }
+    if(ph==='peak') LAB.glow = 1;
+  }
+
+  function labToCanvas(e){
+    const r = LAB.cv.getBoundingClientRect();
+    return { x:(e.clientX-r.left)*(LAB.cv.width/r.width),
+             y:(e.clientY-r.top)*(LAB.cv.height/r.height) };
+  }
+  function rectsOverlap(a,b){
+    return a.x < b.x+b.w && a.x+a.w > b.x && a.y < b.y+b.h && a.y+a.h > b.y;
+  }
+
+  function addLabListeners(cv){
+    LAB.listeners = true;
+    cv.addEventListener('pointerdown', e=>{
+      const p = labToCanvas(e);
+      for(let i=LAB.order.length-1;i>=0;i--){
+        const b=LAB.order[i];
+        if(p.x>=b.x && p.x<=b.x+b.w && p.y>=b.y && p.y<=b.y+b.h){
+          LAB.drag={ bar:b, dx:p.x-b.x, dy:p.y-b.y };
+          b.vx=0; b.vy=0;
+          LAB.order.splice(LAB.order.indexOf(b),1); LAB.order.push(b);
+          try{ cv.setPointerCapture(e.pointerId); }catch(_){}
+          break;
+        }
+      }
+    });
+    window.addEventListener('pointermove', e=>{
+      if(!LAB.cv) return;
+      LAB.pointer = labToCanvas(e);
+      if(!LAB.drag) return;
+      const b=LAB.drag.bar;
+      let nx = LAB.pointer.x - LAB.drag.dx;
+      let ny = LAB.pointer.y - LAB.drag.dy;
+      nx = Math.max(0, Math.min(LAB.W-b.w, nx));
+      ny = Math.max(24, Math.min(LAB.tableTop-b.h, ny));
+      b.vx = nx-b.x; b.vy = ny-b.y; b.x=nx; b.y=ny;
+      handleInteraction(b);
+    });
+    window.addEventListener('pointerup', ()=>{ LAB.drag=null; });
+  }
+
+  function handleInteraction(b){
+    const o = (b===LAB.bars.zn) ? LAB.bars.cu : LAB.bars.zn;
+    const over = rectsOverlap(b,o);
+    if(LAB.phase==='place' || LAB.phase==='dip'){
+      if(over){
+        separate(b,o,true);
+        if(!LAB.overlapPrev){
+          LAB.overlapPrev=true;
+          spawnImpact((b.x+b.w/2 + o.x+o.w/2)/2, Math.max(b.y,o.y)+30);
+          if(LAB.phase==='place'){
+            LAB.collisions++;
+            if(LAB.collisions>=2) setPhase('dip');
+          }
+        }
+      } else LAB.overlapPrev=false;
+      if(LAB.phase==='dip' && isDipped(LAB.bars.zn)) setPhase('touch');
+    } else if(LAB.phase==='touch' || LAB.phase==='peak'){
+      if(over){ separate(b,o,false); setContact(true); }
+      else setContact(false);
+    }
+  }
+
+  function separate(b,o,impulse){
+    const ox = Math.min(b.x+b.w,o.x+o.w) - Math.max(b.x,o.x);
+    const oy = Math.min(b.y+b.h,o.y+o.h) - Math.max(b.y,o.y);
+    if(ox < oy){
+      if(b.x < o.x) b.x = o.x - b.w; else b.x = o.x + o.w;
+      if(impulse){ o.vx = (o.x < b.x ? -1 : 1) * Math.max(2.5, Math.abs(b.vx)*1.1); o.vy += b.vy*0.25; b.vx=0; }
+    } else {
+      if(b.y < o.y) b.y = o.y - b.h; else b.y = o.y + o.h;
+      if(impulse){ o.vy = (o.y < b.y ? -1 : 1) * Math.max(2, Math.abs(b.vy)*1.1); b.vy=0; }
+    }
+  }
+
+  function isDipped(b){
+    const bk=LAB.beaker, cx=b.x+b.w/2;
+    return cx>bk.x+12 && cx<bk.x+bk.w-12 && (b.y+b.h) > bk.liquidTop+18;
+  }
+
+  function contactGeom(){
+    const z=LAB.bars.zn, c=LAB.bars.cu;
+    const left=Math.max(z.x,c.x), right=Math.min(z.x+z.w,c.x+c.w);
+    const top=Math.max(z.y,c.y), bot=Math.min(z.y+z.h,c.y+c.h);
+    return { cx:(left+right)/2, cy:(top+bot)/2, top, bot, znLeft:z.x<c.x };
+  }
+
+  function setContact(on){
+    if(on===LAB.contactActive) return;
+    LAB.contactActive=on;
+    if(on){ const g=contactGeom(); pushSparks(g.cx,g.cy,14,[160,235,255],3.5); }
+    else if(LAB.phase==='peak'){ finalizeReaction(); setPhase('done'); }
+  }
+
+  function finalizeReaction(){
+    const z=LAB.bars.zn, g=LAB.lastG;
+    if(!g) return;
+    LAB.corrosion={
+      face: g.znLeft ? 'right' : 'left',
+      top: Math.max(3, g.top - z.y),
+      bot: Math.min(z.h-3, g.bot - z.y),
+      pits: Array.from({length:16},()=>({ t:Math.random(), d:3+Math.random()*10, r:2.5+Math.random()*4.5 }))
+    };
+  }
+
+  function pushSparks(x,y,n,rgb,spread){
+    for(let i=0;i<n;i++){
+      const a=Math.random()*Math.PI*2, s=1+Math.random()*spread;
+      LAB.sparks.push({ x, y, vx:Math.cos(a)*s, vy:Math.sin(a)*s-0.6, life:1, rgb });
+    }
+  }
+  function spawnImpact(x,y){ pushSparks(x,y,12,[215,222,232],3); }
+
+  function spawnElectron(){
+    const g=contactGeom(), z=LAB.bars.zn, c=LAB.bars.cu;
+    const sx = g.znLeft ? (z.x+z.w-4) : (z.x+4);
+    const ex = g.znLeft ? (c.x+8) : (c.x+c.w-8);
+    const y = g.top+6 + Math.random()*Math.max(6,(g.bot-g.top-12));
+    LAB.electrons.push({ sx, ex, x:sx, y, t:0, spd:0.02+Math.random()*0.02, yoff:(Math.random()-0.5)*12 });
+  }
+
+  function spawnDeposit(){
+    const g=contactGeom(), z=LAB.bars.zn;
+    const faceLocalX = g.znLeft ? z.w : 0;
+    const protr = (g.znLeft ? 1 : -1) * (1+Math.random()*10);
+    const yl = (g.top - z.y) + 6 + Math.random()*Math.max(6,(g.bot-g.top-12));
+    LAB.deposits.push({ dx:faceLocalX+protr, dy:yl, r:0, R:2.5+Math.random()*3.5 });
+  }
+
+  function labLoop(ts){
+    if(!LAB.lastTs) LAB.lastTs=ts;
+    let dt = ts-LAB.lastTs; LAB.lastTs=ts;
+    if(dt>60) dt=60;
+
+    [LAB.bars.zn,LAB.bars.cu].forEach(b=>{
+      if(LAB.drag && LAB.drag.bar===b) return;
+      if(Math.abs(b.vx)<0.03 && Math.abs(b.vy)<0.03){ b.vx=0; b.vy=0; return; }
+      b.x+=b.vx; b.y+=b.vy; b.vx*=0.90; b.vy*=0.90;
+      if(b.x<0){b.x=0;b.vx*=-0.4;}
+      if(b.x>LAB.W-b.w){b.x=LAB.W-b.w;b.vx*=-0.4;}
+      if(b.y<24){b.y=24;b.vy*=-0.4;}
+      if(b.y>LAB.tableTop-b.h){b.y=LAB.tableTop-b.h;b.vy*=-0.4;}
+      const o=(b===LAB.bars.zn)?LAB.bars.cu:LAB.bars.zn;
+      if((LAB.phase==='place'||LAB.phase==='dip') && rectsOverlap(b,o)) separate(b,o,false);
+    });
+
+    if((LAB.phase==='touch'||LAB.phase==='peak') && LAB.contactActive){
+      LAB.contactAccum += dt;
+      const g=contactGeom(); if(g.bot>g.top) LAB.lastG=g;
+      LAB.eleTimer-=dt; LAB.depTimer-=dt;
+      if(LAB.eleTimer<=0){ spawnElectron(); LAB.eleTimer=55; }
+      if(LAB.depTimer<=0){ spawnDeposit(); LAB.depTimer=180; }
+      if(LAB.phase==='touch' && LAB.contactAccum>=30000){ LAB.glow=1; setPhase('peak'); }
+    }
+
+    LAB.electrons.forEach(p=>{ p.t+=p.spd; p.x=p.sx+(p.ex-p.sx)*p.t; });
+    LAB.electrons=LAB.electrons.filter(p=>p.t<1);
+    LAB.sparks.forEach(s=>{ s.x+=s.vx; s.y+=s.vy; s.vy+=0.12; s.life-=0.03; });
+    LAB.sparks=LAB.sparks.filter(s=>s.life>0);
+    LAB.deposits.forEach(d=>{ if(d.r<d.R) d.r+=0.45; });
+    if(LAB.glow>0) LAB.glow=Math.max(0, LAB.glow - dt/900);
+
+    drawLabScene();
+    LAB.raf=requestAnimationFrame(labLoop);
+  }
+
+  /* ── rendering ── */
+  function drawLabScene(){
+    const ctx=LAB.ctx, W=LAB.W, H=LAB.H;
+    ctx.clearRect(0,0,W,H);
+    const bg=ctx.createLinearGradient(0,0,0,H);
+    bg.addColorStop(0,'#02101f'); bg.addColorStop(1,'#041122');
+    ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+    ctx.strokeStyle='rgba(0,160,200,.045)'; ctx.lineWidth=1;
+    for(let x=0;x<W;x+=46){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+    for(let y=0;y<H;y+=46){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+
+    drawTable(ctx);
+    drawBeakerBack(ctx);
+    LAB.order.forEach(b=>drawBar(ctx,b));
+    LAB.order.forEach(b=>drawSubmerge(ctx,b));
+    drawBeakerFront(ctx);
+    drawDeposits(ctx);
+    drawElectricity(ctx);
+    drawSparks(ctx);
+
+    if(LAB.glow>0){
+      const z=LAB.bars.zn, c=LAB.bars.cu;
+      const gx=(z.x+z.w/2+c.x+c.w/2)/2, gy=(z.y+z.h/2+c.y+c.h/2)/2;
+      ctx.save(); ctx.globalAlpha=LAB.glow*0.55;
+      const rg=ctx.createRadialGradient(gx,gy,0,gx,gy,200);
+      rg.addColorStop(0,'rgba(190,248,255,.9)'); rg.addColorStop(1,'rgba(190,248,255,0)');
+      ctx.fillStyle=rg; ctx.fillRect(0,0,W,H); ctx.restore();
+    }
+  }
+
+  function drawTable(ctx){
+    const tT=LAB.tableTop, x0=40, x1=LAB.W-40, DOX=26, DOY=15;
+    ctx.beginPath();
+    ctx.moveTo(x0,tT); ctx.lineTo(x1,tT); ctx.lineTo(x1+DOX,tT-DOY); ctx.lineTo(x0+DOX,tT-DOY);
+    ctx.closePath();
+    const g=ctx.createLinearGradient(0,tT-DOY,0,tT);
+    g.addColorStop(0,'#1d4257'); g.addColorStop(1,'#143040');
+    ctx.fillStyle=g; ctx.fill(); ctx.strokeStyle='#2c6584'; ctx.lineWidth=2.5; ctx.stroke();
+    ctx.beginPath(); ctx.rect(x0,tT,x1-x0,52);
+    const f=ctx.createLinearGradient(0,tT,0,tT+52);
+    f.addColorStop(0,'#11212f'); f.addColorStop(1,'#070f1b');
+    ctx.fillStyle=f; ctx.fill(); ctx.strokeStyle='#2c6584'; ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x1,tT); ctx.lineTo(x1+DOX,tT-DOY); ctx.lineTo(x1+DOX,tT+52-DOY); ctx.lineTo(x1,tT+52);
+    ctx.closePath(); ctx.fillStyle='#0a1822'; ctx.fill(); ctx.stroke();
+  }
+
+  function drawBeakerBack(ctx){
+    const bk=LAB.beaker, DOX=22, DOY=13, lT=bk.liquidTop;
+    ctx.beginPath();
+    ctx.moveTo(bk.x+bk.w,bk.y); ctx.lineTo(bk.x+bk.w+DOX,bk.y-DOY);
+    ctx.lineTo(bk.x+bk.w+DOX,bk.y+bk.h-DOY); ctx.lineTo(bk.x+bk.w,bk.y+bk.h);
+    ctx.closePath();
+    ctx.fillStyle='rgba(28,70,108,.25)'; ctx.fill();
+    ctx.strokeStyle='rgba(120,195,235,.3)'; ctx.lineWidth=1.5; ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(bk.x+bk.w,lT); ctx.lineTo(bk.x+bk.w+DOX,lT-DOY);
+    ctx.lineTo(bk.x+bk.w+DOX,bk.y+bk.h-DOY); ctx.lineTo(bk.x+bk.w,bk.y+bk.h);
+    ctx.closePath(); ctx.fillStyle='rgba(18,80,150,.5)'; ctx.fill();
+    const lg=ctx.createLinearGradient(0,lT,0,bk.y+bk.h);
+    lg.addColorStop(0,'rgba(40,150,235,.6)'); lg.addColorStop(1,'rgba(15,72,158,.72)');
+    ctx.fillStyle=lg; ctx.fillRect(bk.x+3,lT,bk.w-6,bk.y+bk.h-lT-3);
+  }
+
+  function drawBeakerFront(ctx){
+    const bk=LAB.beaker, DOX=22, DOY=13, lT=bk.liquidTop;
+    ctx.save();
+    ctx.fillStyle='rgba(120,200,255,.4)'; ctx.fillRect(bk.x+4,lT,bk.w-8,4);
+    ctx.beginPath();
+    ctx.ellipse(bk.x+bk.w/2+DOX/2, bk.y-DOY/2, bk.w/2, 8, 0, 0, Math.PI*2);
+    ctx.strokeStyle='rgba(150,215,245,.55)'; ctx.lineWidth=2; ctx.stroke();
+    ctx.beginPath(); ctx.rect(bk.x,bk.y,bk.w,bk.h);
+    ctx.strokeStyle='rgba(150,215,245,.7)'; ctx.lineWidth=2.5; ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(bk.x+12,bk.y+10); ctx.lineTo(bk.x+9,bk.y+bk.h-14);
+    ctx.strokeStyle='rgba(255,255,255,.18)'; ctx.lineWidth=4; ctx.stroke();
+    ctx.fillStyle='rgba(190,230,255,.04)'; ctx.fillRect(bk.x,bk.y,bk.w,bk.h);
+    ctx.restore();
+  }
+
+  function drawSubmerge(ctx,b){
+    const bk=LAB.beaker;
+    const ix1=Math.max(b.x,bk.x+3), ix2=Math.min(b.x+b.w,bk.x+bk.w-3);
+    const iy1=Math.max(b.y,bk.liquidTop), iy2=Math.min(b.y+b.h,bk.y+bk.h-3);
+    if(ix2>ix1 && iy2>iy1){
+      ctx.save();
+      ctx.fillStyle='rgba(33,130,210,.42)'; ctx.fillRect(ix1,iy1,ix2-ix1,iy2-iy1);
+      ctx.fillStyle='rgba(150,210,255,.5)'; ctx.fillRect(ix1,iy1,ix2-ix1,2);
+      ctx.restore();
+    }
+  }
+
+  function drawBar(ctx,b){
+    const {x,y,w,h}=b, DOX=18, DOY=11, isZn=b.metal==='Zn';
+    ctx.save(); ctx.fillStyle='rgba(0,0,0,.28)';
+    ctx.beginPath(); ctx.ellipse(x+w/2+8,y+h+4,w/2+8,6,0,0,Math.PI*2); ctx.fill(); ctx.restore();
+    ctx.beginPath();
+    ctx.moveTo(x+w,y); ctx.lineTo(x+w+DOX,y-DOY); ctx.lineTo(x+w+DOX,y+h-DOY); ctx.lineTo(x+w,y+h);
+    ctx.closePath();
+    ctx.fillStyle=isZn?'#4a4f53':'#6a3416'; ctx.fill();
+    ctx.strokeStyle=isZn?'#1c1f22':'#2a1206'; ctx.lineWidth=2.2; ctx.stroke();
+    if(!isZn){ ctx.save(); ctx.shadowColor='rgba(210,95,20,.4)'; ctx.shadowBlur=16; }
+    ctx.beginPath(); ctx.rect(x,y,w,h);
+    const fg=ctx.createLinearGradient(x,0,x+w,0);
+    if(isZn){ fg.addColorStop(0,'#7d8286'); fg.addColorStop(.45,'#d6dadd'); fg.addColorStop(1,'#a7adb1'); }
+    else    { fg.addColorStop(0,'#9a4820'); fg.addColorStop(.42,'#e6864a'); fg.addColorStop(1,'#c0632f'); }
+    ctx.fillStyle=fg; ctx.fill();
+    if(!isZn) ctx.restore();
+    ctx.strokeStyle=isZn?'#1c1f22':'#2a1206'; ctx.lineWidth=2.2; ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x,y); ctx.lineTo(x+w,y); ctx.lineTo(x+w+DOX,y-DOY); ctx.lineTo(x+DOX,y-DOY);
+    ctx.closePath();
+    ctx.fillStyle=isZn?'#e2e6e8':'#f0a558'; ctx.fill();
+    ctx.strokeStyle=isZn?'#1c1f22':'#2a1206'; ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x+11,y+10); ctx.lineTo(x+11,y+h*0.62);
+    ctx.strokeStyle=isZn?'rgba(255,255,255,.30)':'rgba(255,210,150,.32)'; ctx.lineWidth=3; ctx.stroke();
+    if(LAB.phase==='done' && LAB.corrosion && isZn) drawCorrosion(ctx,b);
+    carveName(ctx,b,isZn);
+  }
+
+  function carveName(ctx,b,isZn){
+    const cx=b.x+b.w/2, cy=b.y+b.h/2;
+    ctx.save(); ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.font='700 26px Orbitron, monospace';
+    ctx.fillStyle='rgba(0,0,0,.5)'; ctx.fillText(b.metal, cx+1.4, cy+1.6);
+    ctx.fillStyle=isZn?'rgba(255,255,255,.4)':'rgba(255,225,180,.4)'; ctx.fillText(b.metal, cx-1.2, cy-1.4);
+    ctx.fillStyle=isZn?'#6b7176':'#7a4524'; ctx.fillText(b.metal, cx, cy);
+    ctx.restore();
+  }
+
+  function drawCorrosion(ctx,b){
+    const cor=LAB.corrosion;
+    const faceX = cor.face==='right' ? b.x+b.w : b.x;
+    const dir = cor.face==='right' ? -1 : 1;
+    ctx.save();
+    ctx.fillStyle='rgba(70,95,70,.4)';
+    ctx.fillRect(cor.face==='right'? b.x+b.w-12 : b.x, b.y+cor.top, 12, cor.bot-cor.top);
+    ctx.fillStyle='#0c1a22';
+    cor.pits.forEach(p=>{
+      const py=b.y+cor.top+p.t*(cor.bot-cor.top);
+      ctx.beginPath(); ctx.arc(faceX+dir*p.d, py, p.r, 0, Math.PI*2); ctx.fill();
+    });
+    ctx.restore();
+  }
+
+  function drawDeposits(ctx){
+    const z=LAB.bars.zn;
+    LAB.deposits.forEach(d=>{
+      const x=z.x+d.dx, y=z.y+d.dy;
+      const rg=ctx.createRadialGradient(x-1,y-1,0,x,y,d.r+0.5);
+      rg.addColorStop(0,'#ffb878'); rg.addColorStop(.5,'#e07b30'); rg.addColorStop(1,'#9a4a18');
+      ctx.beginPath(); ctx.arc(x,y,d.r,0,Math.PI*2); ctx.fillStyle=rg; ctx.fill();
+    });
+  }
+
+  function drawElectricity(ctx){
+    LAB.electrons.forEach(p=>{
+      const y=p.y+Math.sin(p.t*Math.PI)*p.yoff;
+      ctx.beginPath(); ctx.arc(p.x,y,3,0,Math.PI*2);
+      ctx.fillStyle='rgba(170,242,255,.95)';
+      ctx.shadowColor='#7df0ff'; ctx.shadowBlur=10; ctx.fill(); ctx.shadowBlur=0;
+    });
+    if(LAB.contactActive && (LAB.phase==='touch'||LAB.phase==='peak')){
+      const g=contactGeom();
+      if(g.bot>g.top){
+        ctx.save();
+        ctx.strokeStyle='rgba(185,246,255,.85)'; ctx.lineWidth=1.6;
+        ctx.shadowColor='#7df0ff'; ctx.shadowBlur=12;
+        for(let k=0;k<2;k++){
+          ctx.beginPath(); let yy=g.top+4; ctx.moveTo(g.cx,yy);
+          while(yy<g.bot-4){ yy+=8+Math.random()*8; ctx.lineTo(g.cx+(Math.random()-0.5)*14, Math.min(yy,g.bot-2)); }
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+    }
+  }
+
+  function drawSparks(ctx){
+    LAB.sparks.forEach(s=>{
+      ctx.beginPath(); ctx.arc(s.x,s.y,2,0,Math.PI*2);
+      ctx.fillStyle=`rgba(${s.rgb[0]},${s.rgb[1]},${s.rgb[2]},${Math.max(0,s.life)})`;
+      ctx.fill();
+    });
+  }
+
+  /* ─── Fake audio player state ─── */
+  const players = {};
+  function togglePlay(n) {
+    const btn = document.getElementById(`play${n}`);
+    if (!players[n]) players[n] = { playing: false, pos: 0 };
+    const p = players[n];
+    p.playing = !p.playing;
+    btn.textContent = p.playing ? '⏸' : '▶';
+  }
+</script>
+</body>
+</html>
