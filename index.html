@@ -913,6 +913,23 @@
     /* batteries raised during track 3 */
     .m1-batteries.t3-lift { bottom: 302px; transition: bottom .5s ease; }
 
+    /* ── Módulo 1: backdrop de zoom (escurece + embaça o fundo) ── */
+    #m1-zoom-backdrop {
+      position: absolute; inset: 0;
+      z-index: 9;
+      background: rgba(0,0,0,0);
+      backdrop-filter: blur(0px);
+      -webkit-backdrop-filter: blur(0px);
+      opacity: 0; pointer-events: none;
+      transition: opacity .45s ease, backdrop-filter .45s ease, background .45s ease;
+    }
+    #m1-zoom-backdrop.in {
+      background: rgba(0,0,0,.72);
+      backdrop-filter: blur(7px);
+      -webkit-backdrop-filter: blur(7px);
+      opacity: 1;
+    }
+
     /* ── Módulo 1: circuito interno (zoom na pilha) ── */
     .m1-circuit-wrap {
       position: absolute;
@@ -1237,6 +1254,9 @@
       </svg>
     </div>
   </div>
+
+  <!-- backdrop do zoom: escurece e embaça o fundo -->
+  <div id="m1-zoom-backdrop"></div>
 
   <!-- circuito interno da pilha (aparece no zoom) -->
   <div class="m1-circuit-wrap" id="m1-circuit-wrap">
@@ -1985,9 +2005,11 @@
 
   function setCircuitZoom(show) {
     const wrap = document.getElementById('m1-circuit-wrap');
+    const back = document.getElementById('m1-zoom-backdrop');
     const bat  = document.getElementById('m1-batteries');
     const flow = document.getElementById('m1-energyflow');
     if (show) {
+      if (back) back.classList.add('in');
       if (bat)  bat.style.opacity  = '0';
       if (flow) flow.style.opacity = '0';
       if (wrap) wrap.classList.add('in');
@@ -1995,6 +2017,7 @@
       startM1Loop();
     } else {
       if (wrap) wrap.classList.remove('in');
+      if (back) back.classList.remove('in');
       if (bat)  bat.style.opacity  = '';
       if (flow) flow.style.opacity = '';
       if (M1.t3) M1.t3.circuitActive = false;
@@ -2122,6 +2145,7 @@
     const bflow = document.getElementById('m1-energyflow'); if (bflow) bflow.style.opacity = '';
     if (bat) bat.style.opacity = '';
     const circ = document.getElementById('m1-circuit-wrap'); if (circ) circ.classList.remove('in');
+    const back = document.getElementById('m1-zoom-backdrop'); if (back) back.classList.remove('in');
     const ccv  = document.getElementById('m1-circuit-canvas'); if (ccv) ccv.getContext('2d').clearRect(0,0,ccv.width,ccv.height);
     setDevices(false);
     const espon = document.getElementById('m1-espontaneo'); if (espon) { espon.classList.remove('in'); espon.classList.remove('pulse'); }
