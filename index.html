@@ -6,7 +6,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <!-- v2026-06-07-lab9 -->
+  <!-- v2026-06-07-lab10 -->
   <title>Eletroquímica — audiobook Interativo</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -791,18 +791,49 @@
       transform: translateY(34px);
       pointer-events: none;
     }
-    .atomos-label {
+    /* Caixa clicável "Átomos" */
+    .atomos-box {
+      display: none;
+      align-items: center;
+      gap: 9px;
+      padding: 9px 24px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, rgba(255,210,63,.12), rgba(255,140,0,.08));
+      border: 1.5px solid rgba(255,210,63,.5);
+      box-shadow: 0 0 30px rgba(255,210,63,.14), inset 0 1px 0 rgba(255,255,255,.08);
+      backdrop-filter: blur(6px);
+      cursor: default;
+    }
+    .atomos-box.in {
+      display: inline-flex;
+      animation: atomosBoxIn .7s cubic-bezier(.34,1.56,.64,1) both;
+    }
+    .atomos-box-icon {
+      font-size: 1.3rem;
+      filter: drop-shadow(0 0 10px rgba(255,210,63,.8));
+    }
+    .atomos-box-label {
       font-family: 'Orbitron', monospace;
-      font-size: clamp(1rem, 2.8vw, 1.7rem);
+      font-size: clamp(.85rem, 2vw, 1.25rem);
       font-weight: 700;
       letter-spacing: .14em;
       color: #ffd23f;
-      text-shadow: 0 0 26px rgba(255,210,63,.55);
-      opacity: 0;
-      transform: translateY(-10px) scale(.85);
-      transition: opacity .55s cubic-bezier(.34,1.56,.64,1), transform .55s cubic-bezier(.34,1.56,.64,1);
+      text-shadow: 0 0 18px rgba(255,210,63,.5);
     }
-    .atomos-label.in { opacity: 1; transform: translateY(0) scale(1); }
+    @keyframes atomosBoxIn {
+      0%   { opacity: 0; transform: translateY(-30px) scale(.5) rotate(-6deg); filter: blur(6px); }
+      60%  { opacity: 1; filter: blur(0); }
+      100% { opacity: 1; transform: translateY(0) scale(1) rotate(0); }
+    }
+    /* aguardando clique (após o dialogo1.2) */
+    .atomos-box.box-pulse {
+      cursor: pointer;
+      animation: atomosBoxPulse 1.05s ease-in-out infinite;
+    }
+    @keyframes atomosBoxPulse {
+      0%,100% { box-shadow: 0 0 14px rgba(255,210,63,.3); transform: scale(1); }
+      50%     { box-shadow: 0 0 40px rgba(255,210,63,.85), 0 0 70px rgba(255,210,63,.3); transform: scale(1.05); }
+    }
 
     .atom-canvas {
       display: none;
@@ -933,35 +964,6 @@
       35%,65% { color: #fff; text-shadow: 0 0 20px rgba(0,229,255,.9), 0 0 40px rgba(0,229,255,.5); }
     }
     .def-typed.typed-highlight { animation: typedHighlight .9s ease; }
-
-    /* Caixa "átomo" — aparece ao final do dialogo1.2 */
-    #m1-atombox {
-      position: absolute;
-      bottom: 308px; left: 50%;
-      transform: translateX(-50%) scale(0);
-      transform-origin: center bottom;
-      opacity: 0;
-      z-index: 6; pointer-events: none;
-      background: linear-gradient(135deg, rgba(255,210,63,.1), rgba(255,160,0,.07));
-      border: 1.5px solid rgba(255,210,63,.55);
-      border-radius: 14px;
-      padding: 10px 26px;
-      font-family: 'Orbitron', monospace;
-      font-size: clamp(.78rem, 2vw, 1.05rem);
-      font-weight: 700; letter-spacing: .14em;
-      color: #ffd23f;
-      white-space: nowrap;
-      transition: opacity .4s, transform .45s cubic-bezier(.2,.6,.3,1.5);
-    }
-    #m1-atombox.in {
-      pointer-events: auto; opacity: 1;
-      transform: translateX(-50%) scale(1);
-      animation: atomBoxPulse 1.1s ease-in-out infinite;
-    }
-    @keyframes atomBoxPulse {
-      0%,100% { box-shadow: 0 0 12px rgba(255,210,63,.35); }
-      50%     { box-shadow: 0 0 32px rgba(255,210,63,.85), 0 0 60px rgba(255,210,63,.3); }
-    }
 
     /* batteries raised during track 3 */
     .m1-batteries.t3-lift { bottom: 302px; transition: bottom .5s ease; }
@@ -1233,7 +1235,6 @@
 
   <div class="s1-body intro-body">
     <h2 class="intro-title">Introdução a Eletroquímica</h2>
-    <div class="atomos-label" id="m1-atomos">Átomos</div>
 
     <div class="intro-stage">
       <div class="def-group" id="m1-defgroup">
@@ -1243,12 +1244,16 @@
         </div>
         <p class="def-typed" id="m1-typed"></p>
       </div>
+
+      <!-- caixa "Átomos" — aparece aos 11s do dialogo1.2; dispara o dialogo1.3 -->
+      <div class="atomos-box" id="m1-atomos">
+        <span class="atomos-box-icon">⚛</span>
+        <span class="atomos-box-label">Átomos</span>
+      </div>
+
       <canvas id="m1-atom" class="atom-canvas" width="600" height="460"></canvas>
     </div>
   </div>
-
-  <!-- caixa "átomo" — aparece no fim do dialogo1.2, dispara o dialogo1.3 -->
-  <div id="m1-atombox">⚛ átomo</div>
 
   <div class="energy-flow" id="m1-energyflow">
     <div class="energia-label" id="m1-energia">
@@ -1602,6 +1607,7 @@
     raf: 0,
     cardShown: false,
     atom: null,
+    t1: null,
     t2: null,
     t3: null,
     defMode: null,   // null | 'trigger' | 'playing' | 'interactive'
@@ -1674,10 +1680,11 @@
   function m1OnTrackEnd(endedIdx) {
     const btn = document.getElementById('m1-play');
     if (endedIdx === 0) {
-      // dialogo1 acabou → card "Definição" pulsa e vira o próximo gatilho
+      // dialogo1 acabou → card "Definição" surge pulsante e vira o gatilho
       if (btn) btn.classList.add('btn-hidden');
       const card = document.getElementById('m1-defcard');
-      if (card) card.classList.add('card-trigger');
+      if (card) { card.classList.add('in'); card.classList.add('card-trigger'); }
+      M1.cardShown = true;
       M1.defMode = 'trigger';
       buzz(30);
     } else if (endedIdx === 1) {
@@ -1685,10 +1692,11 @@
       if (btn) btn.classList.remove('btn-hidden');
       M1.defMode = 'interactive';
     } else if (endedIdx === 2) {
-      // dialogo1.2 acabou → caixa "átomo" aparece, play some
+      // dialogo1.2 acabou → caixa "Átomos" começa a pulsar aguardando clique
       if (btn) btn.classList.add('btn-hidden');
-      const ab = document.getElementById('m1-atombox');
-      if (ab) { ab.classList.remove('in'); void ab.offsetWidth; ab.classList.add('in'); }
+      const ab = document.getElementById('m1-atomos');
+      if (ab) { ab.classList.add('in'); ab.classList.add('box-pulse'); }
+      if (M1.t2) M1.t2.done = true;
       buzz([25, 60]);
     }
   }
@@ -1723,36 +1731,25 @@
   /* aplica o estado final de uma faixa (como se o áudio tivesse tocado por completo) */
   function finalizeTrack(i) {
     if (i === 0) {
-      M1.cardShown = true;
-      document.getElementById('m1-defcard').classList.add('in');
-      document.getElementById('m1-typed').textContent = DEF_TEXT;
+      // dialogo1 não tem evento visual — o card surge em m1OnTrackEnd
     } else if (i === 1) {
-      beginTrack1();                       // garante def em fade-out + átomo criado
-      const atom = M1.atom;
-      atom.atomosShown = true;
-      document.getElementById('m1-atomos').classList.add('in');
-      atom.nucleus = true;
-      atom.nucleusT = 9999;                // núcleo em escala cheia
-      atom.electrons.forEach(e => { e.revealed = true; e.revealT = 9999; });
-      atom.energiaShown = true;
-      document.getElementById('m1-energia').classList.add('in');
+      // dialogo1.1 → texto da definição completo
+      const typed = document.getElementById('m1-typed');
+      if (typed) typed.textContent = DEF_TEXT;
+      M1.t1 = { typing: false };
     } else if (i === 2) {
-      beginTrack2();                       // garante energia visível + estado t2
-      const s = M1.t2;
-      s.pulsed = true; s.arrow = true; s.eletrica = true; s.batteries = true; s.done = true;
-      document.getElementById('m1-arrow').classList.add('in');
-      document.getElementById('m1-eletrica').classList.add('in');
-      const bat = document.getElementById('m1-batteries');
-      if (bat) { bat.classList.remove('in'); void bat.offsetWidth; bat.classList.add('in'); }
+      // dialogo1.2 → caixa "Átomos" visível (a pulsação vem em m1OnTrackEnd)
+      beginTrack2();
+      M1.t2.atomos = true;
+      const ab = document.getElementById('m1-atomos');
+      if (ab) { ab.classList.remove('in'); void ab.offsetWidth; ab.classList.add('in'); }
     } else if (i === 3) {
+      // dialogo1.3 → átomo completo (núcleo + todos os elétrons)
       beginTrack3();
-      const s = M1.t3;
-      s.zoom1 = true; s.zoomOut1 = true; s.espontaneo = true;
-      s.zoom2 = true; s.zoomOut2 = true; s.pulse3 = true; s.done = true;
-      setCircuitZoom(false);
-      setDevices(false);
-      const espon = document.getElementById('m1-espontaneo');
-      if (espon) espon.classList.add('in');
+      const atom = M1.atom;
+      atom.nucleus = true;
+      atom.nucleusT = 9999;
+      atom.electrons.forEach(e => { e.revealed = true; e.revealT = 9999; });
     }
   }
 
@@ -1771,72 +1768,79 @@
     setTimeout(() => el.classList.add('in'), 460);
   }
 
-  /* ── Faixa 0: definição (digitação sincronizada com o áudio) ── */
+  /* ── Faixa 0: dialogo1 (apenas narra; o card "Definição" surge ao final) ── */
   function beginTrack0() { m1ResetVisuals(); }
-  function cueTrack0(tt) {
-    const card  = document.getElementById('m1-defcard');
+  function cueTrack0(tt) { /* sem eventos visuais durante a narração */ }
+
+  /* ── Faixa 1: dialogo1.1 — digitação do texto da definição ── */
+  function beginTrack1() {
     const typed = document.getElementById('m1-typed');
-    const a     = document.getElementById('dialogo1');
-    const CARD_AT = 4.2, TYPE_AT = 5.8;
+    if (typed) typed.innerHTML = '';
+    M1.t1 = { typing: true };
+  }
+  function cueTrack1(tt) {
+    const typed = document.getElementById('m1-typed');
+    const a     = document.getElementById('dialogo1_1');
+    if (!typed) return;
+    const end  = (a && a.duration) ? a.duration : 8;
+    const prog = Math.min(1, tt / Math.max(0.5, end));
+    const n    = Math.round(DEF_TEXT.length * prog);
+    typed.innerHTML = DEF_TEXT.slice(0, n) + (prog < 1 ? '<span class="caret">&nbsp;</span>' : '');
+  }
 
-    if (tt >= CARD_AT && !M1.cardShown) { M1.cardShown = true; card.classList.add('in'); }
-    else if (tt < CARD_AT && M1.cardShown) { M1.cardShown = false; card.classList.remove('in'); }
-
-    if (tt >= TYPE_AT) {
-      const end  = a.duration || (TYPE_AT + 8);
-      const prog = Math.min(1, (tt - TYPE_AT) / Math.max(0.5, end - TYPE_AT));
-      const n    = Math.round(DEF_TEXT.length * prog);
-      typed.innerHTML = DEF_TEXT.slice(0, n) + (prog < 1 ? '<span class="caret">&nbsp;</span>' : '');
-    } else {
-      typed.innerHTML = '';
+  /* ── Faixa 2: dialogo1.2 — caixa "Átomos" surge aos 11s ── */
+  function beginTrack2() {
+    M1.t2 = { atomos: false, clock: 0, done: false };
+    const ab = document.getElementById('m1-atomos');
+    if (ab) { ab.classList.remove('in'); ab.classList.remove('box-pulse'); }
+  }
+  function cueTrack2(tt) {
+    const s = M1.t2; if (!s) return;
+    // 11s — caixa "Átomos" aparece abaixo do texto; botão play some
+    if (tt >= 11 && !s.atomos) {
+      s.atomos = true;
+      const ab = document.getElementById('m1-atomos');
+      if (ab) { ab.classList.remove('in'); void ab.offsetWidth; ab.classList.add('in'); }
+      const btn = document.getElementById('m1-play');
+      if (btn) btn.classList.add('btn-hidden');
+      buzz(30);
     }
   }
 
-  /* ── Faixa 1: átomos (núcleo + elétrons + energia química) ── */
+  /* ── Faixa 3: dialogo1.3 — construção do átomo (abaixo da caixa "Átomos") ── */
   const M1_ORBITS = [
     { tilt:   0, rx: 215, ry: 80, speed:  0.0273 },
     { tilt:  45, rx: 215, ry: 80, speed: -0.0241 },
     { tilt:  90, rx: 215, ry: 80, speed:  0.0305 },
     { tilt: 135, rx: 215, ry: 80, speed: -0.0217 }
   ];
-  const ELECTRON_CUES = [10.8, 13.2, 15.2, 17.0];   // último em 17s
+  const ELECTRON_CUES = [3.0, 5.0, 7.0, 9.0];   // elétrons surgem um a um
 
-  function beginTrack1() {
-    // defgroup permanece visível — apenas mostra o canvas do átomo abaixo
+  function beginTrack3() {
     document.getElementById('m1-atom').classList.add('in');
-
+    M1.t3 = { clock: 0 };   // relógio virtual: permite eventos após o fim do áudio
     M1.atom = {
       active: true,
       nucleus: false, nucleusT: 0,
-      atomosShown: false, energiaShown: false,
+      energiaShown: false,
       lastTs: 0,
       electrons: M1_ORBITS.map((o, i) => ({ orbit: o, ang: i * 1.7, revealed: false, revealT: 0 }))
     };
   }
-
-  function cueTrack1(tt) {
+  function cueTrack3(tt) {
     const atom = M1.atom; if (!atom) return;
-    if (tt >= 6.8 && !atom.atomosShown) {
-      atom.atomosShown = true;
-      document.getElementById('m1-atomos').classList.add('in');
-      buzz(25);
-    }
-    if (tt >= 9.5 && !atom.nucleus) { atom.nucleus = true; buzz(45); }
+    if (tt >= 1.5 && !atom.nucleus) { atom.nucleus = true; buzz(45); }
     atom.electrons.forEach((e, i) => {
       if (!e.revealed && tt >= ELECTRON_CUES[i]) { e.revealed = true; e.revealT = 0; buzz(18); }
     });
-    if (tt >= 20.4 && !atom.energiaShown) {
-      atom.energiaShown = true;
-      document.getElementById('m1-energia').classList.add('in');
-      buzz(35);
-    }
   }
 
-  /* ── Faixa 2: química → seta → elétrica ── */
-  function beginTrack2() {
-    // átomo continua girando; "Energia química" já visível
+  /* ─────────────────────────────────────────────────────────────
+     CÓDIGO ADORMECIDO — fluxo de energia + circuito (sem gatilho)
+     Mantido para reuso posterior em faixas dialogo1.4+
+     ───────────────────────────────────────────────────────────── */
+  function beginTrack2Energy() {
     document.getElementById('m1-energia').classList.add('in');
-    // reset dos elementos da faixa (para permitir reexecução)
     const arr = document.getElementById('m1-arrow');    if (arr) arr.classList.remove('in');
     const el  = document.getElementById('m1-eletrica'); if (el)  el.classList.remove('in');
     const eq  = document.getElementById('m1-energia');  if (eq)  eq.classList.remove('pulse');
@@ -1844,10 +1848,8 @@
     if (bat) bat.classList.remove('in');
     M1.t2 = { pulsed: false, arrow: false, eletrica: false, batteries: false, clock: 0, done: false };
   }
-
-  function cueTrack2(tt) {
+  function cueTrack2Energy(tt) {
     const s = M1.t2; if (!s) return;
-    // 4s — 2 pulsadas rápidas em "Energia química"
     if (tt >= 4 && !s.pulsed) {
       s.pulsed = true;
       const eq = document.getElementById('m1-energia');
@@ -1855,19 +1857,16 @@
       eq.addEventListener('animationend', () => eq.classList.remove('pulse'), { once: true });
       buzz([25, 60, 25]);
     }
-    // 5.6s — seta entra da esquerda para a direita
     if (tt >= 5.6 && !s.arrow) {
       s.arrow = true;
       document.getElementById('m1-arrow').classList.add('in');
       buzz(30);
     }
-    // 6s — "Energia elétrica" entra com efeito elétrico
     if (tt >= 6 && !s.eletrica) {
       s.eletrica = true;
       document.getElementById('m1-eletrica').classList.add('in');
       buzz([20, 30, 50]);
     }
-    // 7.4s — pilhas e baterias aparecem acima da seta (entrada dramática)
     if (tt >= 7.4 && !s.batteries) {
       s.batteries = true;
       const bat = document.getElementById('m1-batteries');
@@ -2073,13 +2072,10 @@
   }
 
   /* ── Faixa 3: zoom na pilha / circuito / dispositivos / espontâneo ── */
-  function beginTrack3() {
+  function beginTrack3Zoom() {
     M1.t3 = { clock: 0, done: false, circuitActive: false,
               zoom1: false, zoomOut1: false, espontaneo: false,
               zoom2: false, zoomOut2: false, pulse3: false };
-    // esconde a caixa "átomo" ao iniciar a faixa
-    const ab = document.getElementById('m1-atombox');
-    if (ab) ab.classList.remove('in');
     // ergue as pilhas pra abrir espaço para o texto "espontâneo"
     const bat = document.getElementById('m1-batteries');
     if (bat) bat.classList.add('t3-lift');
@@ -2119,7 +2115,7 @@
     }
   }
 
-  function cueTrack3(tt) {
+  function cueTrack3Zoom(tt) {
     const s = M1.t3; if (!s) return;
     if (tt >= 1 && !s.zoom1) {
       s.zoom1 = true; setCircuitZoom(true); buzz(40);
@@ -2235,9 +2231,8 @@
     if (grp) { grp.classList.remove('fade-out'); grp.style.display = 'flex'; }
     const card = document.getElementById('m1-defcard');
     if (card) { card.classList.remove('in'); card.classList.remove('card-trigger'); }
-    const ab = document.getElementById('m1-atombox'); if (ab) ab.classList.remove('in');
-    const typed = document.getElementById('m1-typed'); if (typed) typed.innerHTML = '';
-    const at = document.getElementById('m1-atomos'); if (at) at.classList.remove('in');
+    const typed = document.getElementById('m1-typed'); if (typed) { typed.innerHTML = ''; typed.classList.remove('typed-highlight'); }
+    const at = document.getElementById('m1-atomos'); if (at) { at.classList.remove('in'); at.classList.remove('box-pulse'); }
     const en = document.getElementById('m1-energia'); if (en) { en.classList.remove('in'); en.classList.remove('pulse'); }
     const arr = document.getElementById('m1-arrow');    if (arr) arr.classList.remove('in');
     const elt = document.getElementById('m1-eletrica'); if (elt) elt.classList.remove('in');
@@ -2250,7 +2245,7 @@
     const ccv  = document.getElementById('m1-circuit-canvas'); if (ccv) ccv.getContext('2d').clearRect(0,0,ccv.width,ccv.height);
     setDevices(false);
     const espon = document.getElementById('m1-espontaneo'); if (espon) { espon.classList.remove('in'); espon.classList.remove('pulse'); }
-    M1.t2 = null; M1.t3 = null;
+    M1.t1 = null; M1.t2 = null; M1.t3 = null;
     const cv = document.getElementById('m1-atom');
     if (cv) { cv.classList.remove('in'); cv.getContext('2d').clearRect(0, 0, cv.width, cv.height); }
   }
@@ -2318,30 +2313,32 @@
     card.addEventListener('pointerdown', (ev) => {
       ev.stopPropagation();
       if (M1.defMode === 'trigger') {
+        // dispara o dialogo1.1 (digitação do texto)
         M1.defMode = 'playing';
         card.classList.remove('card-trigger');
         buzz(35);
-        if (M1.atom === null) M1.tracks[M1.idx].begin();   // beginTrack1
+        M1.tracks[M1.idx].begin();   // beginTrack1 (reset da digitação)
         const a = m1El();
         if (a) { a.currentTime = 0; a.play().catch(() => {}); }
         startM1Loop();
       } else if (M1.defMode === 'interactive' || M1.defMode === 'playing') {
+        // destaca o texto da definição
         buzz(18);
         highlightTypedText();
       }
     });
   })();
 
-  // caixa "átomo": clique inicia dialogo1.3
+  // caixa "Átomos": clique (quando pulsando) inicia o dialogo1.3
   (function () {
-    const ab = document.getElementById('m1-atombox');
+    const ab = document.getElementById('m1-atomos');
     if (!ab) return;
     ab.addEventListener('pointerdown', (ev) => {
       ev.stopPropagation();
-      if (!ab.classList.contains('in')) return;
-      ab.classList.remove('in');
+      if (!ab.classList.contains('box-pulse')) return;   // só clicável quando aguardando
+      ab.classList.remove('box-pulse');                  // para de pulsar (caixa permanece)
       buzz(45);
-      M1.tracks[M1.idx].begin();   // beginTrack3
+      M1.tracks[M1.idx].begin();   // beginTrack3 (construção do átomo)
       const a = m1El();
       if (a) { a.currentTime = 0; a.play().catch(() => {}); }
       startM1Loop();
@@ -2373,9 +2370,9 @@
       }
     });
   })();
-  // garante o texto completo ao final da definição
+  // garante o texto completo ao final do dialogo1.1 (digitação)
   (function () {
-    const a = document.getElementById('dialogo1');
+    const a = document.getElementById('dialogo1_1');
     if (a) a.addEventListener('ended', () => {
       const typed = document.getElementById('m1-typed');
       if (typed) typed.textContent = DEF_TEXT;
