@@ -851,9 +851,8 @@
       bottom: 176px;
       display: flex;
       align-items: center;
-      justify-content: center;
-      gap: 20px;
-      padding: 0 24px;
+      justify-content: space-between;
+      padding: 0 28px;
       z-index: 6;
       pointer-events: none;
     }
@@ -1824,7 +1823,10 @@
 
   function beginTrack3() {
     document.getElementById('m1-atom').classList.add('in');
-    M1.t3 = { clock: 0 };   // relógio virtual: permite eventos após o fim do áudio
+    const en  = document.getElementById('m1-energia');  if (en)  { en.classList.remove('in');  en.classList.remove('pulse'); }
+    const arr = document.getElementById('m1-arrow');    if (arr) arr.classList.remove('in');
+    const el  = document.getElementById('m1-eletrica'); if (el)  el.classList.remove('in');
+    M1.t3 = { clock: 0, energia: false, arrow: false, eletrica: false };
     M1.atom = {
       active: true,
       nucleus: false, nucleusT: 0,
@@ -1839,6 +1841,22 @@
     atom.electrons.forEach((e, i) => {
       if (!e.revealed && tt >= ELECTRON_CUES[i]) { e.revealed = true; e.revealT = 0; buzz(18); }
     });
+    const s = M1.t3; if (!s) return;
+    if (tt >= 13.5 && !s.energia) {
+      s.energia = true;
+      const en = document.getElementById('m1-energia'); if (en) en.classList.add('in');
+      buzz(30);
+    }
+    if (tt >= 16 && !s.arrow) {
+      s.arrow = true;
+      const arr = document.getElementById('m1-arrow'); if (arr) arr.classList.add('in');
+      buzz(25);
+    }
+    if (tt >= 19 && !s.eletrica) {
+      s.eletrica = true;
+      const el = document.getElementById('m1-eletrica'); if (el) el.classList.add('in');
+      buzz([20, 30, 50]);
+    }
   }
 
   /* ─────────────────────────────────────────────────────────────
