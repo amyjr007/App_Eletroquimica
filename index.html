@@ -1768,9 +1768,15 @@
     setTimeout(() => el.classList.add('in'), 460);
   }
 
-  /* ── Faixa 0: dialogo1 (apenas narra; o card "Definição" surge ao final) ── */
+  /* ── Faixa 0: dialogo1 (card "Definição" surge aos 4.5s; vira gatilho ao final) ── */
   function beginTrack0() { m1ResetVisuals(); }
-  function cueTrack0(tt) { /* sem eventos visuais durante a narração */ }
+  function cueTrack0(tt) {
+    if (tt >= 4.5 && !M1.cardShown) {
+      M1.cardShown = true;
+      document.getElementById('m1-defcard').classList.add('in');
+      buzz(25);
+    }
+  }
 
   /* ── Faixa 1: dialogo1.1 — digitação do texto da definição ── */
   function beginTrack1() {
