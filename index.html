@@ -675,6 +675,78 @@
       box-shadow: 0 0 36px rgba(140,160,180,.55), 0 8px 30px rgba(0,0,0,.5);
     }
 
+    /* ── Barra de navegação rápida (módulo 1) ── */
+    .m1-navbar { position: absolute; inset: 0; z-index: 30; pointer-events: none; }
+    .m1-navbar-handle {
+      position: absolute; left: 14px; bottom: 14px;
+      display: flex; align-items: center; gap: 9px;
+      height: 54px; padding: 0 18px;
+      background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.14);
+      border-radius: 27px; cursor: pointer; pointer-events: auto;
+      backdrop-filter: blur(5px);
+      transition: opacity .3s ease, transform .25s ease, box-shadow .25s ease;
+    }
+    .m1-navbar-handle:active { transform: scale(.95); }
+    .m1-navbar-handle:hover { box-shadow: 0 0 22px rgba(0,229,255,.3); }
+    .m1-navbar-grip { display: flex; flex-direction: column; gap: 3px; }
+    .m1-navbar-grip span { width: 18px; height: 2px; border-radius: 2px; background: rgba(255,255,255,.55); }
+    .m1-navbar-hint {
+      font-family: 'Orbitron', monospace; font-size: .6rem; font-weight: 700;
+      letter-spacing: .12em; color: rgba(226,243,255,.72); text-transform: uppercase;
+    }
+    .m1-navbar.open .m1-navbar-handle { opacity: 0; pointer-events: none; transform: translateY(20px); }
+
+    .m1-nav-backdrop {
+      position: absolute; inset: 0; opacity: 0; pointer-events: none;
+      background: rgba(0,0,0,.6); backdrop-filter: blur(8px);
+      transition: opacity .4s ease, backdrop-filter .4s ease;
+    }
+    .m1-navbar.open .m1-nav-backdrop { opacity: 1; pointer-events: auto; }
+
+    .m1-navbar-panel {
+      position: absolute; left: 0; right: 0; bottom: 0;
+      transform: translateY(105%); opacity: 0; pointer-events: none;
+      transition: transform .45s cubic-bezier(.2,.7,.2,1), opacity .35s ease;
+      padding: 30px 22px 26px;
+      background: linear-gradient(to top, rgba(8,12,20,.55), rgba(8,12,20,.12));
+      backdrop-filter: blur(11px);
+      border-top: 1px solid rgba(255,255,255,.14);
+      border-radius: 22px 22px 0 0;
+      box-shadow: 0 -10px 40px rgba(0,0,0,.45);
+    }
+    .m1-navbar.open .m1-navbar-panel { transform: translateY(0); opacity: 1; pointer-events: auto; }
+    .m1-nav-title {
+      font-family: 'Orbitron', monospace; font-size: .64rem; font-weight: 700;
+      letter-spacing: .16em; color: rgba(0,229,255,.85); text-transform: uppercase;
+      text-align: center; margin-bottom: 16px;
+    }
+    .m1-nav-close {
+      position: absolute; top: 12px; right: 16px; width: 34px; height: 34px;
+      border-radius: 50%; border: 1px solid rgba(255,255,255,.22);
+      background: rgba(255,255,255,.06); color: #e2f3ff; font-size: 1rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; pointer-events: auto;
+      transition: background .2s ease, transform .2s ease;
+    }
+    .m1-nav-close:hover { background: rgba(255,255,255,.14); transform: rotate(90deg); }
+
+    .m1-nav-items { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+    .m1-nav-item {
+      display: flex; align-items: center; gap: 11px;
+      padding: 13px 22px; border-radius: 15px;
+      background: rgba(0,229,255,.08); border: 1px solid rgba(0,229,255,.34);
+      color: #e2f3ff; cursor: pointer; font-family: 'Orbitron', monospace;
+      transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
+    }
+    .m1-nav-item:hover, .m1-nav-item:active {
+      background: rgba(0,229,255,.18); box-shadow: 0 0 26px rgba(0,229,255,.42); transform: translateY(-2px);
+    }
+    .m1-nav-num {
+      flex-shrink: 0; width: 27px; height: 27px; border-radius: 50%;
+      background: #00e5ff; color: #04121a; font-weight: 700; font-size: .85rem;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .m1-nav-topic { font-size: .8rem; letter-spacing: .08em; }
+
     /* ── Section 1 clean body ── */
     .s1-body {
       flex: 1;
@@ -1360,6 +1432,33 @@
   <!-- texto espontâneo (aparece no tempo 15.8s do dialogo1.3) -->
   <div id="m1-espontaneo">espontâneo</div>
 
+  <!-- barra de navegação rápida -->
+  <div class="m1-navbar" id="m1-navbar">
+    <div class="m1-nav-backdrop" id="m1-nav-backdrop"></div>
+    <button class="m1-navbar-handle" id="m1-navbar-handle" aria-label="Navegação rápida">
+      <span class="m1-navbar-grip"><span></span><span></span><span></span></span>
+      <span class="m1-navbar-hint">Navegar</span>
+    </button>
+    <div class="m1-navbar-panel" id="m1-navbar-panel">
+      <button class="m1-nav-close" id="m1-nav-close" aria-label="Recolher">✕</button>
+      <div class="m1-nav-title">Navegação rápida</div>
+      <div class="m1-nav-items">
+        <button class="m1-nav-item" data-target="0">
+          <span class="m1-nav-num">1</span>
+          <span class="m1-nav-topic">Definição</span>
+        </button>
+        <button class="m1-nav-item" data-target="2">
+          <span class="m1-nav-num">2</span>
+          <span class="m1-nav-topic">Átomos</span>
+        </button>
+        <button class="m1-nav-item" data-target="3">
+          <span class="m1-nav-num">3</span>
+          <span class="m1-nav-topic">Energia</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <audio id="dialogo1"   src="audio/dialogo1.mp3"   preload="auto"></audio>
   <audio id="dialogo1_1" src="audio/dialogo1.1.mp3" preload="auto"></audio>
   <audio id="dialogo1_2" src="audio/dialogo1.2.mp3" preload="auto"></audio>
@@ -1757,6 +1856,66 @@
       atom.nucleusT = 9999;
       atom.electrons.forEach(e => { e.revealed = true; e.revealT = 9999; });
     }
+  }
+
+  /* salto rápido pela barra de navegação:
+     leva direto ao FIM de uma faixa, concluindo todos os eventos anteriores
+     (como se o usuário tivesse escutado os áudios até ali).
+     target: 0 = fim do dialogo1 · 2 = fim do dialogo1.2 · 3 = fim do dialogo1.3 */
+  function m1JumpTo(target) {
+    // para tudo e limpa o palco
+    ['dialogo1', 'dialogo1_1', 'dialogo1_2', 'dialogo1_3', 'dialogo1_4'].forEach(id => {
+      const a = document.getElementById(id);
+      if (a) { a.pause(); a.currentTime = 0; }
+    });
+    if (M1.raf) { cancelAnimationFrame(M1.raf); M1.raf = 0; }
+    M1.lastTs = 0;
+    m1ResetVisuals();
+
+    const card  = document.getElementById('m1-defcard');
+    const typed = document.getElementById('m1-typed');
+    const ab    = document.getElementById('m1-atomos');
+    const btn   = document.getElementById('m1-play');
+    M1.cardShown = true;
+
+    if (target === 0) {
+      // fim do dialogo1 → card "Definição" pulsante (gatilho), play oculto
+      if (card) { card.classList.add('in'); card.classList.add('card-trigger'); }
+      M1.defMode = 'trigger';
+      M1.idx = 1;                              // próxima faixa: dialogo1.1 (pelo card)
+      if (btn) btn.classList.add('btn-hidden');
+    } else if (target === 2) {
+      // fim do dialogo1.2 → texto completo + caixa "Átomos" pulsante, play oculto
+      if (card) card.classList.add('in');
+      if (typed) typed.textContent = DEF_TEXT;
+      M1.t1 = { typing: false };
+      M1.defMode = 'interactive';
+      beginTrack2(); M1.t2.atomos = true; M1.t2.done = true;
+      if (ab) { ab.classList.remove('in'); void ab.offsetWidth; ab.classList.add('in'); ab.classList.add('box-pulse'); }
+      M1.idx = 3;                              // próxima faixa: dialogo1.3 (pela caixa)
+      if (btn) btn.classList.add('btn-hidden');
+    } else if (target === 3) {
+      // fim do dialogo1.3 → átomo completo + energia química/seta/elétrica, play visível
+      if (card) card.classList.add('in');
+      if (typed) typed.textContent = DEF_TEXT;
+      M1.t1 = { typing: false };
+      M1.defMode = 'interactive';
+      beginTrack2(); M1.t2.atomos = true; M1.t2.done = true;
+      if (ab) { ab.classList.remove('in'); void ab.offsetWidth; ab.classList.add('in'); }
+      // átomo completo
+      beginTrack3();
+      M1.atom.nucleus = true; M1.atom.nucleusT = 9999;
+      M1.atom.electrons.forEach(e => { e.revealed = true; e.revealT = 9999; });
+      // energia química / seta / elétrica já reveladas
+      const en  = document.getElementById('m1-energia');  if (en)  en.classList.add('in');
+      const arr = document.getElementById('m1-arrow');    if (arr) arr.classList.add('in');
+      const elt = document.getElementById('m1-eletrica'); if (elt) elt.classList.add('in');
+      M1.t3.energia = true; M1.t3.arrow = true; M1.t3.eletrica = true;
+      M1.idx = 4;                              // próxima faixa: dialogo1.4 (pelo play)
+      if (btn) { btn.classList.remove('btn-hidden'); btn.textContent = '▶'; btn.classList.remove('playing'); }
+      startM1Loop();                           // mantém o átomo girando
+    }
+    buzz([30, 40, 30]);
   }
 
   /* replay rápido (ao tocar em "Energia química" após o áudio): pulsa → seta → elétrica */
@@ -2354,6 +2513,7 @@
     M1.idx = 0;
     if (M1.raf) { cancelAnimationFrame(M1.raf); M1.raf = 0; }
     m1ResetVisuals();
+    const nav = document.getElementById('m1-navbar'); if (nav) nav.classList.remove('open');
     const btn = document.getElementById('m1-play');
     if (btn) { btn.textContent = '▶'; btn.classList.remove('playing'); btn.classList.remove('btn-hidden'); }
   }
@@ -2363,6 +2523,27 @@
     const a = document.getElementById(id);
     if (a) a.addEventListener('ended', m1Ended);
   });
+
+  // barra de navegação rápida: abre/fecha o painel e salta para a marcação
+  (function () {
+    const navbar   = document.getElementById('m1-navbar');
+    const handle   = document.getElementById('m1-navbar-handle');
+    const closeBtn = document.getElementById('m1-nav-close');
+    const backdrop = document.getElementById('m1-nav-backdrop');
+    if (!navbar) return;
+    const openNav  = () => { navbar.classList.add('open'); buzz(20); };
+    const closeNav = () => { navbar.classList.remove('open'); buzz(15); };
+    if (handle)   handle.addEventListener('click', openNav);
+    if (closeBtn) closeBtn.addEventListener('click', closeNav);
+    if (backdrop) backdrop.addEventListener('click', closeNav);
+    navbar.querySelectorAll('.m1-nav-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const t = parseInt(item.getAttribute('data-target'), 10);
+        closeNav();
+        m1JumpTo(t);
+      });
+    });
+  })();
 
   // toque = play/pause | segurar = pular para a próxima faixa
   (function () {
