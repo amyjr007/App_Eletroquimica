@@ -959,7 +959,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 6px;
+      gap: 2px;
       flex-shrink: 0;
       position: relative;
     }
@@ -976,12 +976,12 @@
     .energy-arrow.in { opacity: 1; clip-path: inset(0 0 0 0); }
     .energy-arrow svg { width: clamp(64px, 13vw, 124px); height: auto; display: block; }
 
-    /* seta reversa (direita → esquerda): mesma animação, espelhada e invertida */
+    /* seta vertical (↓): revela de cima para baixo */
     .energy-arrow.reverse {
-      transform: translateY(-9px) scaleX(-1);
-      clip-path: inset(0 0 0 100%);
+      clip-path: inset(100% 0 0 0);
     }
     .energy-arrow.reverse.in { clip-path: inset(0 0 0 0); }
+    .energy-arrow.reverse svg { width: auto; height: clamp(48px, 10vw, 85px); }
 
     /* "Processo forçado" (dialogo1.6) — mesma fonte/estilo do "Processo espontâneo" */
     .m1-forcado-label {
@@ -1479,20 +1479,20 @@
         </svg>
       </div>
 
-      <!-- seta reversa (direita → esquerda): aparece aos 4.7s do dialogo1.6 -->
+      <!-- seta vertical (↓): aparece aos 4.7s do dialogo1.6, revela de cima pra baixo -->
       <div class="energy-arrow reverse" id="m1-arrow2" aria-hidden="true">
-        <svg viewBox="0 0 130 30">
+        <svg viewBox="0 0 30 130">
           <defs>
-            <linearGradient id="arrGrad2" x1="0" y1="0" x2="1" y2="0">
+            <linearGradient id="arrGrad2" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0" stop-color="#00e5ff"/>
               <stop offset="1" stop-color="#ffee00"/>
             </linearGradient>
           </defs>
           <g fill="url(#arrGrad2)">
-            <rect x="2"  y="18" width="7"  height="24" rx="1.5"/>
-            <rect x="14" y="18" width="7"  height="24" rx="1.5"/>
-            <rect x="27" y="22" width="46" height="16" rx="2"/>
-            <polygon points="66,8 122,30 66,52"/>
+            <rect x="3"  y="2"  width="24" height="7"  rx="1.5"/>
+            <rect x="3"  y="14" width="24" height="7"  rx="1.5"/>
+            <rect x="7"  y="27" width="16" height="46" rx="2"/>
+            <polygon points="0,66 30,66 15,122"/>
           </g>
         </svg>
       </div>
@@ -1610,6 +1610,10 @@
         <button class="m1-nav-item" data-target="3">
           <span class="m1-nav-num">3</span>
           <span class="m1-nav-topic">Energia</span>
+        </button>
+        <button class="m1-nav-item" data-target="4">
+          <span class="m1-nav-num">4</span>
+          <span class="m1-nav-topic">Eletrólise</span>
         </button>
       </div>
     </div>
@@ -2057,7 +2061,7 @@
      target: 0 = fim do dialogo1 · 2 = fim do dialogo1.2 · 3 = fim do dialogo1.4 */
   function m1JumpTo(target) {
     // para tudo e limpa o palco
-    ['dialogo1', 'dialogo1_1', 'dialogo1_2', 'dialogo1_3', 'dialogo1_4'].forEach(id => {
+    ['dialogo1', 'dialogo1_1', 'dialogo1_2', 'dialogo1_3', 'dialogo1_4', 'dialogo1_5', 'dialogo1_6'].forEach(id => {
       const a = document.getElementById(id);
       if (a) { a.pause(); a.currentTime = 0; }
     });
@@ -2110,6 +2114,28 @@
       beginTrack4();
       const a4 = document.getElementById('dialogo1_4');
       if (a4) { a4.currentTime = 0; a4.play().catch(() => {}); }
+      if (btn) { btn.textContent = '⏸'; btn.classList.add('playing'); btn.classList.remove('btn-hidden'); }
+    } else if (target === 4) {
+      // Eletrólise — estado final do dialogo1.5 → dispara dialogo1.6 do início
+      if (card) card.classList.add('in');
+      if (typed) typed.textContent = DEF_TEXT;
+      M1.t1 = { typing: false };
+      M1.defMode = 'interactive';
+      beginTrack2(); M1.t2.atomos = true; M1.t2.done = true;
+      if (ab) { ab.classList.remove('in'); void ab.offsetWidth; ab.classList.add('in'); ab.style.animation = 'none'; }
+      beginTrack3();
+      M1.atom.nucleus = true; M1.atom.nucleusT = 9999;
+      M1.atom.electrons.forEach(e => { e.revealed = true; e.revealT = 9999; });
+      M1.t3.energia = M1.t3.arrow = M1.t3.eletrica = true;
+      const ar4 = document.getElementById('m1-arrow');    if (ar4) ar4.classList.add('in');
+      const el4 = document.getElementById('m1-eletrica'); if (el4) el4.classList.add('in');
+      const rq4 = document.getElementById('m1-reacao');   if (rq4) rq4.classList.add('in');
+      startM1Loop();
+      beginTrack4();   // slide-up: ergue Átomos/átomo, reposiciona energyflow
+      M1.idx = 6;
+      beginTrack6();
+      const a6 = document.getElementById('dialogo1_6');
+      if (a6) { a6.currentTime = 0; a6.play().catch(() => {}); }
       if (btn) { btn.textContent = '⏸'; btn.classList.add('playing'); btn.classList.remove('btn-hidden'); }
     }
     buzz([30, 40, 30]);
