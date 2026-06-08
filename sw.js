@@ -1,5 +1,5 @@
 /* Service Worker — Eletroquímica PWA */
-const CACHE = 'eletroquimica-v43';
+const CACHE = 'eletroquimica-v44';
 
 const ASSETS = [
   './',
@@ -36,22 +36,37 @@ self.addEventListener('activate', (e) => {
   );
 });
 
-// Busca: cache-first; se não houver, vai à rede e guarda a cópia
+// Navegação (HTML): network-first — sempre tenta a versão mais nova primeiro,
+// e só cai pro cache se estiver offline. Evita ficar preso numa versão antiga.
+function buscaRedePrimeiro(req) {
+  return fetch(req).then((res) => {
+    if (res && res.status === 200 && res.type === 'basic') {
+      const copy = res.clone();
+      caches.open(CACHE).then((c) => c.put(req, copy));
+    }
+    return res;
+  }).catch(() => caches.match(req).then((hit) => hit || caches.match('./index.html')));
+}
+
+// Demais arquivos (áudio, ícones, etc.): cache-first; se não houver, vai à rede e guarda a cópia
+function buscaCachePrimeiro(req) {
+  return caches.match(req).then((hit) => {
+    if (hit) return hit;
+    return fetch(req).then((res) => {
+      if (res && res.status === 200 && res.type === 'basic') {
+        const copy = res.clone();
+        caches.open(CACHE).then((c) => c.put(req, copy));
+      }
+      return res;
+    });
+  });
+}
+
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
-  e.respondWith(
-    caches.match(e.request).then((hit) => {
-      if (hit) return hit;
-      return fetch(e.request).then((res) => {
-        if (res && res.status === 200 && res.type === 'basic') {
-          const copy = res.clone();
-          caches.open(CACHE).then((c) => c.put(e.request, copy));
-        }
-        return res;
-      }).catch(() => {
-        // sem rede: para navegação, devolve a página principal do cache
-        if (e.request.mode === 'navigate') return caches.match('./index.html');
-      });
-    })
-  );
+  if (e.request.mode === 'navigate') {
+    e.respondWith(buscaRedePrimeiro(e.request));
+  } else {
+    e.respondWith(buscaCachePrimeiro(e.request));
+  }
 });
