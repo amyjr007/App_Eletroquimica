@@ -1780,6 +1780,7 @@
     t3: null,
     defMode: null,   // null | 'trigger' | 'playing' | 'interactive'
     lastTs: 0,
+    paused: false, pauseStart: 0, pausedAccum: 0,
     tracks: [
       { id: 'dialogo1',   begin: beginTrack0, cue: cueTrack0 },
       { id: 'dialogo1_1', begin: beginTrack1, cue: cueTrack1 },
@@ -1804,11 +1805,31 @@
       if (a.currentTime < 0.15) M1.tracks[M1.idx].begin();   // início "limpo" da faixa
       a.play().catch(() => {});
       btn.textContent = '⏸'; btn.classList.add('playing');
+      m1ResumeVisuals();
       startM1Loop();
     } else {
       a.pause();
       btn.textContent = '▶'; btn.classList.remove('playing');
+      m1PauseVisuals();
     }
+  }
+
+  /* pausa toda a "cadeia" visual (animações CSS, transições e loops em canvas)
+     junto com o áudio, para que tudo congele e retome em sincronia */
+  function m1PauseVisuals() {
+    if (M1.paused) return;
+    M1.paused = true;
+    M1.pauseStart = performance.now();
+    document.getAnimations().forEach(an => { try { an.pause(); } catch (_) {} });
+    if (M1.raf) { cancelAnimationFrame(M1.raf); M1.raf = 0; }
+  }
+  function m1ResumeVisuals() {
+    if (!M1.paused) return;
+    M1.paused = false;
+    M1.pausedAccum += performance.now() - M1.pauseStart;
+    document.getAnimations().forEach(an => { try { an.play(); } catch (_) {} });
+    M1.lastTs = 0;
+    if (M1.atom) M1.atom.lastTs = 0;
   }
 
   function startM1Loop() {
@@ -1819,6 +1840,7 @@
   function m1Loop(ts) {
     const sec = document.getElementById('section1');
     if (!sec || !sec.classList.contains('active')) { M1.raf = 0; M1.lastTs = 0; return; }
+    if (M1.paused) { M1.raf = 0; return; }
 
     const a = m1El();
     let dt = M1.lastTs ? (ts - M1.lastTs) : 16;
@@ -2339,7 +2361,7 @@
       atom.nucleusT += dt;
       const pop = Math.min(1, atom.nucleusT / 320);
       const scale = pop < 1 ? (0.3 + 0.7 * easeBack(pop)) : 1;
-      const t = ts / 1000;
+      const t = (ts - M1.pausedAccum) / 1000;
       const cluster = [[-9, -6], [9, -6], [-9, 8], [9, 8]];
       const ng = g.createRadialGradient(cx, cy, 0, cx, cy, 48 * scale);
       ng.addColorStop(0, 'rgba(0,229,255,.45)');
@@ -2619,7 +2641,7 @@
     const g = cv.getContext('2d');
     g.clearRect(0, 0, 300, 220);
     if (!circuitTs0) circuitTs0 = ts;
-    const t = (ts - circuitTs0) / 1000;
+    const t = (ts - circuitTs0 - M1.pausedAccum) / 1000;
 
     // fio externo: elétrons percorrem do polo esquerdo (71,42) para o direito (229,42)
     const wirePts = [[71,42],[71,14],[229,14],[229,42]];
@@ -2668,6 +2690,7 @@
     M1.cardShown = false;
     M1.atom = null;
     M1.defMode = null;
+    M1.paused = false; M1.pausedAccum = 0; M1.pauseStart = 0;
     M1.jumpSeq = (M1.jumpSeq || 0) + 1;   // invalida timers de salto pendentes
     const btn = document.getElementById('m1-play');
     if (btn) btn.classList.remove('btn-hidden');
