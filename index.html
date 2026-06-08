@@ -2630,8 +2630,8 @@
     if (!circuitTs0) circuitTs0 = ts;
     const t = (ts - circuitTs0) / 1000;
 
-    // fio externo: elétrons saem do ânodo (229,42), sobem, cruzam para cátodo (71,42)
-    const wirePts = [[229,42],[229,14],[71,14],[71,42]];
+    // fio externo: elétrons percorrem do polo esquerdo (71,42) para o direito (229,42)
+    const wirePts = [[71,42],[71,14],[229,14],[229,42]];
     const wireLen = 25 + 158 + 25; // 208
     const ESPD = 48, N_E = 5, eGap = wireLen / N_E;
     for (let i = 0; i < N_E; i++) {
@@ -2643,19 +2643,19 @@
       g.fillStyle = eg; g.shadowColor = '#ffee00'; g.shadowBlur = 10; g.fill(); g.shadowBlur = 0;
     }
 
-    // cátions (ciano) no eletrólito: movem-se para o cátodo (esq.)
+    // cátions (ciano) no eletrólito: movem-se para a direita
     for (let i = 0; i < 4; i++) {
       const dx = ((t * 28 + i * 34) % 128);
-      const x = 215 - dx; const y = 128 + Math.sin(t * 1.5 + i * 2) * 5;
+      const x = 87 + dx; const y = 128 + Math.sin(t * 1.5 + i * 2) * 5;
       g.beginPath(); g.arc(x, y, 3.5, 0, Math.PI*2);
       g.fillStyle = 'rgba(80,190,255,.88)';
       g.shadowColor = '#00aaff'; g.shadowBlur = 7; g.fill(); g.shadowBlur = 0;
     }
 
-    // ânions (violeta) no eletrólito: movem-se para o ânodo (dir.)
+    // ânions (violeta) no eletrólito: movem-se para a esquerda
     for (let i = 0; i < 4; i++) {
       const dx = ((t * 26 + i * 34) % 128);
-      const x = 87 + dx; const y = 150 + Math.sin(t * 1.3 + i * 2 + 1) * 5;
+      const x = 215 - dx; const y = 150 + Math.sin(t * 1.3 + i * 2 + 1) * 5;
       g.beginPath(); g.arc(x, y, 3.5, 0, Math.PI*2);
       g.fillStyle = 'rgba(180,80,255,.88)';
       g.shadowColor = '#9900ff'; g.shadowBlur = 7; g.fill(); g.shadowBlur = 0;
