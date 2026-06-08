@@ -1875,25 +1875,26 @@
     const atomCv   = document.getElementById('m1-atom');
     const eFlow    = document.getElementById('m1-energyflow');
 
-    // distância total a subir = altura do título + altura do defgroup + margens
-    const shiftUp = (title    ? title.offsetHeight   + 12 : 0)
-                  + (defGroup ? defGroup.offsetHeight + 12 : 0);
+    const titleH   = title    ? title.offsetHeight   + 12 : 0;
+    const defH     = defGroup ? defGroup.offsetHeight + 12 : 0;
+    const exitShift = titleH + defH;   // quanto os itens que saem sobem
+    const slideUp   = titleH;          // Átomos fica onde estava o def-group (Definição)
     const T = '.7s cubic-bezier(.4,0,.2,1)';
 
-    // título e definição: sobem mais e somem
+    // título e definição: sobem e somem
     [title, defGroup].forEach(el => {
       if (!el) return;
       el.style.transition  = `transform ${T}, opacity .5s ease`;
-      el.style.transform   = `translateY(-${shiftUp + 80}px)`;
+      el.style.transform   = `translateY(-${exitShift + 80}px)`;
       el.style.opacity     = '0';
       el.style.pointerEvents = 'none';
     });
 
-    // caixa "Átomos" e canvas do átomo: sobem para preencher o espaço
+    // caixa "Átomos" e canvas do átomo: sobem só o height do título
     [atomos, atomCv].forEach(el => {
       if (!el) return;
       el.style.transition = `transform ${T}`;
-      el.style.transform  = `translateY(-${shiftUp}px)`;
+      el.style.transform  = `translateY(-${slideUp}px)`;
     });
 
     // energia química/seta/elétrica: sobem até onde o átomo estava
