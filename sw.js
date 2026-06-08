@@ -1,5 +1,5 @@
 /* Service Worker — Eletroquímica PWA */
-const CACHE = 'eletroquimica-v44';
+const CACHE = 'eletroquimica-v45';
 
 const ASSETS = [
   './',
@@ -39,7 +39,10 @@ self.addEventListener('activate', (e) => {
 // Navegação (HTML): network-first — sempre tenta a versão mais nova primeiro,
 // e só cai pro cache se estiver offline. Evita ficar preso numa versão antiga.
 function buscaRedePrimeiro(req) {
-  return fetch(req).then((res) => {
+  // 'no-store' ignora qualquer cópia guardada no cache HTTP do navegador/CDN,
+  // garantindo que a navegação sempre busque o HTML mais recente do servidor.
+  const reqFresca = new Request(req.url, { cache: 'no-store' });
+  return fetch(reqFresca).then((res) => {
     if (res && res.status === 200 && res.type === 'basic') {
       const copy = res.clone();
       caches.open(CACHE).then((c) => c.put(req, copy));
