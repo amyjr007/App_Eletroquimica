@@ -678,23 +678,20 @@
     /* ── Barra de navegação rápida (módulo 1) ── */
     .m1-navbar { position: absolute; inset: 0; z-index: 30; pointer-events: none; }
     .m1-navbar-handle {
-      position: absolute; left: 14px; bottom: 14px;
-      display: flex; align-items: center; gap: 9px;
-      height: 54px; padding: 0 18px;
-      background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.14);
-      border-radius: 27px; cursor: pointer; pointer-events: auto;
-      backdrop-filter: blur(5px);
-      transition: opacity .3s ease, transform .25s ease, box-shadow .25s ease;
+      position: absolute; left: 50%; bottom: 6px; transform: translateX(-50%);
+      display: flex; align-items: center; justify-content: center;
+      padding: 11px 16px;          /* área de toque invisível */
+      background: none; border: none; cursor: pointer; pointer-events: auto;
+      transition: opacity .3s ease, transform .25s ease;
     }
-    .m1-navbar-handle:active { transform: scale(.95); }
-    .m1-navbar-handle:hover { box-shadow: 0 0 22px rgba(0,229,255,.3); }
-    .m1-navbar-grip { display: flex; flex-direction: column; gap: 3px; }
-    .m1-navbar-grip span { width: 18px; height: 2px; border-radius: 2px; background: rgba(255,255,255,.55); }
-    .m1-navbar-hint {
-      font-family: 'Orbitron', monospace; font-size: .6rem; font-weight: 700;
-      letter-spacing: .12em; color: rgba(226,243,255,.72); text-transform: uppercase;
+    .m1-navbar-handle:active { transform: translateX(-50%) scale(.88); }
+    .m1-navbar-grip {
+      width: 44px; height: 5px; border-radius: 3px;
+      background: rgba(255,255,255,.35);
+      transition: background .25s ease;
     }
-    .m1-navbar.open .m1-navbar-handle { opacity: 0; pointer-events: none; transform: translateY(20px); }
+    .m1-navbar-handle:hover .m1-navbar-grip { background: rgba(255,255,255,.6); }
+    .m1-navbar.open .m1-navbar-handle { opacity: 0; pointer-events: none; }
 
     .m1-nav-backdrop {
       position: absolute; inset: 0; opacity: 0; pointer-events: none;
@@ -1436,8 +1433,7 @@
   <div class="m1-navbar" id="m1-navbar">
     <div class="m1-nav-backdrop" id="m1-nav-backdrop"></div>
     <button class="m1-navbar-handle" id="m1-navbar-handle" aria-label="Navegação rápida">
-      <span class="m1-navbar-grip"><span></span><span></span><span></span></span>
-      <span class="m1-navbar-hint">Navegar</span>
+      <span class="m1-navbar-grip"></span>
     </button>
     <div class="m1-navbar-panel" id="m1-navbar-panel">
       <button class="m1-nav-close" id="m1-nav-close" aria-label="Recolher">✕</button>
