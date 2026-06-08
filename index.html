@@ -1871,15 +1871,17 @@
     const sec      = document.getElementById('section1');
     const title    = sec ? sec.querySelector('.intro-title') : null;
     const defGroup = document.getElementById('m1-defgroup');
+    const defCard  = document.getElementById('m1-defcard');
     const atomos   = document.getElementById('m1-atomos');
     const atomCv   = document.getElementById('m1-atom');
     const eFlow    = document.getElementById('m1-energyflow');
     const T = '.7s cubic-bezier(.4,0,.2,1)';
 
     // mede posições reais antes de qualquer transform
-    const secR     = sec  ? sec.getBoundingClientRect()    : null;
-    const atomosR  = atomos ? atomos.getBoundingClientRect() : null;
-    const cvR      = atomCv ? atomCv.getBoundingClientRect() : null;
+    const secR     = sec     ? sec.getBoundingClientRect()     : null;
+    const atomosR  = atomos  ? atomos.getBoundingClientRect()  : null;
+    const cvR      = atomCv  ? atomCv.getBoundingClientRect()  : null;
+    const defCardR = defCard ? defCard.getBoundingClientRect() : null;
 
     // quanto o título + defgroup ocupam (para animar a saída)
     const titleH   = title    ? title.offsetHeight   + 12 : 0;
@@ -1895,10 +1897,9 @@
       el.style.pointerEvents = 'none';
     });
 
-    // Átomos sobe até a posição do título (topo da área de conteúdo)
-    if (atomos && atomosR && secR) {
-      const titleTop = title ? title.getBoundingClientRect().top : secR.top + 16;
-      const slideUp  = atomosR.top - titleTop;
+    // Átomos sobe até a posição onde estava a caixa "Definição"
+    if (atomos && atomosR && defCardR) {
+      const slideUp  = atomosR.top - defCardR.top;
       atomos.style.transition = `transform ${T}`;
       atomos.style.transform  = `translateY(-${slideUp}px)`;
 
@@ -1909,7 +1910,7 @@
       }
 
       // energia química/seta/elétrica sobem até onde o átomo estava
-      if (eFlow && cvR) {
+      if (eFlow && cvR && secR) {
         const cvMid  = cvR.top + cvR.height / 2;
         const efMid  = secR.bottom - 176;
         const efMove = efMid - cvMid;
