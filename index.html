@@ -1923,7 +1923,7 @@
   /* salto rápido pela barra de navegação:
      leva direto ao FIM de uma faixa, concluindo todos os eventos anteriores
      (como se o usuário tivesse escutado os áudios até ali).
-     target: 0 = fim do dialogo1 · 2 = fim do dialogo1.2 · 3 = fim do dialogo1.3 */
+     target: 0 = fim do dialogo1 · 2 = fim do dialogo1.2 · 3 = fim do dialogo1.4 */
   function m1JumpTo(target) {
     // para tudo e limpa o palco
     ['dialogo1', 'dialogo1_1', 'dialogo1_2', 'dialogo1_3', 'dialogo1_4'].forEach(id => {
@@ -1957,37 +1957,38 @@
       M1.idx = 3;                              // próxima faixa: dialogo1.3 (pela caixa)
       if (btn) btn.classList.add('btn-hidden');
     } else if (target === 3) {
-      // fim do dialogo1.3 → átomo se MONTA + energia química/seta/elétrica entram em sequência
+      // ESTADO FINAL do dialogo1.4: slide-up + reação química + energia elétrica + pilhas + rótulo
       if (card) card.classList.add('in');
       if (typed) typed.textContent = DEF_TEXT;
       M1.t1 = { typing: false };
       M1.defMode = 'interactive';
       beginTrack2(); M1.t2.atomos = true; M1.t2.done = true;
-      if (ab) { ab.classList.remove('in'); void ab.offsetWidth; ab.classList.add('in'); }
-      M1.idx = 4;                              // próxima faixa: dialogo1.4 (pelo play)
-      if (btn) { btn.classList.remove('btn-hidden'); btn.textContent = '▶'; btn.classList.remove('playing'); }
-
-      // reconstrói o átomo ANIMANDO (como na escuta normal); guarda contra saltos repetidos
-      const seq = (M1.jumpSeq = (M1.jumpSeq || 0) + 1);
-      beginTrack3();                           // núcleo/elétrons começam ocultos; energia some
-      M1.t3.energia = M1.t3.arrow = M1.t3.eletrica = true;  // não refazer via cue
-      M1.atom.nucleus = true; M1.atom.nucleusT = 0;          // núcleo surge com "pop"
-      M1.atom.electrons.forEach(e => { e.revealed = false; });
+      // caixa "Átomos" visível e ASSENTADA (mata a animação p/ medir a posição certa no slide)
+      if (ab) { ab.classList.remove('in'); void ab.offsetWidth; ab.classList.add('in'); ab.style.animation = 'none'; }
+      // átomo completo (instantâneo)
+      beginTrack3();
+      M1.atom.nucleus = true; M1.atom.nucleusT = 9999;
+      M1.atom.electrons.forEach(e => { e.revealed = true; e.revealT = 9999; });
+      M1.t3.energia = M1.t3.arrow = M1.t3.eletrica = true;
+      const ar0 = document.getElementById('m1-arrow');    if (ar0) ar0.classList.add('in');
+      const el0 = document.getElementById('m1-eletrica'); if (el0) el0.classList.add('in');
       startM1Loop();
-      // elétrons surgem um a um
-      M1.atom.electrons.forEach((e, i) => {
-        setTimeout(() => {
-          if (M1.jumpSeq !== seq || !M1.atom) return;
-          e.revealed = true; e.revealT = 0; buzz(18); startM1Loop();
-        }, 260 + i * 210);
-      });
-      // energia química → seta → elétrica logo depois
-      [['m1-energia', 1200], ['m1-arrow', 1450], ['m1-eletrica', 1700]].forEach(([id, ms]) => {
-        setTimeout(() => {
-          if (M1.jumpSeq !== seq) return;
-          const el = document.getElementById(id); if (el) el.classList.add('in'); buzz(22);
-        }, ms);
-      });
+
+      // slide-up (mede as posições atuais e anima título/Átomos/átomo/energia)
+      beginTrack4();
+
+      // aplica o estado final dos eventos do dialogo1.4 (energia química já substituída)
+      const s = M1.t4;
+      if (s) { s.tvoff = s.reacao = s.pReacao = s.pEletrica = s.batteries = s.pilhas = true; }
+      const ef = s ? (s.efMove || 0) : 0;
+      const rea = document.getElementById('m1-reacao'); if (rea) rea.classList.add('in');
+      const bat = document.getElementById('m1-batteries');
+      if (bat) { bat.style.bottom = (228 + ef) + 'px'; bat.classList.remove('in'); void bat.offsetWidth; bat.classList.add('in'); }
+      const pl = document.getElementById('m1-pilhas-label');
+      if (pl) { pl.style.bottom = (292 + ef) + 'px'; pl.classList.add('in'); }
+
+      M1.idx = 4;                              // última faixa (dialogo1.4 concluído)
+      if (btn) { btn.classList.remove('btn-hidden'); btn.textContent = '▶'; btn.classList.remove('playing'); }
     }
     buzz([30, 40, 30]);
   }
