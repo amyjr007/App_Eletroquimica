@@ -1975,7 +1975,7 @@
       M1.idx = 3;                              // próxima faixa: dialogo1.3 (pela caixa)
       if (btn) btn.classList.add('btn-hidden');
     } else if (target === 3) {
-      // ESTADO FINAL do dialogo1.4: slide-up + reação química + energia elétrica + pilhas + rótulo
+      // FIM do dialogo1.3 (todos os eventos completos) → dispara o dialogo1.4 do início, com seus próprios eventos
       if (card) card.classList.add('in');
       if (typed) typed.textContent = DEF_TEXT;
       M1.t1 = { typing: false };
@@ -1992,21 +1992,12 @@
       const el0 = document.getElementById('m1-eletrica'); if (el0) el0.classList.add('in');
       startM1Loop();
 
-      // slide-up (mede as posições atuais e anima título/Átomos/átomo/energia)
+      // dispara o dialogo1.4 do começo (slide-up + seus próprios eventos ao longo do áudio)
+      M1.idx = 4;
       beginTrack4();
-
-      // aplica o estado final dos eventos do dialogo1.4 (energia química já substituída)
-      const s = M1.t4;
-      if (s) { s.tvoff = s.reacao = s.pReacao = s.pEletrica = s.batteries = s.pilhas = true; }
-      const ef = s ? (s.efMove || 0) : 0;
-      const rea = document.getElementById('m1-reacao'); if (rea) rea.classList.add('in');
-      const bat = document.getElementById('m1-batteries');
-      if (bat) { bat.style.bottom = (228 + ef) + 'px'; bat.classList.remove('in'); void bat.offsetWidth; bat.classList.add('in'); }
-      const pl = document.getElementById('m1-pilhas-label');
-      if (pl) { pl.style.bottom = (292 + ef) + 'px'; pl.classList.add('in'); }
-
-      M1.idx = 4;                              // última faixa (dialogo1.4 concluído)
-      if (btn) { btn.classList.remove('btn-hidden'); btn.textContent = '▶'; btn.classList.remove('playing'); }
+      const a4 = document.getElementById('dialogo1_4');
+      if (a4) { a4.currentTime = 0; a4.play().catch(() => {}); }
+      if (btn) { btn.textContent = '⏸'; btn.classList.add('playing'); btn.classList.remove('btn-hidden'); }
     }
     buzz([30, 40, 30]);
   }
