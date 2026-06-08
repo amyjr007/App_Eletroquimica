@@ -976,12 +976,8 @@
     .energy-arrow.in { opacity: 1; clip-path: inset(0 0 0 0); }
     .energy-arrow svg { width: clamp(64px, 13vw, 124px); height: auto; display: block; }
 
-    /* seta vertical (↓): revela de cima para baixo */
-    .energy-arrow.reverse {
-      clip-path: inset(100% 0 0 0);
-    }
-    .energy-arrow.reverse.in { clip-path: inset(0 0 0 0); }
-    .energy-arrow.reverse svg { width: auto; height: clamp(48px, 10vw, 85px); }
+    /* seta espelhada (←): mesma animação da seta superior, mesma metade (baixo), direção oposta */
+    .energy-arrow.reverse { transform: scaleX(-1); }
 
     /* "Processo forçado" (dialogo1.6) — mesma fonte/estilo do "Processo espontâneo" */
     .m1-forcado-label {
@@ -1479,20 +1475,20 @@
         </svg>
       </div>
 
-      <!-- seta vertical (↓): aparece aos 4.7s do dialogo1.6, revela de cima pra baixo -->
+      <!-- seta ← (metade inferior da forma simétrica, espelhada): aparece aos 4.7s do dialogo1.6 -->
       <div class="energy-arrow reverse" id="m1-arrow2" aria-hidden="true">
-        <svg viewBox="0 0 30 130">
+        <svg viewBox="0 30 130 30">
           <defs>
-            <linearGradient id="arrGrad2" x1="0" y1="0" x2="0" y2="1">
+            <linearGradient id="arrGrad2" x1="0" y1="0" x2="1" y2="0">
               <stop offset="0" stop-color="#00e5ff"/>
               <stop offset="1" stop-color="#ffee00"/>
             </linearGradient>
           </defs>
           <g fill="url(#arrGrad2)">
-            <rect x="3"  y="2"  width="24" height="7"  rx="1.5"/>
-            <rect x="3"  y="14" width="24" height="7"  rx="1.5"/>
-            <rect x="7"  y="27" width="16" height="46" rx="2"/>
-            <polygon points="0,66 30,66 15,122"/>
+            <rect x="2"  y="18" width="7"  height="24" rx="1.5"/>
+            <rect x="14" y="18" width="7"  height="24" rx="1.5"/>
+            <rect x="27" y="22" width="46" height="16" rx="2"/>
+            <polygon points="66,8 122,30 66,52"/>
           </g>
         </svg>
       </div>
