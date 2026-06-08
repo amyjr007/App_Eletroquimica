@@ -1871,24 +1871,21 @@
     const sec      = document.getElementById('section1');
     const title    = sec ? sec.querySelector('.intro-title') : null;
     const defGroup = document.getElementById('m1-defgroup');
-    const defCard  = document.getElementById('m1-defcard');
     const atomos   = document.getElementById('m1-atomos');
     const atomCv   = document.getElementById('m1-atom');
     const eFlow    = document.getElementById('m1-energyflow');
     const T = '.7s cubic-bezier(.4,0,.2,1)';
 
-    // mede posições reais antes de qualquer transform
-    const secR     = sec     ? sec.getBoundingClientRect()     : null;
-    const atomosR  = atomos  ? atomos.getBoundingClientRect()  : null;
-    const cvR      = atomCv  ? atomCv.getBoundingClientRect()  : null;
-    const defCardR = defCard ? defCard.getBoundingClientRect() : null;
-
-    // quanto o título + defgroup ocupam (para animar a saída)
-    const titleH   = title    ? title.offsetHeight   + 12 : 0;
-    const defH     = defGroup ? defGroup.offsetHeight + 12 : 0;
-    const exitShift = titleH + defH;
+    // mede TODAS as posições reais ANTES de aplicar qualquer transform
+    const secR     = sec    ? sec.getBoundingClientRect()    : null;
+    const titleR   = title  ? title.getBoundingClientRect()  : null;
+    const atomosR  = atomos ? atomos.getBoundingClientRect() : null;
+    const cvR      = atomCv ? atomCv.getBoundingClientRect() : null;
 
     // título e definição: sobem e somem
+    const titleH   = title    ? title.offsetHeight   + 14 : 0;
+    const defH     = defGroup ? defGroup.offsetHeight + 16 : 0;
+    const exitShift = titleH + defH;
     [title, defGroup].forEach(el => {
       if (!el) return;
       el.style.transition  = `transform ${T}, opacity .5s ease`;
@@ -1897,13 +1894,13 @@
       el.style.pointerEvents = 'none';
     });
 
-    // Átomos sobe até a posição onde estava a caixa "Definição"
-    if (atomos && atomosR && defCardR) {
-      const slideUp  = atomosR.top - defCardR.top;
+    // Átomos sobe até logo abaixo da top bar (onde estava o título)
+    if (atomos && atomosR && titleR) {
+      const slideUp = atomosR.top - titleR.top;
       atomos.style.transition = `transform ${T}`;
       atomos.style.transform  = `translateY(-${slideUp}px)`;
 
-      // canvas do átomo sobe o mesmo valor (mantém distância)
+      // canvas do átomo sobe o mesmo valor (mantém a distância para "Átomos")
       if (atomCv) {
         atomCv.style.transition = `transform ${T}`;
         atomCv.style.transform  = `translateY(-${slideUp}px)`;
@@ -2333,14 +2330,22 @@
     const ccv  = document.getElementById('m1-circuit-canvas'); if (ccv) ccv.getContext('2d').clearRect(0,0,ccv.width,ccv.height);
     setDevices(false);
     const espon = document.getElementById('m1-espontaneo'); if (espon) { espon.classList.remove('in'); espon.classList.remove('pulse'); }
-    M1.t1 = null; M1.t2 = null; M1.t3 = null;
+    M1.t1 = null; M1.t2 = null; M1.t3 = null; M1.t4 = null;
     const cv = document.getElementById('m1-atom');
     if (cv) { cv.classList.remove('in'); cv.getContext('2d').clearRect(0, 0, cv.width, cv.height); }
+    // limpa os transforms aplicados pelo slide-up da faixa 4 (dialogo1.4)
+    const secEl = document.getElementById('section1');
+    const ttlEl = secEl ? secEl.querySelector('.intro-title') : null;
+    [ttlEl, grp, at, cv, bflow].forEach(el => {
+      if (!el) return;
+      el.style.transition = ''; el.style.transform = '';
+      el.style.opacity = ''; el.style.pointerEvents = '';
+    });
   }
 
   /* reset total ao (re)entrar no módulo */
   function m1Reset() {
-    ['dialogo1', 'dialogo1_1', 'dialogo1_2', 'dialogo1_3'].forEach(id => {
+    ['dialogo1', 'dialogo1_1', 'dialogo1_2', 'dialogo1_3', 'dialogo1_4'].forEach(id => {
       const a = document.getElementById(id);
       if (a) { a.pause(); a.currentTime = 0; }
     });
@@ -2352,7 +2357,7 @@
   }
 
   // listeners de fim de faixa
-  ['dialogo1', 'dialogo1_1', 'dialogo1_2', 'dialogo1_3'].forEach(id => {
+  ['dialogo1', 'dialogo1_1', 'dialogo1_2', 'dialogo1_3', 'dialogo1_4'].forEach(id => {
     const a = document.getElementById(id);
     if (a) a.addEventListener('ended', m1Ended);
   });
