@@ -948,6 +948,22 @@
       20%,60%         { transform: scale(1.16); }
     }
 
+    /* pulso único de velocidade ajustável (via animation-duration inline) — dialogo1.6 */
+    @keyframes m1PulseOnce {
+      0%,100% { transform: scale(1); }
+      50%     { transform: scale(1.18); }
+    }
+
+    /* pilha das duas setas (dialogo1.6: seta normal + seta reversa) */
+    .m1-arrow-stack {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+      position: relative;
+    }
+
     /* seta (estilo bold: ticks + haste + triângulo) */
     .energy-arrow {
       flex-shrink: 0;
@@ -959,6 +975,46 @@
     }
     .energy-arrow.in { opacity: 1; clip-path: inset(0 0 0 0); }
     .energy-arrow svg { width: clamp(64px, 13vw, 124px); height: auto; display: block; }
+
+    /* seta reversa (direita → esquerda): mesma animação, espelhada e invertida */
+    .energy-arrow.reverse {
+      transform: translateY(-9px) scaleX(-1);
+      clip-path: inset(0 0 0 100%);
+    }
+    .energy-arrow.reverse.in { clip-path: inset(0 0 0 0); }
+
+    /* "Processo forçado" (dialogo1.6) — mesma fonte/estilo do "Processo espontâneo" */
+    .m1-forcado-label {
+      position: absolute; left: 0; right: 0; top: 100%;
+      margin-top: 8px;
+      text-align: center;
+      font-family: 'Orbitron', monospace; font-weight: 700;
+      font-size: clamp(.72rem, 1.9vw, 1.05rem);
+      color: #ffd23f; letter-spacing: .12em;
+      text-shadow: 0 0 18px rgba(255,210,63,.75);
+      opacity: 0;
+      transform: translateX(-50px);
+      transition: opacity .5s ease, transform .5s cubic-bezier(.2,.6,.3,1.2);
+      pointer-events: none;
+      white-space: nowrap;
+    }
+    .m1-forcado-label.in { opacity: 1; transform: translateX(0); }
+
+    /* "Eletrólise" / "Pilhas ou baterias" (dialogo1.6) — mesma fonte/estilo do "Pilhas ou Células voltaicas" */
+    .m1-eletrolise-label {
+      position: absolute; left: 0; right: 0; top: 100%;
+      margin-top: 36px;
+      text-align: center;
+      font-family: 'Orbitron', monospace; font-weight: 700;
+      font-size: clamp(.8rem, 2.2vw, 1.2rem); letter-spacing: .07em;
+      color: #fff; text-shadow: 0 0 18px rgba(255,255,255,.6), 0 0 36px rgba(0,229,255,.4);
+      opacity: 0;
+      transform: translateY(14px) scale(.92);
+      transition: opacity .5s ease, transform .5s cubic-bezier(.2,.7,.2,1);
+      pointer-events: none;
+      white-space: nowrap;
+    }
+    .m1-eletrolise-label.in { opacity: 1; transform: translateY(0) scale(1); }
 
     /* "Energia elétrica" — entrada elétrica (flicker neon) */
     .eletrica-label {
@@ -1405,21 +1461,47 @@
       </div>
     </div>
 
-    <div class="energy-arrow" id="m1-arrow" aria-hidden="true">
-      <svg viewBox="0 0 130 30">
-        <defs>
-          <linearGradient id="arrGrad" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0" stop-color="#00e5ff"/>
-            <stop offset="1" stop-color="#ffee00"/>
-          </linearGradient>
-        </defs>
-        <g fill="url(#arrGrad)">
-          <rect x="2"  y="18" width="7"  height="24" rx="1.5"/>
-          <rect x="14" y="18" width="7"  height="24" rx="1.5"/>
-          <rect x="27" y="22" width="46" height="16" rx="2"/>
-          <polygon points="66,8 122,30 66,52"/>
-        </g>
-      </svg>
+    <div class="m1-arrow-stack" id="m1-arrow-stack">
+      <div class="energy-arrow" id="m1-arrow" aria-hidden="true">
+        <svg viewBox="0 0 130 30">
+          <defs>
+            <linearGradient id="arrGrad" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stop-color="#00e5ff"/>
+              <stop offset="1" stop-color="#ffee00"/>
+            </linearGradient>
+          </defs>
+          <g fill="url(#arrGrad)">
+            <rect x="2"  y="18" width="7"  height="24" rx="1.5"/>
+            <rect x="14" y="18" width="7"  height="24" rx="1.5"/>
+            <rect x="27" y="22" width="46" height="16" rx="2"/>
+            <polygon points="66,8 122,30 66,52"/>
+          </g>
+        </svg>
+      </div>
+
+      <!-- seta reversa (direita → esquerda): aparece aos 4.7s do dialogo1.6 -->
+      <div class="energy-arrow reverse" id="m1-arrow2" aria-hidden="true">
+        <svg viewBox="0 0 130 30">
+          <defs>
+            <linearGradient id="arrGrad2" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stop-color="#00e5ff"/>
+              <stop offset="1" stop-color="#ffee00"/>
+            </linearGradient>
+          </defs>
+          <g fill="url(#arrGrad2)">
+            <rect x="2"  y="18" width="7"  height="24" rx="1.5"/>
+            <rect x="14" y="18" width="7"  height="24" rx="1.5"/>
+            <rect x="27" y="22" width="46" height="16" rx="2"/>
+            <polygon points="66,8 122,30 66,52"/>
+          </g>
+        </svg>
+      </div>
+
+      <!-- "Processo forçado": aparece aos 16s e 59s do dialogo1.6 -->
+      <div class="m1-forcado-label" id="m1-forcado">Processo forçado</div>
+
+      <!-- "Eletrólise" / "Pilhas ou baterias": reaproveita o mesmo rótulo (24s, 41.3s e 55.4s) -->
+      <div class="m1-eletrolise-label" id="m1-eletrolise">Eletrólise</div>
     </div>
 
     <div class="eletrica-label" id="m1-eletrica">
@@ -2301,9 +2383,141 @@
     M1.t6 = { faded: false };
     const fadeIds = ['m1-energia', 'm1-batteries', 'm1-pilhas-label', 'm1-devices', 'm1-espontaneo'];
     fadeIds.forEach(id => { const el = document.getElementById(id); if (el) el.classList.add('m1-scene-fade'); });
+    const ar2 = document.getElementById('m1-arrow2');    if (ar2) ar2.classList.remove('in');
+    const fc  = document.getElementById('m1-forcado');   if (fc)  fc.classList.remove('in');
+    const el6 = document.getElementById('m1-eletrolise');if (el6) el6.classList.remove('in');
     buzz(30);
   }
-  function cueTrack6(tt) {}
+
+  /* dispara N pulsos sequenciais de velocidade ajustável (durMs) num elemento */
+  function m1PulseN(el, times, durMs, gapMs) {
+    if (!el) return;
+    if (gapMs == null) gapMs = 60;
+    const dur = durMs / 1000;
+    let count = 0;
+    const step = () => {
+      if (count >= times) return;
+      count++;
+      el.style.animation = 'none'; void el.offsetWidth;
+      el.style.animation = `m1PulseOnce ${dur}s ease`;
+      el.addEventListener('animationend', () => { el.style.animation = ''; setTimeout(step, gapMs); }, { once: true });
+    };
+    step();
+  }
+
+  /* dispara um pulso único em cada elemento da lista, em sequência (um após o outro) */
+  function m1PulseSequence(els, durMs) {
+    let i = 0;
+    const next = () => {
+      if (i >= els.length) return;
+      const el = els[i++];
+      m1PulseN(el, 1, durMs, 0);
+      setTimeout(next, durMs);
+    };
+    next();
+  }
+
+  function cueTrack6(tt) {
+    const s = M1.t6; if (!s) return;
+    // 4.7s — seta reversa (direita → esquerda) surge embaixo da seta atual
+    if (tt >= 4.7 && !s.arrow2) {
+      s.arrow2 = true;
+      const ar2 = document.getElementById('m1-arrow2'); if (ar2) ar2.classList.add('in');
+      buzz(30);
+    }
+    // 7.8s — duas pulsadas de 0.2s em "Energia elétrica"
+    if (tt >= 7.8 && !s.pulseEletrica1) {
+      s.pulseEletrica1 = true;
+      m1PulseN(document.getElementById('m1-eletrica'), 2, 200);
+      buzz([20, 50, 20]);
+    }
+    // 9.6s — duas pulsadas de 0.2s em "Reação química"
+    if (tt >= 9.6 && !s.pulseReacao1) {
+      s.pulseReacao1 = true;
+      m1PulseN(document.getElementById('m1-reacao'), 2, 200);
+      buzz([20, 50, 20]);
+    }
+    // 16s — "Processo forçado" surge embaixo da seta de baixo
+    if (tt >= 16 && !s.forcado1) {
+      s.forcado1 = true;
+      const fc = document.getElementById('m1-forcado');
+      if (fc) { fc.textContent = 'Processo forçado'; fc.classList.remove('in'); void fc.offsetWidth; fc.classList.add('in'); }
+      buzz(30);
+    }
+    // 24s — "Eletrólise" surge embaixo de "Processo forçado"
+    if (tt >= 24 && !s.eletrolise1) {
+      s.eletrolise1 = true;
+      const el = document.getElementById('m1-eletrolise');
+      if (el) { el.textContent = 'Eletrólise'; el.classList.remove('in'); void el.offsetWidth; el.classList.add('in'); }
+      buzz(30);
+    }
+    // 35.5s — duas pulsadas de 0.3s em "Reação química"
+    if (tt >= 35.5 && !s.pulseReacao2) {
+      s.pulseReacao2 = true;
+      m1PulseN(document.getElementById('m1-reacao'), 2, 300);
+      buzz([25, 60, 25]);
+    }
+    // 37s — duas pulsadas de 0.3s em "Energia elétrica"
+    if (tt >= 37 && !s.pulseEletrica2) {
+      s.pulseEletrica2 = true;
+      m1PulseN(document.getElementById('m1-eletrica'), 2, 300);
+      buzz([25, 60, 25]);
+    }
+    // 41.3s — o rótulo passa a exibir "Pilhas ou baterias"
+    if (tt >= 41.3 && !s.pilhasBaterias) {
+      s.pilhasBaterias = true;
+      const el = document.getElementById('m1-eletrolise');
+      if (el) { el.textContent = 'Pilhas ou baterias'; el.classList.remove('in'); void el.offsetWidth; el.classList.add('in'); }
+      buzz(30);
+    }
+    // 43s — "Processo espontâneo" reaparece
+    if (tt >= 43 && !s.espontaneo2) {
+      s.espontaneo2 = true;
+      const esp = document.getElementById('m1-espontaneo');
+      if (esp) {
+        esp.textContent = 'Processo espontâneo';
+        esp.classList.remove('m1-scene-fade');
+        esp.classList.remove('in'); void esp.offsetWidth; esp.classList.add('in');
+      }
+      buzz(30);
+    }
+    // 49s — sequência rápida de pulsos (0.8s cada): energia elétrica → seta → reação química
+    if (tt >= 49 && !s.sequence) {
+      s.sequence = true;
+      m1PulseSequence([
+        document.getElementById('m1-eletrica'),
+        document.getElementById('m1-arrow'),
+        document.getElementById('m1-reacao')
+      ], 800);
+      buzz([30, 60, 30, 60, 30]);
+    }
+    // 51.3s — duas pulsadas de 0.3s em "Energia elétrica"
+    if (tt >= 51.3 && !s.pulseEletrica3) {
+      s.pulseEletrica3 = true;
+      m1PulseN(document.getElementById('m1-eletrica'), 2, 300);
+      buzz([25, 60, 25]);
+    }
+    // 52.4s — duas pulsadas de 0.3s em "Reação química"
+    if (tt >= 52.4 && !s.pulseReacao3) {
+      s.pulseReacao3 = true;
+      m1PulseN(document.getElementById('m1-reacao'), 2, 300);
+      buzz([25, 60, 25]);
+    }
+    // 55.4s — "Eletrólise" reaparece embaixo das setas
+    if (tt >= 55.4 && !s.eletrolise2) {
+      s.eletrolise2 = true;
+      const el = document.getElementById('m1-eletrolise');
+      if (el) { el.textContent = 'Eletrólise'; el.classList.remove('in'); void el.offsetWidth; el.classList.add('in'); }
+      buzz(30);
+    }
+    // 59s — "Processo forçado" reaparece
+    if (tt >= 59 && !s.forcado2) {
+      s.forcado2 = true;
+      const fc = document.getElementById('m1-forcado');
+      if (fc) { fc.classList.remove('in'); void fc.offsetWidth; fc.classList.add('in'); }
+      buzz(30);
+    }
+  }
 
   /* repete o pulso grande N vezes no texto espontâneo */
   function pulseEspontaneoBig(el, times) {
@@ -2720,9 +2934,12 @@
     const typed = document.getElementById('m1-typed'); if (typed) { typed.innerHTML = ''; typed.classList.remove('typed-highlight'); }
     const at = document.getElementById('m1-atomos'); if (at) { at.classList.remove('in'); at.classList.remove('box-pulse'); }
     const en = document.getElementById('m1-energia'); if (en) { en.classList.remove('in'); en.classList.remove('pulse'); en.classList.remove('tv-off'); }
-    const rea = document.getElementById('m1-reacao'); if (rea) { rea.classList.remove('in'); rea.classList.remove('pulse-twice'); }
+    const rea = document.getElementById('m1-reacao'); if (rea) { rea.classList.remove('in'); rea.classList.remove('pulse-twice'); rea.style.animation = ''; }
     const arr = document.getElementById('m1-arrow');    if (arr) arr.classList.remove('in');
-    const elt = document.getElementById('m1-eletrica'); if (elt) { elt.classList.remove('in'); elt.classList.remove('pulse-twice'); }
+    const arr2 = document.getElementById('m1-arrow2');  if (arr2) arr2.classList.remove('in');
+    const fc6  = document.getElementById('m1-forcado');    if (fc6)  { fc6.classList.remove('in'); fc6.style.animation = ''; }
+    const el6  = document.getElementById('m1-eletrolise'); if (el6)  { el6.classList.remove('in'); el6.textContent = 'Eletrólise'; el6.style.animation = ''; }
+    const elt = document.getElementById('m1-eletrica'); if (elt) { elt.classList.remove('in'); elt.classList.remove('pulse-twice'); elt.style.animation = ''; }
     const plab = document.getElementById('m1-pilhas-label'); if (plab) { plab.classList.remove('in'); plab.style.bottom = ''; plab.style.transition = ''; plab.style.opacity = ''; }
     const bat = document.getElementById('m1-batteries');
     if (bat) { bat.classList.remove('in'); bat.classList.remove('t3-lift'); bat.style.bottom = ''; bat.style.transition = ''; bat.style.pointerEvents = ''; bat.style.cursor = ''; }
