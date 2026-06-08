@@ -3482,7 +3482,16 @@
   /* ─── PWA: registra o service worker (cache offline + instalável) ─── */
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js').catch(err => console.warn('SW falhou:', err));
+      navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
+        .catch(err => console.warn('SW falhou:', err));
+    });
+    // Quando uma nova versão do SW assume o controle, recarrega a página
+    // para garantir que o usuário veja o conteúdo atualizado.
+    let recarregando = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (recarregando) return;
+      recarregando = true;
+      window.location.reload();
     });
   }
 
