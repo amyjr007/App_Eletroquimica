@@ -1874,12 +1874,17 @@
     const atomos   = document.getElementById('m1-atomos');
     const atomCv   = document.getElementById('m1-atom');
     const eFlow    = document.getElementById('m1-energyflow');
+    const T = '.7s cubic-bezier(.4,0,.2,1)';
 
+    // mede posições reais antes de qualquer transform
+    const secR     = sec  ? sec.getBoundingClientRect()    : null;
+    const atomosR  = atomos ? atomos.getBoundingClientRect() : null;
+    const cvR      = atomCv ? atomCv.getBoundingClientRect() : null;
+
+    // quanto o título + defgroup ocupam (para animar a saída)
     const titleH   = title    ? title.offsetHeight   + 12 : 0;
     const defH     = defGroup ? defGroup.offsetHeight + 12 : 0;
-    const exitShift = titleH + defH;   // quanto os itens que saem sobem
-    const slideUp   = titleH;          // Átomos fica onde estava o def-group (Definição)
-    const T = '.7s cubic-bezier(.4,0,.2,1)';
+    const exitShift = titleH + defH;
 
     // título e definição: sobem e somem
     [title, defGroup].forEach(el => {
@@ -1890,22 +1895,27 @@
       el.style.pointerEvents = 'none';
     });
 
-    // caixa "Átomos" e canvas do átomo: sobem só o height do título
-    [atomos, atomCv].forEach(el => {
-      if (!el) return;
-      el.style.transition = `transform ${T}`;
-      el.style.transform  = `translateY(-${slideUp}px)`;
-    });
+    // Átomos sobe até a posição do título (topo da área de conteúdo)
+    if (atomos && atomosR && secR) {
+      const titleTop = title ? title.getBoundingClientRect().top : secR.top + 16;
+      const slideUp  = atomosR.top - titleTop;
+      atomos.style.transition = `transform ${T}`;
+      atomos.style.transform  = `translateY(-${slideUp}px)`;
 
-    // energia química/seta/elétrica: sobem até onde o átomo estava
-    if (eFlow && atomCv && sec) {
-      const secR   = sec.getBoundingClientRect();
-      const cvR    = atomCv.getBoundingClientRect();
-      const cvMid  = cvR.top + cvR.height / 2;
-      const efMid  = secR.bottom - 176;
-      const efMove = efMid - cvMid;
-      eFlow.style.transition = `transform ${T}`;
-      eFlow.style.transform  = `translateY(-${efMove}px)`;
+      // canvas do átomo sobe o mesmo valor (mantém distância)
+      if (atomCv) {
+        atomCv.style.transition = `transform ${T}`;
+        atomCv.style.transform  = `translateY(-${slideUp}px)`;
+      }
+
+      // energia química/seta/elétrica sobem até onde o átomo estava
+      if (eFlow && cvR) {
+        const cvMid  = cvR.top + cvR.height / 2;
+        const efMid  = secR.bottom - 176;
+        const efMove = efMid - cvMid;
+        eFlow.style.transition = `transform ${T}`;
+        eFlow.style.transform  = `translateY(-${efMove}px)`;
+      }
     }
 
     M1.t4 = {};
