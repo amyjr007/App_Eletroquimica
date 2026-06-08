@@ -981,20 +981,19 @@
 
     /* "Processo forçado" (dialogo1.6) — mesma fonte/estilo do "Processo espontâneo" */
     .m1-forcado-label {
-      position: absolute; left: 0; right: 0; top: 100%;
+      position: absolute; top: 100%; left: 50%; width: max-content;
       margin-top: 8px;
-      text-align: center;
       font-family: 'Orbitron', monospace; font-weight: 700;
       font-size: clamp(.72rem, 1.9vw, 1.05rem);
       color: #ffd23f; letter-spacing: .12em;
       text-shadow: 0 0 18px rgba(255,210,63,.75);
       opacity: 0;
-      transform: translateX(50px);
+      transform: translate(calc(-50% + 50px), 0);
       transition: opacity .5s ease, transform .5s cubic-bezier(.2,.6,.3,1.2);
       pointer-events: none;
       white-space: nowrap;
     }
-    .m1-forcado-label.in { opacity: 1; transform: translateX(0); }
+    .m1-forcado-label.in { opacity: 1; transform: translate(-50%, 0); }
 
     /* "Eletrólise" / "Pilhas ou baterias" (dialogo1.6) — mesma fonte/estilo do "Pilhas ou Células voltaicas" */
     .m1-eletrolise-label {
@@ -1012,21 +1011,36 @@
     }
     .m1-eletrolise-label.in { opacity: 1; transform: translateY(0) scale(1); }
 
-    /* "Pilhas ou baterias" (41.3s) — aparece ACIMA das setas, entra de cima */
+    /* "Pilhas ou baterias" (41.3s) — aparece ACIMA das setas, entra de cima, centralizado */
     .m1-above-label {
-      position: absolute; bottom: 100%; left: 0; right: 0;
+      position: absolute; bottom: 100%; left: 50%; width: max-content;
       margin-bottom: 8px;
-      text-align: center;
       font-family: 'Orbitron', monospace; font-weight: 700;
       font-size: clamp(.8rem, 2.2vw, 1.2rem); letter-spacing: .07em;
       color: #fff; text-shadow: 0 0 18px rgba(255,255,255,.6), 0 0 36px rgba(0,229,255,.4);
       opacity: 0;
-      transform: translateY(-14px) scale(.92);
+      transform: translate(-50%, -14px) scale(.92);
       transition: opacity .5s ease, transform .5s cubic-bezier(.2,.7,.2,1);
       pointer-events: none;
       white-space: nowrap;
     }
-    .m1-above-label.in { opacity: 1; transform: translateY(0) scale(1); }
+    .m1-above-label.in { opacity: 1; transform: translate(-50%, 0) scale(1); }
+
+    /* "Processo espontâneo" (45s dialogo1.6) — entra da direita, depois sobe */
+    .m1-esp6 {
+      position: absolute; bottom: 100%; left: 50%; width: max-content;
+      margin-bottom: 8px;
+      font-family: 'Orbitron', monospace; font-weight: 700;
+      font-size: clamp(.72rem, 1.9vw, 1.05rem); letter-spacing: .12em;
+      color: #ffd23f; text-shadow: 0 0 18px rgba(255,210,63,.75);
+      opacity: 0;
+      transform: translate(calc(-50% + 50px), 0);
+      transition: opacity .5s ease, transform .5s cubic-bezier(.2,.6,.3,1.2);
+      pointer-events: none;
+      white-space: nowrap;
+    }
+    .m1-esp6.in { opacity: 1; transform: translate(-50%, 0); }
+    .m1-esp6.raised { transform: translate(-50%, -28px); }
 
     /* "Energia elétrica" — entrada elétrica (flicker neon) */
     .eletrica-label {
@@ -1517,6 +1531,9 @@
 
       <!-- "Pilhas ou baterias": aparece ACIMA das setas no tempo 41.3s -->
       <div class="m1-above-label" id="m1-pilhas-bat">Pilhas ou baterias</div>
+
+      <!-- "Processo espontâneo": aparece no lugar de Pilhas ou baterias (45s) e sobe -->
+      <div class="m1-esp6" id="m1-esp6"></div>
     </div>
 
     <div class="eletrica-label" id="m1-eletrica">
@@ -2428,6 +2445,7 @@
     const fc  = document.getElementById('m1-forcado');   if (fc)  fc.classList.remove('in');
     const el6 = document.getElementById('m1-eletrolise');if (el6) el6.classList.remove('in');
     const pb  = document.getElementById('m1-pilhas-bat');if (pb)  pb.classList.remove('in');
+    const es6 = document.getElementById('m1-esp6');     if (es6) { es6.classList.remove('in', 'raised'); es6.textContent = ''; }
     buzz(30);
   }
 
@@ -2514,19 +2532,18 @@
       if (pb) { pb.classList.remove('in'); void pb.offsetWidth; pb.classList.add('in'); }
       buzz(30);
     }
-    // 45s — "Processo espontâneo" reaparece, entra da direita
+    // 45s — "Processo espontâneo" entra da direita no lugar de "Pilhas ou baterias", depois sobe
     if (tt >= 45 && !s.espontaneo2) {
       s.espontaneo2 = true;
-      const esp = document.getElementById('m1-espontaneo');
-      if (esp) {
-        esp.textContent = 'Processo espontâneo';
-        esp.classList.remove('m1-scene-fade');
-        esp.classList.remove('in');
-        esp.style.opacity = '0';
-        esp.style.transform = 'translateX(50px)';
-        void esp.offsetWidth;
-        esp.style.opacity = '1';
-        esp.style.transform = 'translateX(0)';
+      const pb = document.getElementById('m1-pilhas-bat');
+      if (pb) pb.classList.remove('in');
+      const esp6 = document.getElementById('m1-esp6');
+      if (esp6) {
+        esp6.textContent = 'Processo espontâneo';
+        esp6.classList.remove('in', 'raised');
+        void esp6.offsetWidth;
+        esp6.classList.add('in');
+        setTimeout(() => { esp6.classList.add('raised'); }, 700);
       }
       buzz(30);
     }
@@ -2989,6 +3006,7 @@
     const fc6  = document.getElementById('m1-forcado');    if (fc6)  { fc6.classList.remove('in'); fc6.style.animation = ''; }
     const el6  = document.getElementById('m1-eletrolise'); if (el6)  { el6.classList.remove('in'); el6.textContent = 'Eletrólise'; el6.style.animation = ''; }
     const pb6  = document.getElementById('m1-pilhas-bat'); if (pb6)  pb6.classList.remove('in');
+    const esp6r = document.getElementById('m1-esp6'); if (esp6r) { esp6r.classList.remove('in', 'raised'); esp6r.textContent = ''; }
     const elt = document.getElementById('m1-eletrica'); if (elt) { elt.classList.remove('in'); elt.classList.remove('pulse-twice'); elt.style.animation = ''; }
     const plab = document.getElementById('m1-pilhas-label'); if (plab) { plab.classList.remove('in'); plab.style.bottom = ''; plab.style.transition = ''; plab.style.opacity = ''; }
     const bat = document.getElementById('m1-batteries');
