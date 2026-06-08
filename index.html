@@ -1364,6 +1364,7 @@
   <audio id="dialogo1_1" src="audio/dialogo1.1.mp3" preload="auto"></audio>
   <audio id="dialogo1_2" src="audio/dialogo1.2.mp3" preload="auto"></audio>
   <audio id="dialogo1_3" src="audio/dialogo1.3.mp3" preload="auto"></audio>
+  <audio id="dialogo1_4" src="audio/dialogo1.4.mp3" preload="auto"></audio>
   <button class="btn-action" id="m1-play">▶</button>
 
 </div>
@@ -1616,7 +1617,8 @@
       { id: 'dialogo1',   begin: beginTrack0, cue: cueTrack0 },
       { id: 'dialogo1_1', begin: beginTrack1, cue: cueTrack1 },
       { id: 'dialogo1_2', begin: beginTrack2, cue: cueTrack2 },
-      { id: 'dialogo1_3', begin: beginTrack3, cue: cueTrack3 }
+      { id: 'dialogo1_3', begin: beginTrack3, cue: cueTrack3 },
+      { id: 'dialogo1_4', begin: beginTrack4, cue: cueTrack4 }
     ]
   };
 
@@ -1698,6 +1700,10 @@
       if (ab) { ab.classList.add('in'); ab.classList.add('box-pulse'); }
       if (M1.t2) M1.t2.done = true;
       buzz([25, 60]);
+    } else if (endedIdx === 3) {
+      // dialogo1.3 acabou → botão play volta para disparar dialogo1.4
+      if (btn) btn.classList.remove('btn-hidden');
+      buzz(30);
     }
   }
 
@@ -1859,6 +1865,51 @@
       buzz([20, 30, 50]);
     }
   }
+
+  /* ── Faixa 4: dialogo1.4 — slide-up: título/definição saem, átomo+energia sobem ── */
+  function beginTrack4() {
+    const sec      = document.getElementById('section1');
+    const title    = sec ? sec.querySelector('.intro-title') : null;
+    const defGroup = document.getElementById('m1-defgroup');
+    const atomos   = document.getElementById('m1-atomos');
+    const atomCv   = document.getElementById('m1-atom');
+    const eFlow    = document.getElementById('m1-energyflow');
+
+    // distância total a subir = altura do título + altura do defgroup + margens
+    const shiftUp = (title    ? title.offsetHeight   + 12 : 0)
+                  + (defGroup ? defGroup.offsetHeight + 12 : 0);
+    const T = '.7s cubic-bezier(.4,0,.2,1)';
+
+    // título e definição: sobem mais e somem
+    [title, defGroup].forEach(el => {
+      if (!el) return;
+      el.style.transition  = `transform ${T}, opacity .5s ease`;
+      el.style.transform   = `translateY(-${shiftUp + 80}px)`;
+      el.style.opacity     = '0';
+      el.style.pointerEvents = 'none';
+    });
+
+    // caixa "Átomos" e canvas do átomo: sobem para preencher o espaço
+    [atomos, atomCv].forEach(el => {
+      if (!el) return;
+      el.style.transition = `transform ${T}`;
+      el.style.transform  = `translateY(-${shiftUp}px)`;
+    });
+
+    // energia química/seta/elétrica: sobem até onde o átomo estava
+    if (eFlow && atomCv && sec) {
+      const secR   = sec.getBoundingClientRect();
+      const cvR    = atomCv.getBoundingClientRect();
+      const cvMid  = cvR.top + cvR.height / 2;
+      const efMid  = secR.bottom - 176;
+      const efMove = efMid - cvMid;
+      eFlow.style.transition = `transform ${T}`;
+      eFlow.style.transform  = `translateY(-${efMove}px)`;
+    }
+
+    M1.t4 = {};
+  }
+  function cueTrack4(tt) { /* eventos futuros */ }
 
   /* ─────────────────────────────────────────────────────────────
      CÓDIGO ADORMECIDO — fluxo de energia + circuito (sem gatilho)
