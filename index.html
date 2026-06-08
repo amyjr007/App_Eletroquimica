@@ -1161,6 +1161,11 @@
     }
     #m1-espontaneo.in  { opacity: 1; transform: translateX(0); }
     #m1-espontaneo.pulse { animation: pulse2 .55s ease; }
+    #m1-espontaneo.pulse-big { animation: pulseBig .5s ease; }
+    @keyframes pulseBig {
+      0%,100% { transform: scale(1); }
+      50%     { transform: scale(1.35); text-shadow: 0 0 28px rgba(255,210,63,1), 0 0 52px rgba(255,210,63,.6); }
+    }
 
     .def-box {
       background: rgba(0,229,255,.04);
@@ -1526,6 +1531,7 @@
   <audio id="dialogo1_2" src="audio/dialogo1.2.mp3" preload="auto"></audio>
   <audio id="dialogo1_3" src="audio/dialogo1.3.mp3" preload="auto"></audio>
   <audio id="dialogo1_4" src="audio/dialogo1.4.mp3" preload="auto"></audio>
+  <audio id="dialogo1_5" src="audio/dialogo1.5.mp3" preload="auto"></audio>
   <button class="btn-action" id="m1-play">▶</button>
 
 </div>
@@ -1779,7 +1785,8 @@
       { id: 'dialogo1_1', begin: beginTrack1, cue: cueTrack1 },
       { id: 'dialogo1_2', begin: beginTrack2, cue: cueTrack2 },
       { id: 'dialogo1_3', begin: beginTrack3, cue: cueTrack3 },
-      { id: 'dialogo1_4', begin: beginTrack4, cue: cueTrack4 }
+      { id: 'dialogo1_4', begin: beginTrack4, cue: cueTrack4 },
+      { id: 'dialogo1_5', begin: beginTrack5, cue: cueTrack5 }
     ]
   };
 
@@ -1833,9 +1840,9 @@
 
     M1.tracks[M1.idx].cue(tt);
     if (M1.atom && M1.atom.active) drawAtom(ts);
-    if (M1.t3 && M1.t3.circuitActive) drawCircuit(ts);
+    if (M1.circuitActive) drawCircuit(ts);
 
-    const keep = (M1.atom && M1.atom.active) || (a && !a.paused) || (M1.t3 && M1.t3.circuitActive);
+    const keep = (M1.atom && M1.atom.active) || (a && !a.paused) || M1.circuitActive;
     M1.raf = keep ? requestAnimationFrame(m1Loop) : 0;
   }
 
@@ -1865,6 +1872,17 @@
       // dialogo1.3 acabou → botão play volta para disparar dialogo1.4
       if (btn) btn.classList.remove('btn-hidden');
       buzz(30);
+    } else if (endedIdx === 4) {
+      // dialogo1.4 acabou → botão play volta para disparar dialogo1.5
+      if (btn) btn.classList.remove('btn-hidden');
+      buzz(30);
+    } else if (endedIdx === 5) {
+      // dialogo1.5 acabou → botão play; libera clique na pilha para rever o zoom
+      if (btn) btn.classList.remove('btn-hidden');
+      M1.pilhaClickable = true;
+      const bat = document.getElementById('m1-batteries');
+      if (bat) { bat.style.pointerEvents = 'auto'; bat.style.cursor = 'pointer'; }
+      buzz([25, 60]);
     }
   }
 
@@ -2213,6 +2231,60 @@
     }
   }
 
+  /* ── Faixa 5: dialogo1.5 — zoom no funcionamento da pilha + dispositivos + espontâneo ── */
+  function beginTrack5() {
+    const ef = (M1.t4 && typeof M1.t4.efMove === 'number') ? M1.t4.efMove : 0;
+    M1.t5 = { ef, zoom1: false, out1: false, devices: false,
+              espontaneo: false, zoom2: false, out2: false, pulse: false };
+  }
+  function cueTrack5(tt) {
+    const s = M1.t5; if (!s) return;
+    const ef = s.ef || 0;
+    // 0.3s — zoom na pilha central (circuito interno)
+    if (tt >= 0.3 && !s.zoom1) { s.zoom1 = true; setCircuitZoom(true); buzz(40); }
+    // 8s — volta ao normal
+    if (tt >= 8 && !s.out1) { s.out1 = true; setCircuitZoom(false); buzz(30); }
+    // 9s — dispositivos portáteis entram em cena
+    if (tt >= 9 && !s.devices) { s.devices = true; setDevices(true); buzz(30); }
+    // 16.5s — "Processo espontâneo" logo acima da seta (ergue pilhas/rótulo p/ abrir espaço)
+    if (tt >= 16.5 && !s.espontaneo) {
+      s.espontaneo = true;
+      const bat = document.getElementById('m1-batteries');
+      if (bat) { bat.style.transition = 'bottom .5s ease'; bat.style.bottom = (268 + ef) + 'px'; }
+      const pl = document.getElementById('m1-pilhas-label');
+      if (pl) { pl.style.transition = 'bottom .5s ease, opacity .5s ease, transform .5s ease'; pl.style.bottom = (330 + ef) + 'px'; }
+      const esp = document.getElementById('m1-espontaneo');
+      if (esp) {
+        esp.textContent = 'Processo espontâneo';
+        esp.style.bottom = (220 + ef) + 'px';
+        esp.classList.remove('in'); void esp.offsetWidth; esp.classList.add('in');
+      }
+      buzz(30);
+    }
+    // 19s — zoom de novo na pilha + dispositivos somem
+    if (tt >= 19 && !s.zoom2) { s.zoom2 = true; setDevices(false); setCircuitZoom(true); buzz(40); }
+    // 26s — volta ao normal
+    if (tt >= 26 && !s.out2) { s.out2 = true; setCircuitZoom(false); buzz(30); }
+    // 30s — 2 pulsadas grandes (0.5s) no "espontâneo"
+    if (tt >= 30 && !s.pulse) {
+      s.pulse = true;
+      const esp = document.getElementById('m1-espontaneo');
+      if (esp) pulseEspontaneoBig(esp, 2);
+      buzz([40, 80, 40]);
+    }
+  }
+  /* repete o pulso grande N vezes no texto espontâneo */
+  function pulseEspontaneoBig(el, times) {
+    let count = 0;
+    const doPulse = () => {
+      if (count >= times) return;
+      count++;
+      el.classList.remove('pulse-big'); void el.offsetWidth; el.classList.add('pulse-big');
+      el.addEventListener('animationend', () => { el.classList.remove('pulse-big'); setTimeout(doPulse, 70); }, { once: true });
+    };
+    doPulse();
+  }
+
   /* ─────────────────────────────────────────────────────────────
      CÓDIGO ADORMECIDO — fluxo de energia + circuito (sem gatilho)
      Mantido para reuso posterior em faixas dialogo1.4+
@@ -2466,21 +2538,23 @@
   function setCircuitZoom(show) {
     const wrap = document.getElementById('m1-circuit-wrap');
     const back = document.getElementById('m1-zoom-backdrop');
-    const bat  = document.getElementById('m1-batteries');
-    const flow = document.getElementById('m1-energyflow');
+    const hide = [
+      document.getElementById('m1-batteries'),
+      document.getElementById('m1-energyflow'),
+      document.getElementById('m1-pilhas-label'),
+      document.getElementById('m1-espontaneo')
+    ];
     if (show) {
       if (back) back.classList.add('in');
-      if (bat)  bat.style.opacity  = '0';
-      if (flow) flow.style.opacity = '0';
+      hide.forEach(e => { if (e) e.style.opacity = '0'; });
       if (wrap) wrap.classList.add('in');
-      if (M1.t3) M1.t3.circuitActive = true;
+      M1.circuitActive = true;
       startM1Loop();
     } else {
       if (wrap) wrap.classList.remove('in');
       if (back) back.classList.remove('in');
-      if (bat)  bat.style.opacity  = '';
-      if (flow) flow.style.opacity = '';
-      if (M1.t3) M1.t3.circuitActive = false;
+      hide.forEach(e => { if (e) e.style.opacity = ''; });
+      M1.circuitActive = false;
     }
   }
 
@@ -2616,17 +2690,18 @@
     const rea = document.getElementById('m1-reacao'); if (rea) { rea.classList.remove('in'); rea.classList.remove('pulse-twice'); }
     const arr = document.getElementById('m1-arrow');    if (arr) arr.classList.remove('in');
     const elt = document.getElementById('m1-eletrica'); if (elt) { elt.classList.remove('in'); elt.classList.remove('pulse-twice'); }
-    const plab = document.getElementById('m1-pilhas-label'); if (plab) { plab.classList.remove('in'); plab.style.bottom = ''; }
+    const plab = document.getElementById('m1-pilhas-label'); if (plab) { plab.classList.remove('in'); plab.style.bottom = ''; plab.style.transition = ''; plab.style.opacity = ''; }
     const bat = document.getElementById('m1-batteries');
-    if (bat) { bat.classList.remove('in'); bat.classList.remove('t3-lift'); bat.style.bottom = ''; }
+    if (bat) { bat.classList.remove('in'); bat.classList.remove('t3-lift'); bat.style.bottom = ''; bat.style.transition = ''; bat.style.pointerEvents = ''; bat.style.cursor = ''; }
     const bflow = document.getElementById('m1-energyflow'); if (bflow) bflow.style.opacity = '';
     if (bat) bat.style.opacity = '';
     const circ = document.getElementById('m1-circuit-wrap'); if (circ) circ.classList.remove('in');
-    const back = document.getElementById('m1-zoom-backdrop'); if (back) back.classList.remove('in');
+    const back = document.getElementById('m1-zoom-backdrop'); if (back) { back.classList.remove('in'); back.style.pointerEvents = ''; }
     const ccv  = document.getElementById('m1-circuit-canvas'); if (ccv) ccv.getContext('2d').clearRect(0,0,ccv.width,ccv.height);
     setDevices(false);
-    const espon = document.getElementById('m1-espontaneo'); if (espon) { espon.classList.remove('in'); espon.classList.remove('pulse'); }
-    M1.t1 = null; M1.t2 = null; M1.t3 = null; M1.t4 = null;
+    const espon = document.getElementById('m1-espontaneo'); if (espon) { espon.classList.remove('in'); espon.classList.remove('pulse'); espon.classList.remove('pulse-big'); espon.style.bottom = ''; espon.textContent = 'espontâneo'; }
+    M1.circuitActive = false; M1.pilhaClickable = false;
+    M1.t1 = null; M1.t2 = null; M1.t3 = null; M1.t4 = null; M1.t5 = null;
     const cv = document.getElementById('m1-atom');
     if (cv) { cv.classList.remove('in'); cv.getContext('2d').clearRect(0, 0, cv.width, cv.height); }
     // limpa os transforms aplicados pelo slide-up da faixa 4 (dialogo1.4)
@@ -2641,7 +2716,7 @@
 
   /* reset total ao (re)entrar no módulo */
   function m1Reset() {
-    ['dialogo1', 'dialogo1_1', 'dialogo1_2', 'dialogo1_3', 'dialogo1_4'].forEach(id => {
+    ['dialogo1', 'dialogo1_1', 'dialogo1_2', 'dialogo1_3', 'dialogo1_4', 'dialogo1_5'].forEach(id => {
       const a = document.getElementById(id);
       if (a) { a.pause(); a.currentTime = 0; }
     });
@@ -2654,7 +2729,7 @@
   }
 
   // listeners de fim de faixa
-  ['dialogo1', 'dialogo1_1', 'dialogo1_2', 'dialogo1_3', 'dialogo1_4'].forEach(id => {
+  ['dialogo1', 'dialogo1_1', 'dialogo1_2', 'dialogo1_3', 'dialogo1_4', 'dialogo1_5'].forEach(id => {
     const a = document.getElementById(id);
     if (a) a.addEventListener('ended', m1Ended);
   });
@@ -2677,6 +2752,25 @@
         closeNav();
         m1JumpTo(t);
       });
+    });
+  })();
+
+  // após o dialogo1.5: clicar na pilha dá zoom no circuito; clicar no fundo volta ao normal
+  (function () {
+    const bat  = document.getElementById('m1-batteries');
+    const back = document.getElementById('m1-zoom-backdrop');
+    if (!bat) return;
+    bat.addEventListener('click', () => {
+      if (!M1.pilhaClickable || M1.circuitActive) return;
+      setCircuitZoom(true);
+      if (back) back.style.pointerEvents = 'auto';
+      buzz(35);
+    });
+    if (back) back.addEventListener('click', () => {
+      if (!M1.pilhaClickable || !M1.circuitActive) return;
+      setCircuitZoom(false);
+      back.style.pointerEvents = '';
+      buzz(20);
     });
   })();
 
