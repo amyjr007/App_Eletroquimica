@@ -851,8 +851,9 @@
       bottom: 176px;
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      padding: 0 28px;
+      justify-content: center;
+      gap: 18px;
+      padding: 0 16px;
       z-index: 6;
       pointer-events: none;
     }
@@ -1952,7 +1953,7 @@
     atom.electrons.forEach((e) => {
       if (!e.revealed) return;
       e.revealT += dt;
-      e.ang += e.orbit.speed * step;
+      e.ang += e.orbit.speed * step * (M1.atomBoost ? 3 : 1);
       if (e.shot) drawShotElectron(g, e, cx, cy, dt);
       else        drawOrbitElectron(g, e, cx, cy);
     });
@@ -2315,19 +2316,19 @@
     });
   })();
 
-  // tocar no átomo (completo) → atira o próximo elétron pra fora; volta em 3s
+  // segurar o dedo no átomo → elétrons 200% mais rápidos enquanto pressionado
   (function () {
     const cv = document.getElementById('m1-atom');
     if (!cv) return;
-    cv.addEventListener('pointerdown', () => {
+    cv.addEventListener('pointerdown', (e) => {
       const atom = M1.atom;
       if (!atom || !atom.active) return;
-      if (!atom.electrons.every(e => e.revealed)) return;   // só com o átomo completo
-      buzz(70);
-      atom.shootIdx = ((atom.shootIdx == null ? -1 : atom.shootIdx) + 1) % atom.electrons.length;
-      shootElectron(atom.electrons[atom.shootIdx], cv);
-      startM1Loop();
+      try { cv.setPointerCapture(e.pointerId); } catch (_) {}
+      M1.atomBoost = true;
+      buzz(25);
     });
+    cv.addEventListener('pointerup',     () => { M1.atomBoost = false; });
+    cv.addEventListener('pointercancel', () => { M1.atomBoost = false; });
   })();
 
   // card "Definição": clique inicia dialogo1.1 (trigger) ou destaca o texto (interactive)
