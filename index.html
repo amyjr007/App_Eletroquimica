@@ -948,10 +948,14 @@
       20%,60%         { transform: scale(1.16); }
     }
 
-    /* pulso único de velocidade ajustável (via animation-duration inline) — dialogo1.6 */
+    /* pulso único de velocidade ajustável — versão normal e versão para seta invertida */
     @keyframes m1PulseOnce {
       0%,100% { transform: scale(1); }
       50%     { transform: scale(1.18); }
+    }
+    @keyframes m1PulseOnceRev {
+      0%,100% { transform: scaleX(-1) scale(1); }
+      50%     { transform: scaleX(-1) scale(1.18); }
     }
 
     /* pilha das duas setas (dialogo1.6: seta normal + seta reversa) */
@@ -1011,10 +1015,10 @@
     }
     .m1-eletrolise-label.in { opacity: 1; transform: translateY(0) scale(1); }
 
-    /* "Pilhas ou baterias" (41.3s) — aparece ACIMA das setas, entra de cima, centralizado */
+    /* "Pilhas ou baterias" (41.3s) — aparece ACIMA das setas, margem maior p/ deixar espaço abaixo */
     .m1-above-label {
       position: absolute; bottom: 100%; left: 50%; width: max-content;
-      margin-bottom: 8px;
+      margin-bottom: 40px;
       font-family: 'Orbitron', monospace; font-weight: 700;
       font-size: clamp(.8rem, 2.2vw, 1.2rem); letter-spacing: .07em;
       color: #fff; text-shadow: 0 0 18px rgba(255,255,255,.6), 0 0 36px rgba(0,229,255,.4);
@@ -1040,7 +1044,6 @@
       white-space: nowrap;
     }
     .m1-esp6.in { opacity: 1; transform: translate(-50%, 0); }
-    .m1-esp6.raised { transform: translate(-50%, -28px); }
 
     /* "Energia elétrica" — entrada elétrica (flicker neon) */
     .eletrica-label {
@@ -2458,8 +2461,9 @@
     const step = () => {
       if (count >= times) return;
       count++;
+      const kf = el.classList.contains('reverse') ? 'm1PulseOnceRev' : 'm1PulseOnce';
       el.style.animation = 'none'; void el.offsetWidth;
-      el.style.animation = `m1PulseOnce ${dur}s ease`;
+      el.style.animation = `${kf} ${dur}s ease`;
       el.addEventListener('animationend', () => { el.style.animation = ''; setTimeout(step, gapMs); }, { once: true });
     };
     step();
@@ -2504,11 +2508,11 @@
       if (fc) { fc.textContent = 'Processo forçado'; fc.classList.remove('in'); void fc.offsetWidth; fc.classList.add('in'); }
       buzz(30);
     }
-    // 21.3s — "Eletrólise" surge embaixo de "Processo forçado"
+    // 21.3s — "Eletrólise" surge embaixo de "Processo forçado" com 3 pulsos rápidos
     if (tt >= 21.3 && !s.eletrolise1) {
       s.eletrolise1 = true;
       const el = document.getElementById('m1-eletrolise');
-      if (el) { el.textContent = 'Eletrólise'; el.classList.remove('in'); void el.offsetWidth; el.classList.add('in'); }
+      if (el) { el.textContent = 'Eletrólise'; el.classList.remove('in'); void el.offsetWidth; el.classList.add('in'); m1PulseN(el, 3, 300); }
       buzz(30);
     }
     // 35.5s — duas pulsadas de 0.3s em "Reação química"
@@ -2523,27 +2527,22 @@
       m1PulseN(document.getElementById('m1-eletrica'), 2, 300);
       buzz([25, 60, 25]);
     }
-    // 41.3s — "Pilhas ou baterias" aparece ACIMA das setas; "Eletrólise" some ao mesmo tempo
+    // 41.3s — "Pilhas ou baterias" aparece ACIMA das setas; "Eletrólise" fica visível
     if (tt >= 41.3 && !s.pilhasBaterias) {
       s.pilhasBaterias = true;
-      const eli = document.getElementById('m1-eletrolise');
-      if (eli) eli.classList.remove('in');
       const pb = document.getElementById('m1-pilhas-bat');
       if (pb) { pb.classList.remove('in'); void pb.offsetWidth; pb.classList.add('in'); }
       buzz(30);
     }
-    // 45s — "Processo espontâneo" entra da direita no lugar de "Pilhas ou baterias", depois sobe
+    // 45s — "Processo espontâneo" entra da direita logo acima da seta (abaixo de "Pilhas ou baterias")
     if (tt >= 45 && !s.espontaneo2) {
       s.espontaneo2 = true;
-      const pb = document.getElementById('m1-pilhas-bat');
-      if (pb) pb.classList.remove('in');
       const esp6 = document.getElementById('m1-esp6');
       if (esp6) {
         esp6.textContent = 'Processo espontâneo';
-        esp6.classList.remove('in', 'raised');
+        esp6.classList.remove('in');
         void esp6.offsetWidth;
         esp6.classList.add('in');
-        setTimeout(() => { esp6.classList.add('raised'); }, 700);
       }
       buzz(30);
     }
@@ -2569,12 +2568,11 @@
       m1PulseN(document.getElementById('m1-reacao'), 2, 300);
       buzz([25, 60, 25]);
     }
-    // 55.4s — "Eletrólise" reaparece embaixo das setas
+    // 55.4s — "Eletrólise" já visível: 3 pulsos rápidos de 0.3s
     if (tt >= 55.4 && !s.eletrolise2) {
       s.eletrolise2 = true;
-      const el = document.getElementById('m1-eletrolise');
-      if (el) { el.textContent = 'Eletrólise'; el.classList.remove('in'); void el.offsetWidth; el.classList.add('in'); }
-      buzz(30);
+      m1PulseN(document.getElementById('m1-eletrolise'), 3, 300);
+      buzz([25, 60, 25, 60, 25]);
     }
     // 59s — "Processo forçado" reaparece
     if (tt >= 59 && !s.forcado2) {
