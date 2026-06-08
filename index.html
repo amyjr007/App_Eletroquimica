@@ -1897,6 +1897,8 @@
     // Átomos sobe até logo abaixo da top bar (onde estava o título)
     if (atomos && atomosR && titleR) {
       const slideUp = atomosR.top - titleR.top;
+      // mata a animação atomosBoxIn (fill:both fixa um transform que sobrepõe o inline)
+      atomos.style.animation  = 'none';
       atomos.style.transition = `transform ${T}`;
       atomos.style.transform  = `translateY(-${slideUp}px)`;
 
@@ -2339,7 +2341,7 @@
     [ttlEl, grp, at, cv, bflow].forEach(el => {
       if (!el) return;
       el.style.transition = ''; el.style.transform = '';
-      el.style.opacity = ''; el.style.pointerEvents = '';
+      el.style.opacity = ''; el.style.pointerEvents = ''; el.style.animation = '';
     });
   }
 
