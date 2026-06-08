@@ -1043,6 +1043,13 @@
     }
     .m1-pilhas-label.in { opacity: 1; transform: translateY(0) scale(1); }
 
+    /* dialogo1.6: some em fade-out tudo da cena, exceto Átomos/átomo/Reação química/seta/Energia elétrica */
+    .m1-scene-fade {
+      transition: opacity .9s ease !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+    }
+
     /* ── Módulo 1: pilhas e baterias ── */
     .m1-batteries {
       position: absolute;
@@ -1532,6 +1539,7 @@
   <audio id="dialogo1_3" src="audio/dialogo1.3.mp3" preload="auto"></audio>
   <audio id="dialogo1_4" src="audio/dialogo1.4.mp3" preload="auto"></audio>
   <audio id="dialogo1_5" src="audio/dialogo1.5.mp3" preload="auto"></audio>
+  <audio id="dialogo1_6" src="audio/dialogo1.6.mp3" preload="auto"></audio>
   <button class="btn-action" id="m1-play">▶</button>
 
 </div>
@@ -1787,7 +1795,8 @@
       { id: 'dialogo1_2', begin: beginTrack2, cue: cueTrack2 },
       { id: 'dialogo1_3', begin: beginTrack3, cue: cueTrack3 },
       { id: 'dialogo1_4', begin: beginTrack4, cue: cueTrack4 },
-      { id: 'dialogo1_5', begin: beginTrack5, cue: cueTrack5 }
+      { id: 'dialogo1_5', begin: beginTrack5, cue: cueTrack5 },
+      { id: 'dialogo1_6', begin: beginTrack6, cue: cueTrack6 }
     ]
   };
 
@@ -2286,6 +2295,16 @@
       buzz([40, 80, 40]);
     }
   }
+  /* ── Faixa 6: dialogo1.6 — some em fade-out tudo da cena, restando só
+     a caixa "Átomos", o átomo animado, "Reação química", a seta e "Energia elétrica" ── */
+  function beginTrack6() {
+    M1.t6 = { faded: false };
+    const fadeIds = ['m1-energia', 'm1-batteries', 'm1-pilhas-label', 'm1-devices', 'm1-espontaneo'];
+    fadeIds.forEach(id => { const el = document.getElementById(id); if (el) el.classList.add('m1-scene-fade'); });
+    buzz(30);
+  }
+  function cueTrack6(tt) {}
+
   /* repete o pulso grande N vezes no texto espontâneo */
   function pulseEspontaneoBig(el, times) {
     let count = 0;
@@ -2714,8 +2733,12 @@
     const ccv  = document.getElementById('m1-circuit-canvas'); if (ccv) ccv.getContext('2d').clearRect(0,0,ccv.width,ccv.height);
     setDevices(false);
     const espon = document.getElementById('m1-espontaneo'); if (espon) { espon.classList.remove('in'); espon.classList.remove('pulse'); espon.classList.remove('pulse-big'); espon.style.bottom = ''; espon.textContent = 'espontâneo'; }
+    // desfaz o fade-out de cena do dialogo1.6
+    ['m1-energia', 'm1-batteries', 'm1-pilhas-label', 'm1-devices', 'm1-espontaneo'].forEach(id => {
+      const el = document.getElementById(id); if (el) el.classList.remove('m1-scene-fade');
+    });
     M1.circuitActive = false; M1.pilhaClickable = false;
-    M1.t1 = null; M1.t2 = null; M1.t3 = null; M1.t4 = null; M1.t5 = null;
+    M1.t1 = null; M1.t2 = null; M1.t3 = null; M1.t4 = null; M1.t5 = null; M1.t6 = null;
     const cv = document.getElementById('m1-atom');
     if (cv) { cv.classList.remove('in'); cv.getContext('2d').clearRect(0, 0, cv.width, cv.height); }
     // limpa os transforms aplicados pelo slide-up da faixa 4 (dialogo1.4)
@@ -2730,7 +2753,7 @@
 
   /* reset total ao (re)entrar no módulo */
   function m1Reset() {
-    ['dialogo1', 'dialogo1_1', 'dialogo1_2', 'dialogo1_3', 'dialogo1_4', 'dialogo1_5'].forEach(id => {
+    ['dialogo1', 'dialogo1_1', 'dialogo1_2', 'dialogo1_3', 'dialogo1_4', 'dialogo1_5', 'dialogo1_6'].forEach(id => {
       const a = document.getElementById(id);
       if (a) { a.pause(); a.currentTime = 0; }
     });
