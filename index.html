@@ -1891,25 +1891,37 @@
       M1.idx = 3;                              // próxima faixa: dialogo1.3 (pela caixa)
       if (btn) btn.classList.add('btn-hidden');
     } else if (target === 3) {
-      // fim do dialogo1.3 → átomo completo + energia química/seta/elétrica, play visível
+      // fim do dialogo1.3 → átomo se MONTA + energia química/seta/elétrica entram em sequência
       if (card) card.classList.add('in');
       if (typed) typed.textContent = DEF_TEXT;
       M1.t1 = { typing: false };
       M1.defMode = 'interactive';
       beginTrack2(); M1.t2.atomos = true; M1.t2.done = true;
       if (ab) { ab.classList.remove('in'); void ab.offsetWidth; ab.classList.add('in'); }
-      // átomo completo
-      beginTrack3();
-      M1.atom.nucleus = true; M1.atom.nucleusT = 9999;
-      M1.atom.electrons.forEach(e => { e.revealed = true; e.revealT = 9999; });
-      // energia química / seta / elétrica já reveladas
-      const en  = document.getElementById('m1-energia');  if (en)  en.classList.add('in');
-      const arr = document.getElementById('m1-arrow');    if (arr) arr.classList.add('in');
-      const elt = document.getElementById('m1-eletrica'); if (elt) elt.classList.add('in');
-      M1.t3.energia = true; M1.t3.arrow = true; M1.t3.eletrica = true;
       M1.idx = 4;                              // próxima faixa: dialogo1.4 (pelo play)
       if (btn) { btn.classList.remove('btn-hidden'); btn.textContent = '▶'; btn.classList.remove('playing'); }
-      startM1Loop();                           // mantém o átomo girando
+
+      // reconstrói o átomo ANIMANDO (como na escuta normal); guarda contra saltos repetidos
+      const seq = (M1.jumpSeq = (M1.jumpSeq || 0) + 1);
+      beginTrack3();                           // núcleo/elétrons começam ocultos; energia some
+      M1.t3.energia = M1.t3.arrow = M1.t3.eletrica = true;  // não refazer via cue
+      M1.atom.nucleus = true; M1.atom.nucleusT = 0;          // núcleo surge com "pop"
+      M1.atom.electrons.forEach(e => { e.revealed = false; });
+      startM1Loop();
+      // elétrons surgem um a um
+      M1.atom.electrons.forEach((e, i) => {
+        setTimeout(() => {
+          if (M1.jumpSeq !== seq || !M1.atom) return;
+          e.revealed = true; e.revealT = 0; buzz(18); startM1Loop();
+        }, 260 + i * 210);
+      });
+      // energia química → seta → elétrica logo depois
+      [['m1-energia', 1200], ['m1-arrow', 1450], ['m1-eletrica', 1700]].forEach(([id, ms]) => {
+        setTimeout(() => {
+          if (M1.jumpSeq !== seq) return;
+          const el = document.getElementById(id); if (el) el.classList.add('in'); buzz(22);
+        }, ms);
+      });
     }
     buzz([30, 40, 30]);
   }
@@ -2053,7 +2065,11 @@
     if (atomos && atomosR && titleR) {
       const slideUp = atomosR.top - titleR.top;
       // mata a animação atomosBoxIn (fill:both fixa um transform que sobrepõe o inline)
+      // e fixa o ponto de partida (translateY 0) com reflow, senão "teleporta" pro destino
       atomos.style.animation  = 'none';
+      atomos.style.transition = 'none';
+      atomos.style.transform  = 'translateY(0)';
+      void atomos.offsetWidth;                       // reflow: commita o estado inicial
       atomos.style.transition = `transform ${T}`;
       atomos.style.transform  = `translateY(-${slideUp}px)`;
 
@@ -2467,6 +2483,7 @@
     M1.cardShown = false;
     M1.atom = null;
     M1.defMode = null;
+    M1.jumpSeq = (M1.jumpSeq || 0) + 1;   // invalida timers de salto pendentes
     const btn = document.getElementById('m1-play');
     if (btn) btn.classList.remove('btn-hidden');
     const grp = document.getElementById('m1-defgroup');
