@@ -986,6 +986,63 @@
       50%  { opacity: 1; text-shadow: 0 0 20px rgba(0,229,255,.95), 0 0 34px rgba(125,249,255,.6); }
       100% { opacity: 1; text-shadow: 0 0 14px rgba(0,229,255,.7); }
     }
+
+    /* slot esquerdo: "Energia química" e "Reação química" empilhadas (mesma célula) */
+    .ef-left { display: grid; align-items: center; justify-items: start; }
+    .ef-left > .energia-label, .ef-left > .reacao-label { grid-area: 1 / 1; }
+
+    /* "Reação química" — entra deslizando da esquerda */
+    .reacao-label {
+      display: flex; flex-direction: column; align-items: flex-start;
+      gap: 1px; line-height: 1.05;
+      font-family: 'Orbitron', monospace; font-weight: 700;
+      white-space: nowrap;
+      opacity: 0; transform: translateX(-46px);
+      transition: opacity .5s ease, transform .55s cubic-bezier(.2,.7,.2,1);
+    }
+    .reacao-label.in { opacity: 1; transform: translateX(0); }
+    .reacao-label span {
+      font-size: clamp(.85rem, 2.4vw, 1.35rem);
+      color: #ff9d3d; letter-spacing: .12em;
+      text-shadow: 0 0 18px rgba(255,138,61,.55);
+    }
+
+    /* "Energia química" desliga como TV: vira linha horizontal e some pro centro */
+    .energia-label.tv-off {
+      transform-origin: center center;
+      animation: tvOff .4s cubic-bezier(.6,0,.4,1) forwards;
+    }
+    @keyframes tvOff {
+      0%   { transform: scale(1);                 opacity: 1; filter: brightness(1); }
+      45%  { transform: scaleX(1)   scaleY(.04);  opacity: 1; filter: brightness(2.6); }
+      72%  { transform: scaleX(.5)  scaleY(.04);  opacity: 1; filter: brightness(3.2); }
+      100% { transform: scaleX(0)   scaleY(.04);  opacity: 0; filter: brightness(4); }
+    }
+
+    /* 2 pulsadas rápidas (mantém opacidade visível) */
+    @keyframes pulseTwice {
+      0%       { transform: scale(1);   opacity: 1; }
+      22%      { transform: scale(1.2); opacity: 1; }
+      44%      { transform: scale(1);   opacity: 1; }
+      66%      { transform: scale(1.2); opacity: 1; }
+      88%,100% { transform: scale(1);   opacity: 1; }
+    }
+    .reacao-label.pulse-twice  { animation: pulseTwice .58s ease forwards; }
+    .eletrica-label.pulse-twice { animation: pulseTwice .58s ease forwards !important; }
+
+    /* rótulo branco "Pilhas ou Células voltaicas" */
+    .m1-pilhas-label {
+      position: absolute; bottom: 292px; left: 0; right: 0;
+      text-align: center;
+      font-family: 'Orbitron', monospace; font-weight: 700;
+      font-size: clamp(.8rem, 2.2vw, 1.2rem); letter-spacing: .07em;
+      color: #fff; text-shadow: 0 0 18px rgba(255,255,255,.6), 0 0 36px rgba(0,229,255,.4);
+      opacity: 0; transform: translateY(14px) scale(.92);
+      transition: opacity .5s ease, transform .5s cubic-bezier(.2,.7,.2,1);
+      z-index: 8; pointer-events: none;
+    }
+    .m1-pilhas-label.in { opacity: 1; transform: translateY(0) scale(1); }
+
     /* ── Módulo 1: pilhas e baterias ── */
     .m1-batteries {
       position: absolute;
@@ -1325,9 +1382,15 @@
   </div>
 
   <div class="energy-flow" id="m1-energyflow">
-    <div class="energia-label" id="m1-energia">
-      <span class="l1">Energia</span>
-      <span class="l2">química</span>
+    <div class="ef-left">
+      <div class="energia-label" id="m1-energia">
+        <span class="l1">Energia</span>
+        <span class="l2">química</span>
+      </div>
+      <div class="reacao-label" id="m1-reacao">
+        <span class="l1">Reação</span>
+        <span class="l2">química</span>
+      </div>
     </div>
 
     <div class="energy-arrow" id="m1-arrow" aria-hidden="true">
@@ -1384,6 +1447,9 @@
       </svg>
     </div>
   </div>
+
+  <!-- rótulo "Pilhas ou Células voltaicas" (dialogo1.4, 15.7s) -->
+  <div class="m1-pilhas-label" id="m1-pilhas-label">Pilhas ou Células voltaicas</div>
 
   <!-- backdrop do zoom: escurece e embaça o fundo -->
   <div id="m1-zoom-backdrop"></div>
@@ -2061,6 +2127,8 @@
       el.style.pointerEvents = 'none';
     });
 
+    let efMoveOut = 0;   // guardado em M1.t4 para posicionar pilhas/rótulo depois
+
     // Átomos sobe até logo abaixo da top bar (onde estava o título)
     if (atomos && atomosR && titleR) {
       const slideUp = atomosR.top - titleR.top;
@@ -2085,14 +2153,64 @@
         const cvMid  = cvR.top + cvR.height / 2;
         const efMid  = secR.bottom - 176;
         const efMove = (efMid - cvMid) - LINE;
+        efMoveOut = efMove;
         eFlow.style.transition = `transform ${T}`;
         eFlow.style.transform  = `translateY(-${efMove}px)`;
       }
     }
 
-    M1.t4 = {};
+    M1.t4 = {
+      efMove: efMoveOut,
+      tvoff: false, reacao: false, pReacao: false,
+      pEletrica: false, batteries: false, pilhas: false
+    };
   }
-  function cueTrack4(tt) { /* eventos futuros */ }
+  function cueTrack4(tt) {
+    const s = M1.t4; if (!s) return;
+    // 3.5s — "Energia química" desliga como TV (linha horizontal → some pro centro)
+    if (tt >= 3.5 && !s.tvoff) {
+      s.tvoff = true;
+      const en = document.getElementById('m1-energia'); if (en) en.classList.add('tv-off');
+      buzz(45);
+    }
+    // 5s — "Reação química" entra deslizando da esquerda
+    if (tt >= 5 && !s.reacao) {
+      s.reacao = true;
+      const rq = document.getElementById('m1-reacao'); if (rq) rq.classList.add('in');
+      buzz(30);
+    }
+    // 9s — 2 pulsadas rápidas em "Reação química"
+    if (tt >= 9 && !s.pReacao) {
+      s.pReacao = true;
+      const rq = document.getElementById('m1-reacao');
+      if (rq) { rq.classList.remove('pulse-twice'); void rq.offsetWidth; rq.classList.add('pulse-twice'); }
+      buzz([22, 40, 22, 40]);
+    }
+    // 10.5s — 2 pulsadas rápidas em "Energia elétrica"
+    if (tt >= 10.5 && !s.pEletrica) {
+      s.pEletrica = true;
+      const el = document.getElementById('m1-eletrica');
+      if (el) { el.classList.remove('pulse-twice'); void el.offsetWidth; el.classList.add('pulse-twice'); }
+      buzz([22, 40, 22, 40]);
+    }
+    // 13s — pilhas e baterias surgem em cima da seta
+    if (tt >= 13 && !s.batteries) {
+      s.batteries = true;
+      const bat = document.getElementById('m1-batteries');
+      if (bat) {
+        bat.style.bottom = (228 + (s.efMove || 0)) + 'px';
+        bat.classList.remove('in'); void bat.offsetWidth; bat.classList.add('in');
+      }
+      buzz([80, 20, 60]);
+    }
+    // 15.7s — rótulo branco "Pilhas ou Células voltaicas" acima das pilhas
+    if (tt >= 15.7 && !s.pilhas) {
+      s.pilhas = true;
+      const pl = document.getElementById('m1-pilhas-label');
+      if (pl) { pl.style.bottom = (292 + (s.efMove || 0)) + 'px'; pl.classList.add('in'); }
+      buzz([20, 30, 40]);
+    }
+  }
 
   /* ─────────────────────────────────────────────────────────────
      CÓDIGO ADORMECIDO — fluxo de energia + circuito (sem gatilho)
@@ -2493,11 +2611,13 @@
     if (card) { card.classList.remove('in'); card.classList.remove('card-trigger'); }
     const typed = document.getElementById('m1-typed'); if (typed) { typed.innerHTML = ''; typed.classList.remove('typed-highlight'); }
     const at = document.getElementById('m1-atomos'); if (at) { at.classList.remove('in'); at.classList.remove('box-pulse'); }
-    const en = document.getElementById('m1-energia'); if (en) { en.classList.remove('in'); en.classList.remove('pulse'); }
+    const en = document.getElementById('m1-energia'); if (en) { en.classList.remove('in'); en.classList.remove('pulse'); en.classList.remove('tv-off'); }
+    const rea = document.getElementById('m1-reacao'); if (rea) { rea.classList.remove('in'); rea.classList.remove('pulse-twice'); }
     const arr = document.getElementById('m1-arrow');    if (arr) arr.classList.remove('in');
-    const elt = document.getElementById('m1-eletrica'); if (elt) elt.classList.remove('in');
+    const elt = document.getElementById('m1-eletrica'); if (elt) { elt.classList.remove('in'); elt.classList.remove('pulse-twice'); }
+    const plab = document.getElementById('m1-pilhas-label'); if (plab) { plab.classList.remove('in'); plab.style.bottom = ''; }
     const bat = document.getElementById('m1-batteries');
-    if (bat) { bat.classList.remove('in'); bat.classList.remove('t3-lift'); }
+    if (bat) { bat.classList.remove('in'); bat.classList.remove('t3-lift'); bat.style.bottom = ''; }
     const bflow = document.getElementById('m1-energyflow'); if (bflow) bflow.style.opacity = '';
     if (bat) bat.style.opacity = '';
     const circ = document.getElementById('m1-circuit-wrap'); if (circ) circ.classList.remove('in');
