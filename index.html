@@ -2079,11 +2079,12 @@
         atomCv.style.transform  = `translateY(-${slideUp}px)`;
       }
 
-      // energia química/seta/elétrica sobem até onde o átomo estava
+      // energia química/seta/elétrica sobem até onde o átomo estava — porém 1 linha abaixo
       if (eFlow && cvR && secR) {
+        const LINE   = 38;                       // ~1 linha de texto mais baixo
         const cvMid  = cvR.top + cvR.height / 2;
         const efMid  = secR.bottom - 176;
-        const efMove = efMid - cvMid;
+        const efMove = (efMid - cvMid) - LINE;
         eFlow.style.transition = `transform ${T}`;
         eFlow.style.transform  = `translateY(-${efMove}px)`;
       }
