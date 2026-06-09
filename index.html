@@ -1710,6 +1710,10 @@
           <span class="m1-nav-num">4</span>
           <span class="m1-nav-topic">Eletrólise</span>
         </button>
+        <button class="m1-nav-item" data-target="5">
+          <span class="m1-nav-num">5</span>
+          <span class="m1-nav-topic">Quiz</span>
+        </button>
       </div>
     </div>
   </div>
@@ -2260,6 +2264,11 @@
       const a6 = document.getElementById('dialogo1_6');
       if (a6) { a6.currentTime = 0; a6.play().catch(() => {}); }
       if (btn) { btn.textContent = '⏸'; btn.classList.add('playing'); btn.classList.remove('btn-hidden'); }
+    } else if (target === 5) {
+      // Quiz — toca ex0 e exibe botão quiz pulsando
+      M1.idx = 6;
+      if (btn) btn.classList.add('btn-hidden');
+      m1QuizShowBtn();
     }
     buzz([30, 40, 30]);
   }
