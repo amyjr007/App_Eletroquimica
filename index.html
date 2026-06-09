@@ -4011,7 +4011,15 @@
     counter.textContent = (n + 1) + ' / ' + M1Q.qs.length;
     qtxt.textContent    = data.q;
     qopts.innerHTML     = '';
-    data.opts.forEach((opt, i) => {
+    // embaralha as alternativas (Fisher-Yates) preservando qual é a correta
+    const correctText = data.opts[data.c];
+    const shuffled = [...data.opts];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    M1Q.currentCorrect = shuffled.indexOf(correctText);
+    shuffled.forEach((opt, i) => {
       const btn = document.createElement('button');
       btn.className   = 'm1-quiz-opt';
       btn.textContent = opt;
@@ -4027,21 +4035,19 @@
   function m1QuizAnswer(chosen) {
     if (M1Q.answered) return;
     M1Q.answered = true;
-    const data = M1Q.qs[M1Q.idx];
+    const correct = M1Q.currentCorrect;
     document.querySelectorAll('.m1-quiz-opt').forEach((btn, i) => {
       btn.classList.add('locked');
-      if (i === data.c)    btn.classList.add('correct');
+      if (i === correct)   btn.classList.add('correct');
       else if (i === chosen) btn.classList.add('wrong');
     });
-    if (chosen === data.c) {
+    if (chosen === correct) {
       buzz([20, 40, 20, 60]);
+      const yes = document.getElementById('m1-yes');
+      if (yes) { yes.currentTime = 0; yes.play().catch(() => {}); }
       const applause = document.getElementById('m1-applause');
       if (applause) { applause.currentTime = 0; applause.play().catch(() => {}); }
       m1ConfettiStart();
-      setTimeout(() => {
-        const yes = document.getElementById('m1-yes');
-        if (yes) { yes.currentTime = 0; yes.play().catch(() => {}); }
-      }, 1200);
       setTimeout(m1QuizNext, 2800);
     } else {
       buzz([60, 30, 60]);
