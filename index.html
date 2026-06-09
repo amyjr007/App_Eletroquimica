@@ -2101,6 +2101,44 @@
   </div>
   <button class="btn-action" id="m2-play" onclick="m2TogglePlay()">▶</button>
 
+  <!-- barra de navegação rápida (mesmos itens do módulo 1) -->
+  <div class="m1-navbar" id="m2-navbar">
+    <div class="m1-nav-backdrop" id="m2-nav-backdrop"></div>
+    <button class="m1-navbar-handle" id="m2-navbar-handle" aria-label="Navegação rápida">
+      <span class="m1-navbar-grip"></span>
+    </button>
+    <div class="m1-navbar-panel" id="m2-navbar-panel">
+      <button class="m1-nav-close" id="m2-nav-close" aria-label="Recolher">✕</button>
+      <div class="m1-nav-title">Navegação rápida</div>
+      <div class="m1-nav-items">
+        <button class="m1-nav-item" data-target="0">
+          <span class="m1-nav-num">1</span>
+          <span class="m1-nav-topic">Definição</span>
+        </button>
+        <button class="m1-nav-item" data-target="2">
+          <span class="m1-nav-num">2</span>
+          <span class="m1-nav-topic">Átomos</span>
+        </button>
+        <button class="m1-nav-item" data-target="3">
+          <span class="m1-nav-num">3</span>
+          <span class="m1-nav-topic">Energia</span>
+        </button>
+        <button class="m1-nav-item" data-target="4">
+          <span class="m1-nav-num">4</span>
+          <span class="m1-nav-topic">Eletrólise</span>
+        </button>
+        <button class="m1-nav-item" data-target="5">
+          <span class="m1-nav-num">5</span>
+          <span class="m1-nav-topic">Quiz</span>
+        </button>
+        <button class="m1-nav-item" data-target="6">
+          <span class="m1-nav-num">6</span>
+          <span class="m1-nav-topic">As pilhas</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <!-- ═══════════════════ SECTION 2: (recebeu o lab de Oxi-Redução) ═══════════════════ -->
@@ -3525,6 +3563,27 @@
     const handle   = document.getElementById('m1-navbar-handle');
     const closeBtn = document.getElementById('m1-nav-close');
     const backdrop = document.getElementById('m1-nav-backdrop');
+    if (!navbar) return;
+    const openNav  = () => { navbar.classList.add('open'); buzz(20); };
+    const closeNav = () => { navbar.classList.remove('open'); buzz(15); };
+    if (handle)   handle.addEventListener('click', openNav);
+    if (closeBtn) closeBtn.addEventListener('click', closeNav);
+    if (backdrop) backdrop.addEventListener('click', closeNav);
+    navbar.querySelectorAll('.m1-nav-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const t = parseInt(item.getAttribute('data-target'), 10);
+        closeNav();
+        m1JumpTo(t);
+      });
+    });
+  })();
+
+  // barra de navegação rápida de section-pilhas (mesmos targets do módulo 1)
+  (function () {
+    const navbar   = document.getElementById('m2-navbar');
+    const handle   = document.getElementById('m2-navbar-handle');
+    const closeBtn = document.getElementById('m2-nav-close');
+    const backdrop = document.getElementById('m2-nav-backdrop');
     if (!navbar) return;
     const openNav  = () => { navbar.classList.add('open'); buzz(20); };
     const closeNav = () => { navbar.classList.remove('open'); buzz(15); };
