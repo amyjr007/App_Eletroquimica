@@ -1485,6 +1485,85 @@
 
     #section-pilhas { --accent-color: #00e5ff; }
 
+    /* ── Módulo 2 – stage de animações ── */
+    .m2-stage {
+      flex: 1; width: 100%;
+      position: relative; overflow: hidden; min-height: 0;
+    }
+    /* pilha */
+    .m2-battery {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 70px; opacity: 0;
+      transition: opacity .6s, top .9s, left .9s, width .9s, transform .9s;
+      pointer-events: none;
+    }
+    .m2-battery.show  { opacity: 1; width: 115px; }
+    .m2-battery.small { opacity: 1; width: 46px; top: 8px; left: 8px; transform: none; }
+    .m2-battery.gone  { opacity: 0 !important; }
+    /* carrossel de dispositivos */
+    .m2-dev-wrap {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: min(200px, 58%); height: 110px;
+      overflow: hidden; opacity: 0; transition: opacity .4s;
+    }
+    .m2-dev-wrap.show { opacity: 1; }
+    .m2-dev-slot {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 6px;
+      transform: translateX(110%);
+    }
+    .m2-dev-slot .m2-dev-icon  { font-size: 2.6rem; line-height: 1; }
+    .m2-dev-slot .m2-dev-label {
+      font-family: 'Orbitron', monospace; font-size: .7rem;
+      color: #00e5ff; letter-spacing: .1em;
+    }
+    @keyframes m2DevIn  { from { transform: translateX(110%); } to { transform: translateX(0); } }
+    @keyframes m2DevOut { from { transform: translateX(0); }    to { transform: translateX(-110%); } }
+    .m2-dev-slot.in  { animation: m2DevIn  .35s ease forwards; }
+    .m2-dev-slot.out { animation: m2DevOut .35s ease forwards; }
+    /* cena Galvani */
+    .m2-galvani {
+      position: absolute; top: 5%; left: 50%;
+      transform: translateX(-50%);
+      width: min(100px, 30%); border-radius: 8px;
+      border: 1px solid rgba(0,229,255,.3);
+      opacity: 0; transition: opacity .7s;
+    }
+    .m2-galvani.show { opacity: 1; }
+    .m2-ra1 {
+      position: absolute; top: 42%; left: 50%;
+      transform: translateX(-50%);
+      width: min(170px, 52%); border-radius: 8px;
+      opacity: 0; transition: opacity .7s;
+    }
+    .m2-ra1.show { opacity: 1; }
+    /* bisturi de zinco */
+    .m2-bisturi {
+      position: absolute; top: 34%; left: 50%;
+      transform: translateX(-50%);
+      opacity: 0; transition: opacity .5s;
+      pointer-events: none;
+      -webkit-user-select: none; user-select: none; touch-action: none;
+      filter: drop-shadow(0 2px 5px rgba(0,0,0,.6));
+    }
+    .m2-bisturi.show      { opacity: 1; }
+    .m2-bisturi.draggable { pointer-events: auto; cursor: grab; }
+    .m2-bisturi.dragging  { cursor: grabbing !important; z-index: 5; }
+    /* fio de cobre */
+    .m2-cobre {
+      position: absolute; top: 68%; left: 36%;
+      opacity: 0; transition: opacity .5s;
+      pointer-events: none;
+      -webkit-user-select: none; user-select: none; touch-action: none;
+      filter: drop-shadow(0 1px 3px rgba(0,0,0,.5));
+    }
+    .m2-cobre.show      { opacity: 1; }
+    .m2-cobre.draggable { pointer-events: auto; cursor: grab; }
+    .m2-cobre.dragging  { cursor: grabbing !important; z-index: 5; }
+
     /* ── Diagram SVG Animations ── */
     @keyframes orbit1 {
       to { transform: rotate(360deg); }
@@ -1915,6 +1994,89 @@
   <div class="s1-body intro-body">
     <h2 class="intro-title">As pilhas</h2>
     <audio id="dialogo2" src="audio/dialogo2.mp3" preload="auto"></audio>
+
+    <div class="m2-stage" id="m2-stage">
+
+      <!-- Pilha cilíndrica -->
+      <div class="m2-battery" id="m2-battery">
+        <svg viewBox="0 0 60 130" xmlns="http://www.w3.org/2000/svg" width="100%">
+          <defs>
+            <linearGradient id="m2bG" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%"   stop-color="#555"/>
+              <stop offset="22%"  stop-color="#ccc"/>
+              <stop offset="50%"  stop-color="#eee"/>
+              <stop offset="78%"  stop-color="#ccc"/>
+              <stop offset="100%" stop-color="#555"/>
+            </linearGradient>
+            <linearGradient id="m2bC" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%"   stop-color="#444"/>
+              <stop offset="50%"  stop-color="#aaa"/>
+              <stop offset="100%" stop-color="#444"/>
+            </linearGradient>
+          </defs>
+          <rect x="4" y="16" width="52" height="106" rx="8" fill="url(#m2bG)"/>
+          <rect x="4" y="16" width="52" height="14"  rx="5" fill="url(#m2bC)"/>
+          <rect x="20" y="5" width="20" height="12"  rx="5" fill="url(#m2bC)"/>
+          <rect x="4" y="30" width="52" height="76"  fill="#ffd23f"/>
+          <rect x="4" y="108" width="52" height="14" rx="5" fill="#444"/>
+          <text x="30" y="58" text-anchor="middle" font-family="Orbitron,monospace" font-size="8.5" font-weight="700" fill="#040d1a">PILHA</text>
+          <text x="30" y="78" text-anchor="middle" font-size="22" fill="#040d1a">⚡</text>
+          <text x="30" y="94" text-anchor="middle" font-family="monospace" font-size="8" fill="#040d1a">1,5 V</text>
+          <rect x="5" y="16" width="7" height="106" rx="3" fill="white" opacity=".18"/>
+          <line x1="30" y1="7"  x2="30" y2="13" stroke="#bbb" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="27" y1="10" x2="33" y2="10" stroke="#bbb" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="22" y1="115" x2="38" y2="115" stroke="#999" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+
+      <!-- Carrossel de dispositivos -->
+      <div class="m2-dev-wrap" id="m2-dev-wrap">
+        <div class="m2-dev-slot" id="m2-slot-0">
+          <span class="m2-dev-icon"></span>
+          <span class="m2-dev-label"></span>
+        </div>
+        <div class="m2-dev-slot" id="m2-slot-1">
+          <span class="m2-dev-icon"></span>
+          <span class="m2-dev-label"></span>
+        </div>
+      </div>
+
+      <!-- Retrato de Galvani -->
+      <img class="m2-galvani" id="m2-galvani" src="images/galvani.jpeg" alt="Luigi Galvani">
+
+      <!-- Experimento da rã -->
+      <img class="m2-ra1" id="m2-ra1" src="images/rã1.png" alt="Experimento da rã">
+
+      <!-- Bisturi de zinco (arrastável após t=36s) -->
+      <svg class="m2-bisturi" id="m2-bisturi" viewBox="0 0 170 22" width="170" height="22"
+           xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="m2bsG" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%"   stop-color="#d8e0e8"/>
+            <stop offset="50%"  stop-color="#f0f4f8"/>
+            <stop offset="100%" stop-color="#9fb0bc"/>
+          </linearGradient>
+        </defs>
+        <rect x="0"  y="5" width="92" height="12" rx="6" fill="url(#m2bsG)" stroke="#889" stroke-width=".5"/>
+        <rect x="90" y="6" width="12" height="10"         fill="#bcc"        stroke="#889" stroke-width=".5"/>
+        <path d="M 102,6 L 170,11 L 102,16 Z"              fill="url(#m2bsG)" stroke="#aab" stroke-width=".5"/>
+        <text x="36" y="14" text-anchor="middle" font-family="Orbitron,monospace" font-size="7.5" fill="#445" font-weight="700">Zn</text>
+        <line x1="62" y1="6" x2="62" y2="16" stroke="#aaa" stroke-width=".5"/>
+        <line x1="68" y1="6" x2="68" y2="16" stroke="#aaa" stroke-width=".5"/>
+        <line x1="74" y1="6" x2="74" y2="16" stroke="#aaa" stroke-width=".5"/>
+        <line x1="80" y1="6" x2="80" y2="16" stroke="#aaa" stroke-width=".5"/>
+      </svg>
+
+      <!-- Fio de cobre (arrastável após t=36s) -->
+      <svg class="m2-cobre" id="m2-cobre" viewBox="0 0 130 26" width="130" height="26"
+           xmlns="http://www.w3.org/2000/svg">
+        <path d="M 5,13 Q 20,3 35,13 Q 50,23 65,13 Q 80,3 95,13 Q 110,23 125,13"
+              fill="none" stroke="#b87333" stroke-width="3.5" stroke-linecap="round"/>
+        <text x="65" y="9" text-anchor="middle" font-family="Orbitron,monospace"
+              font-size="5.5" fill="#b87333" font-weight="700">Cu</text>
+      </svg>
+
+    </div>
   </div>
   <button class="btn-action" id="m2-play" onclick="m2TogglePlay()">▶</button>
 
@@ -4414,12 +4576,163 @@
     buzz(30);
   }
 
+  /* ═══════════ Módulo 2 — sistema de cues do dialogo2 ═══════════ */
+
+  const M2_DEVICES = [
+    { icon: '📱', label: 'Celular' },
+    { icon: '🔦', label: 'Lanterna' },
+    { icon: '🎮', label: 'Controle' },
+    { icon: '⌚', label: 'Relógio' },
+    { icon: '🖩', label: 'Calculadora' },
+  ];
+
+  const M2 = { raf: 0, f: {}, deviceIdx: -1, activeSlot: -1 };
+
+  function m2StartLoop() {
+    if (M2.raf) return;
+    M2.raf = requestAnimationFrame(m2Loop);
+  }
+
+  function m2Loop() {
+    const sec = document.getElementById('section-pilhas');
+    if (!sec || !sec.classList.contains('active')) { M2.raf = 0; return; }
+    const a = document.getElementById('dialogo2');
+    if (!a || a.paused) { M2.raf = 0; return; }
+    m2Cue(a.currentTime);
+    M2.raf = requestAnimationFrame(m2Loop);
+  }
+
+  function m2Cue(tt) {
+    const f = M2.f;
+    // 1.2s — pilha grande
+    if (!f.battery && tt >= 1.2) {
+      f.battery = true;
+      document.getElementById('m2-battery')?.classList.add('show');
+    }
+    // 13s — pilha diminui, inicia carrossel
+    if (!f.shrink && tt >= 13) {
+      f.shrink = true;
+      const bat = document.getElementById('m2-battery');
+      if (bat) { bat.classList.remove('show'); bat.classList.add('small'); }
+      document.getElementById('m2-dev-wrap')?.classList.add('show');
+      m2ShowDevice(0);
+      M2.deviceIdx = 0;
+    }
+    // carrossel 13s–18s: 1 dispositivo por segundo
+    if (f.shrink && !f.hideDevices && tt >= 13 && tt < 18.5) {
+      const idx = Math.floor(tt - 13);
+      if (idx >= 1 && idx < M2_DEVICES.length && idx !== M2.deviceIdx) {
+        M2.deviceIdx = idx;
+        m2ShowDevice(idx);
+      }
+    }
+    // 18.5s — esconde carrossel
+    if (!f.hideDevices && tt >= 18.5) {
+      f.hideDevices = true;
+      document.getElementById('m2-dev-wrap')?.classList.remove('show');
+    }
+    // 24s — galvani, some a pilha
+    if (!f.galvani && tt >= 24) {
+      f.galvani = true;
+      document.getElementById('m2-battery')?.classList.add('gone');
+      document.getElementById('m2-galvani')?.classList.add('show');
+    }
+    // 27s — rã1 abaixo do galvani
+    if (!f.ra1 && tt >= 27) {
+      f.ra1 = true;
+      document.getElementById('m2-ra1')?.classList.add('show');
+    }
+    // 31.4s — bisturi de zinco
+    if (!f.bisturi && tt >= 31.4) {
+      f.bisturi = true;
+      document.getElementById('m2-bisturi')?.classList.add('show');
+    }
+    // 36s — fio de cobre + habilita arraste nos dois
+    if (!f.cobre && tt >= 36) {
+      f.cobre = true;
+      document.getElementById('m2-cobre')?.classList.add('show');
+      enableDrag('m2-bisturi');
+      enableDrag('m2-cobre');
+    }
+  }
+
+  function m2ShowDevice(idx) {
+    const d   = M2_DEVICES[idx % M2_DEVICES.length];
+    const cur = M2.activeSlot;
+    const nxt = cur < 0 ? 0 : 1 - cur;
+    const s   = [document.getElementById('m2-slot-0'), document.getElementById('m2-slot-1')];
+    if (!s[0] || !s[1]) return;
+    // reset posição do próximo slot antes de animar
+    s[nxt].className = 'm2-dev-slot';
+    void s[nxt].offsetWidth;
+    s[nxt].querySelector('.m2-dev-icon').textContent  = d.icon;
+    s[nxt].querySelector('.m2-dev-label').textContent = d.label;
+    if (cur >= 0) s[cur].className = 'm2-dev-slot out';
+    s[nxt].className = 'm2-dev-slot in';
+    M2.activeSlot = nxt;
+  }
+
+  function enableDrag(id) {
+    const el = document.getElementById(id);
+    if (!el || el.dataset.draggable) return;
+    el.dataset.draggable = '1';
+    el.classList.add('draggable');
+    // converte posição CSS para left/top explícitos
+    const rect  = el.getBoundingClientRect();
+    const prect = el.parentElement.getBoundingClientRect();
+    el.style.left = (rect.left - prect.left) + 'px';
+    el.style.top  = (rect.top  - prect.top)  + 'px';
+    el.style.transform = 'none';
+    const ac = new AbortController();
+    el._dragAC = ac;
+    const sig = { signal: ac.signal };
+    let dragging = false, sx, sy, ox, oy;
+    el.addEventListener('pointerdown', e => {
+      e.preventDefault();
+      dragging = true;
+      el.setPointerCapture(e.pointerId);
+      el.classList.add('dragging');
+      ox = parseFloat(el.style.left) || 0;
+      oy = parseFloat(el.style.top)  || 0;
+      sx = e.clientX; sy = e.clientY;
+    }, { ...sig, passive: false });
+    el.addEventListener('pointermove', e => {
+      if (!dragging) return;
+      el.style.left = (ox + e.clientX - sx) + 'px';
+      el.style.top  = (oy + e.clientY - sy) + 'px';
+    }, sig);
+    const end = () => { dragging = false; el.classList.remove('dragging'); };
+    el.addEventListener('pointerup',     end, sig);
+    el.addEventListener('pointercancel', end, sig);
+  }
+
+  function m2Reset() {
+    if (M2.raf) { cancelAnimationFrame(M2.raf); M2.raf = 0; }
+    M2.f = {}; M2.deviceIdx = -1; M2.activeSlot = -1;
+    document.getElementById('m2-battery')?.setAttribute('class', 'm2-battery');
+    document.getElementById('m2-dev-wrap')?.setAttribute('class', 'm2-dev-wrap');
+    document.getElementById('m2-slot-0')?.setAttribute('class', 'm2-dev-slot');
+    document.getElementById('m2-slot-1')?.setAttribute('class', 'm2-dev-slot');
+    document.getElementById('m2-galvani')?.classList.remove('show');
+    document.getElementById('m2-ra1')?.classList.remove('show');
+    ['m2-bisturi', 'm2-cobre'].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (el._dragAC) { el._dragAC.abort(); delete el._dragAC; }
+      delete el.dataset.draggable;
+      el.classList.remove('show', 'draggable', 'dragging');
+      el.style.cssText = '';
+    });
+  }
+
   function goToPilhas() {
+    m2Reset();
     goTo('section-pilhas');
     const d2 = document.getElementById('dialogo2');
     if (d2) { d2.currentTime = 0; d2.play().catch(() => {}); }
     const btn = document.getElementById('m2-play');
     if (btn) { btn.textContent = '⏸'; btn.classList.add('playing'); }
+    m2StartLoop();
     buzz(30);
   }
 
@@ -4430,6 +4743,7 @@
     if (d2.paused) {
       d2.play().catch(() => {});
       if (btn) { btn.textContent = '⏸'; btn.classList.add('playing'); }
+      m2StartLoop();
     } else {
       d2.pause();
       if (btn) { btn.textContent = '▶'; btn.classList.remove('playing'); }
