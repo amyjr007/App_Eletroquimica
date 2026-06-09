@@ -1811,6 +1811,7 @@
   <audio id="m1-yes"        src="audio/yes.mp3"        preload="auto"></audio>
   <audio id="m1-statistics" src="audio/statistics.mp3" preload="auto"></audio>
   <audio id="m1-lowscore"   src="audio/lowscore.mp3"   preload="auto"></audio>
+  <audio id="m1-error"     src="audio/error.mp3"      preload="auto"></audio>
 
   <button class="btn-action" id="m1-play">▶</button>
 
@@ -1850,7 +1851,7 @@
       <p class="m1-result-msg" id="m1-result-msg"></p>
       <p class="m1-result-sub" id="m1-result-sub"></p>
       <div class="m1-result-actions">
-        <button class="m1-res-btn secondary" onclick="m1QuizRestart()">● REVISAR RESPOSTAS</button>
+        <button class="m1-res-btn secondary" onclick="m1QuizRestart()">↺ REFAZER O QUIZ</button>
         <button class="m1-res-btn primary"   onclick="m1QuizFinish()">▶ PRÓXIMO DESAFIO</button>
       </div>
     </div>
@@ -4056,14 +4057,8 @@
   /* ═══════════════════════════════════════
      QUIZ — Módulo 1
   ═══════════════════════════════════════ */
-  const M1Q = {
-    idx: 0,
-    answered: false,
-    currentCorrect: 0,
-    studentName: '',
-    acertos: 0,
-    erros: 0,
-    qs: [
+  const M1Q_BANKS = [
+    [
       {
         q: 'O que a eletroquímica estuda?',
         opts: [
@@ -4101,7 +4096,96 @@
         opts: ['Eletrólise', 'Oxidação', 'Galvanização'],
         c: 0
       }
+    ],
+    [
+      {
+        q: 'A eletroquímica é a área da química que investiga:',
+        opts: [
+          'Mudanças de estado físico da matéria',
+          'A ligação entre fenômenos elétricos e reações químicas',
+          'O calor liberado em combustões'
+        ],
+        c: 1
+      },
+      {
+        q: 'Entre as partículas subatômicas, a responsável pela corrente elétrica é:',
+        opts: ['O próton', 'O nêutron', 'O elétron'],
+        c: 2
+      },
+      {
+        q: 'Uma pilha ou bateria é um exemplo de:',
+        opts: [
+          'Gerador termoelétrico',
+          'Célula voltaica',
+          'Célula eletrolítica'
+        ],
+        c: 1
+      },
+      {
+        q: 'A corrente elétrica gerada por uma bateria resulta de um processo:',
+        opts: [
+          'Induzido por fonte externa de energia',
+          'Espontâneo, que ocorre por conta própria',
+          'Dependente de variação de temperatura'
+        ],
+        c: 1
+      },
+      {
+        q: 'Quando usamos energia elétrica para provocar uma reação química, o fenômeno é:',
+        opts: ['Eletrólise', 'Redução', 'Eletrodeposição'],
+        c: 0
+      }
+    ],
+    [
+      {
+        q: 'Qual é o objeto de estudo da eletroquímica?',
+        opts: [
+          'As propriedades físicas dos metais',
+          'A interação entre energia elétrica e substâncias químicas',
+          'Os processos de aquecimento de soluções'
+        ],
+        c: 1
+      },
+      {
+        q: 'Qual partícula subatômica é transferida nas reações de oxidação e redução?',
+        opts: ['Nêutron', 'Próton', 'Elétron'],
+        c: 2
+      },
+      {
+        q: 'Uma célula voltaica converte energia química em:',
+        opts: ['Energia térmica', 'Energia elétrica', 'Energia mecânica'],
+        c: 1
+      },
+      {
+        q: 'Em uma pilha, a reação química acontece de forma:',
+        opts: [
+          'Forçada, com aplicação de corrente elétrica externa',
+          'Espontânea, sem necessidade de energia externa',
+          'Lenta, com aquecimento progressivo'
+        ],
+        c: 1
+      },
+      {
+        q: 'A eletrólise é o processo em que:',
+        opts: [
+          'Uma reação espontânea gera corrente elétrica',
+          'Energia elétrica é usada para forçar uma reação química',
+          'O calor decompõe substâncias químicas'
+        ],
+        c: 1
+      }
     ]
+  ];
+
+  const M1Q = {
+    idx: 0,
+    answered: false,
+    currentCorrect: 0,
+    studentName: '',
+    acertos: 0,
+    erros: 0,
+    bankIdx: 0,
+    get qs() { return M1Q_BANKS[this.bankIdx]; }
   };
 
   function m1QuizShowBtn() {
@@ -4186,6 +4270,8 @@
     } else {
       M1Q.erros++;
       buzz([60, 30, 60]);
+      const err = document.getElementById('m1-error');
+      if (err) { err.currentTime = 0; err.play().catch(() => {}); }
       const qnext = document.getElementById('m1-qnext');
       if (qnext) qnext.style.display = 'block';
     }
@@ -4247,6 +4333,7 @@
   function m1QuizRestart() {
     const rd = document.getElementById('m1-quiz-result');
     if (rd) rd.classList.remove('show');
+    M1Q.bankIdx = (M1Q.bankIdx + 1) % M1Q_BANKS.length;
     M1Q.idx = 0; M1Q.answered = false; M1Q.acertos = 0; M1Q.erros = 0;
     const qd = document.getElementById('m1-quiz');
     if (qd) qd.classList.add('show');
@@ -4299,12 +4386,12 @@
   }
 
   function m1QuizReset() {
-    M1Q.idx = 0; M1Q.answered = false; M1Q.acertos = 0; M1Q.erros = 0;
+    M1Q.idx = 0; M1Q.answered = false; M1Q.acertos = 0; M1Q.erros = 0; M1Q.bankIdx = 0;
     const qb = document.getElementById('m1-quiz-btn');    if (qb) qb.classList.remove('show');
     const qd = document.getElementById('m1-quiz');        if (qd) qd.classList.remove('show');
     const nd = document.getElementById('m1-quiz-name');   if (nd) nd.classList.remove('show');
     const rd = document.getElementById('m1-quiz-result'); if (rd) rd.classList.remove('show');
-    ['ex0','ex1','ex2','ex3','ex4','ex5','m1-applause','m1-yes','m1-statistics','m1-lowscore'].forEach(id => {
+    ['ex0','ex1','ex2','ex3','ex4','ex5','m1-applause','m1-yes','m1-statistics','m1-lowscore','m1-error'].forEach(id => {
       const a = document.getElementById(id); if (a) { a.pause(); a.currentTime = 0; }
     });
     const cv = document.getElementById('m1-confetti');
