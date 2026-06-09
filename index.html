@@ -1484,16 +1484,6 @@
     #section3 .fn-btn.next:hover { box-shadow: 0 0 22px rgba(249,115,22,.5); }
 
     #section-pilhas { --accent-color: #00e5ff; }
-    #section-pilhas .section-chip { color: #00e5ff; background: rgba(0,229,255,.1); border: 1px solid rgba(0,229,255,.22); }
-    .pilhas-body {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 28px;
-      padding: 44px 52px;
-    }
 
     /* ── Diagram SVG Animations ── */
     @keyframes orbit1 {
@@ -1922,12 +1912,11 @@
     </div>
   </div>
 
-  <div class="pilhas-body">
-    <span class="section-chip">MÓDULO 01</span>
+  <div class="s1-body intro-body">
     <h2 class="intro-title">As pilhas</h2>
     <audio id="dialogo2" src="audio/dialogo2.mp3" preload="auto"></audio>
-    <button class="pc-btn big" id="m2-play" onclick="m2TogglePlay()">▶</button>
   </div>
+  <button class="btn-action" id="m2-play" onclick="m2TogglePlay()">▶</button>
 
 </div>
 
@@ -2135,7 +2124,7 @@
     const m1btn = document.getElementById('m1-play');
     if (m1btn) { m1btn.textContent = '▶'; m1btn.classList.remove('playing'); }
     const m2btn = document.getElementById('m2-play');
-    if (m2btn) m2btn.textContent = '▶';
+    if (m2btn) { m2btn.textContent = '▶'; m2btn.classList.remove('playing'); }
 
     const current = document.querySelector('.screen.active');
     if (current) current.classList.remove('active');
@@ -3344,7 +3333,7 @@
   const d2el = document.getElementById('dialogo2');
   if (d2el) d2el.addEventListener('ended', () => {
     const btn = document.getElementById('m2-play');
-    if (btn) btn.textContent = '▶';
+    if (btn) { btn.textContent = '▶'; btn.classList.remove('playing'); }
   });
 
   // barra de navegação rápida: abre/fecha o painel e salta para a marcação
@@ -4430,7 +4419,7 @@
     const d2 = document.getElementById('dialogo2');
     if (d2) { d2.currentTime = 0; d2.play().catch(() => {}); }
     const btn = document.getElementById('m2-play');
-    if (btn) btn.textContent = '⏸';
+    if (btn) { btn.textContent = '⏸'; btn.classList.add('playing'); }
     buzz(30);
   }
 
@@ -4440,10 +4429,10 @@
     if (!d2) return;
     if (d2.paused) {
       d2.play().catch(() => {});
-      if (btn) btn.textContent = '⏸';
+      if (btn) { btn.textContent = '⏸'; btn.classList.add('playing'); }
     } else {
       d2.pause();
-      if (btn) btn.textContent = '▶';
+      if (btn) { btn.textContent = '▶'; btn.classList.remove('playing'); }
     }
     buzz(20);
   }
