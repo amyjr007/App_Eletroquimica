@@ -1483,6 +1483,18 @@
     #section3 .fn-btn.next  { background: #f97316; }
     #section3 .fn-btn.next:hover { box-shadow: 0 0 22px rgba(249,115,22,.5); }
 
+    #section-pilhas { --accent-color: #00e5ff; }
+    #section-pilhas .section-chip { color: #00e5ff; background: rgba(0,229,255,.1); border: 1px solid rgba(0,229,255,.22); }
+    .pilhas-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 28px;
+      padding: 44px 52px;
+    }
+
     /* ── Diagram SVG Animations ── */
     @keyframes orbit1 {
       to { transform: rotate(360deg); }
@@ -1808,6 +1820,10 @@
           <span class="m1-nav-num">5</span>
           <span class="m1-nav-topic">Quiz</span>
         </button>
+        <button class="m1-nav-item" data-target="6">
+          <span class="m1-nav-num">6</span>
+          <span class="m1-nav-topic">As pilhas</span>
+        </button>
       </div>
     </div>
   </div>
@@ -1887,6 +1903,31 @@
 
   <!-- Canvas de confetes -->
   <canvas id="m1-confetti"></canvas>
+
+</div>
+
+<!-- ═══════════════════ SECTION PILHAS: As pilhas (dialogo2) ═══════════════════ -->
+<div id="section-pilhas" class="screen section-page">
+
+  <div class="slide-topbar">
+    <button class="btn-back" onclick="goTo('menu')">← Módulos</button>
+    <span class="topbar-label">MÓDULO 01 — AS PILHAS</span>
+    <div class="topbar-right">
+      <div class="topbar-dots">
+        <div class="tdot on"></div>
+        <div class="tdot"></div>
+        <div class="tdot"></div>
+      </div>
+      <button class="btn-home" onclick="goTo('cover')" title="Capa">⌂</button>
+    </div>
+  </div>
+
+  <div class="pilhas-body">
+    <span class="section-chip">MÓDULO 01</span>
+    <h2 class="intro-title">As pilhas</h2>
+    <audio id="dialogo2" src="audio/dialogo2.mp3" preload="auto"></audio>
+    <button class="pc-btn big" id="m2-play" onclick="m2TogglePlay()">▶</button>
+  </div>
 
 </div>
 
@@ -2093,6 +2134,8 @@
     document.querySelectorAll('audio').forEach(a => a.pause());
     const m1btn = document.getElementById('m1-play');
     if (m1btn) { m1btn.textContent = '▶'; m1btn.classList.remove('playing'); }
+    const m2btn = document.getElementById('m2-play');
+    if (m2btn) m2btn.textContent = '▶';
 
     const current = document.querySelector('.screen.active');
     if (current) current.classList.remove('active');
@@ -2411,6 +2454,9 @@
       M1.idx = 6;
       if (btn) btn.classList.add('btn-hidden');
       m1QuizShowBtn();
+    } else if (target === 6) {
+      goToPilhas();
+      return;
     }
     buzz([30, 40, 30]);
   }
@@ -3292,6 +3338,13 @@
   ['dialogo1', 'dialogo1_1', 'dialogo1_2', 'dialogo1_3', 'dialogo1_4', 'dialogo1_5', 'dialogo1_6'].forEach(id => {
     const a = document.getElementById(id);
     if (a) a.addEventListener('ended', m1Ended);
+  });
+
+  // dialogo2: reset do botão ao fim
+  const d2el = document.getElementById('dialogo2');
+  if (d2el) d2el.addEventListener('ended', () => {
+    const btn = document.getElementById('m2-play');
+    if (btn) btn.textContent = '▶';
   });
 
   // barra de navegação rápida: abre/fecha o painel e salta para a marcação
@@ -4368,8 +4421,31 @@
   function m1QuizFinish() {
     const rd = document.getElementById('m1-quiz-result');
     if (rd) rd.classList.remove('show');
-    goTo('section2');
+    goToPilhas();
     buzz(30);
+  }
+
+  function goToPilhas() {
+    goTo('section-pilhas');
+    const d2 = document.getElementById('dialogo2');
+    if (d2) { d2.currentTime = 0; d2.play().catch(() => {}); }
+    const btn = document.getElementById('m2-play');
+    if (btn) btn.textContent = '⏸';
+    buzz(30);
+  }
+
+  function m2TogglePlay() {
+    const d2  = document.getElementById('dialogo2');
+    const btn = document.getElementById('m2-play');
+    if (!d2) return;
+    if (d2.paused) {
+      d2.play().catch(() => {});
+      if (btn) btn.textContent = '⏸';
+    } else {
+      d2.pause();
+      if (btn) btn.textContent = '▶';
+    }
+    buzz(20);
   }
 
   function m1ConfettiStart() {
