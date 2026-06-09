@@ -354,6 +354,20 @@
     }
     .btn-back:hover { border-color: rgba(255,255,255,.3); color: var(--text); }
 
+    .topbar-right { display: flex; align-items: center; gap: 12px; }
+    .btn-home {
+      background: none;
+      border: 1px solid rgba(255,255,255,.1);
+      color: var(--muted);
+      padding: 5px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      line-height: 1;
+      transition: border-color .2s, color .2s;
+    }
+    .btn-home:hover { border-color: rgba(255,255,255,.3); color: var(--text); }
+
     .topbar-label {
       font-family: 'Orbitron', monospace;
       font-size: .65rem;
@@ -1550,6 +1564,7 @@
     <div class="menu-header">
       <h2 class="menu-title">Selecione um Módulo</h2>
       <p class="menu-subtitle">Escolha por onde deseja começar</p>
+      <button class="btn-home" onclick="goTo('cover')" title="Capa" style="margin-top:8px;align-self:center;">⌂ Capa</button>
     </div>
 
     <div class="sections-grid">
@@ -1585,10 +1600,13 @@
   <div class="slide-topbar">
     <button class="btn-back" onclick="goTo('menu')">← Módulos</button>
     <span class="topbar-label">MÓDULO 01</span>
-    <div class="topbar-dots">
-      <div class="tdot on"></div>
-      <div class="tdot"></div>
-      <div class="tdot"></div>
+    <div class="topbar-right">
+      <div class="topbar-dots">
+        <div class="tdot on"></div>
+        <div class="tdot"></div>
+        <div class="tdot"></div>
+      </div>
+      <button class="btn-home" onclick="goTo('cover')" title="Capa">⌂</button>
     </div>
   </div>
 
@@ -1878,10 +1896,13 @@
   <div class="slide-topbar">
     <button class="btn-back" onclick="goTo('menu')">← Módulos</button>
     <span class="topbar-label">MÓDULO 01 — OXI-REDUÇÃO</span>
-    <div class="topbar-dots">
-      <div class="tdot on"></div>
-      <div class="tdot"></div>
-      <div class="tdot"></div>
+    <div class="topbar-right">
+      <div class="topbar-dots">
+        <div class="tdot on"></div>
+        <div class="tdot"></div>
+        <div class="tdot"></div>
+      </div>
+      <button class="btn-home" onclick="goTo('cover')" title="Capa">⌂</button>
     </div>
   </div>
 
@@ -1913,10 +1934,13 @@
   <div class="slide-topbar">
     <button class="btn-back" onclick="goTo('menu')">← Módulos</button>
     <span class="topbar-label">MÓDULO 03 — ELETRÓLISE</span>
-    <div class="topbar-dots">
-      <div class="tdot on"></div>
-      <div class="tdot"></div>
-      <div class="tdot"></div>
+    <div class="topbar-right">
+      <div class="topbar-dots">
+        <div class="tdot on"></div>
+        <div class="tdot"></div>
+        <div class="tdot"></div>
+      </div>
+      <button class="btn-home" onclick="goTo('cover')" title="Capa">⌂</button>
     </div>
   </div>
 
