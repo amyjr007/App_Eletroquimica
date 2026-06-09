@@ -1030,7 +1030,7 @@
     }
     .m1-above-label.in { opacity: 1; transform: translate(-50%, 0) scale(1); }
 
-    /* "Processo espontâneo" (45s dialogo1.6) — entra da direita, depois sobe */
+    /* "Processo espontâneo" (45s dialogo1.6) — entra da esquerda */
     .m1-esp6 {
       position: absolute; bottom: 100%; left: 50%; width: max-content;
       margin-bottom: 8px;
@@ -1038,12 +1038,72 @@
       font-size: clamp(.72rem, 1.9vw, 1.05rem); letter-spacing: .12em;
       color: #ffd23f; text-shadow: 0 0 18px rgba(255,210,63,.75);
       opacity: 0;
-      transform: translate(calc(-50% + 50px), 0);
+      transform: translate(calc(-50% - 50px), 0);
       transition: opacity .5s ease, transform .5s cubic-bezier(.2,.6,.3,1.2);
       pointer-events: none;
       white-space: nowrap;
     }
     .m1-esp6.in { opacity: 1; transform: translate(-50%, 0); }
+
+    /* ── QUIZ ── */
+    #m1-quiz-btn {
+      position: absolute; bottom: 14px; left: 14px;
+      width: 54px; height: 54px; border-radius: 50%; border: none;
+      background: linear-gradient(135deg, #ffd23f, #e09a00);
+      color: #040d1a;
+      font-family: 'Orbitron', monospace; font-size: .55rem; font-weight: 700; letter-spacing: .06em;
+      cursor: pointer; z-index: 20;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 0 28px rgba(255,210,63,.55), 0 4px 20px rgba(0,0,0,.4);
+      opacity: 0; pointer-events: none;
+      transition: opacity .4s ease;
+    }
+    #m1-quiz-btn.show { opacity: 1; pointer-events: auto; animation: quiz-btn-pulse 1.3s ease-in-out infinite; }
+    #m1-quiz-btn:active { transform: scale(.92); }
+    @keyframes quiz-btn-pulse {
+      0%,100% { box-shadow: 0 0 28px rgba(255,210,63,.55), 0 4px 20px rgba(0,0,0,.4); transform: scale(1); }
+      50%      { box-shadow: 0 0 56px rgba(255,210,63,.95), 0 4px 24px rgba(0,0,0,.45); transform: scale(1.1); }
+    }
+    #m1-quiz {
+      position: absolute; inset: 0; z-index: 40;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(4,13,26,.93); backdrop-filter: blur(5px);
+      opacity: 0; pointer-events: none; transition: opacity .35s ease;
+    }
+    #m1-quiz.show { opacity: 1; pointer-events: auto; }
+    .m1-quiz-card {
+      background: rgba(255,255,255,.04); border: 1px solid rgba(0,229,255,.18);
+      border-radius: 20px; padding: 28px 24px 22px;
+      width: min(420px, 92vw); display: flex; flex-direction: column; gap: 14px;
+    }
+    .m1-quiz-counter {
+      font-family: 'Orbitron', monospace; font-size: .62rem; letter-spacing: .22em;
+      color: #00e5ff; text-align: center;
+    }
+    .m1-quiz-q { font-size: .95rem; color: #dde5f0; line-height: 1.45; text-align: center; font-weight: 500; }
+    .m1-quiz-opts { display: flex; flex-direction: column; gap: 10px; }
+    .m1-quiz-opt {
+      background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1);
+      border-radius: 12px; padding: 13px 16px;
+      font-size: .88rem; color: #c8d4e6; cursor: pointer; text-align: left;
+      transition: background .18s, border-color .18s, transform .1s;
+    }
+    .m1-quiz-opt:not(.locked):hover { background: rgba(0,229,255,.09); border-color: rgba(0,229,255,.32); }
+    .m1-quiz-opt:not(.locked):active { transform: scale(.97); }
+    .m1-quiz-opt.correct { background: rgba(0,210,100,.18); border-color: #00c864; color: #a8ffc8; }
+    .m1-quiz-opt.wrong   { background: rgba(255,60,60,.18);  border-color: #ff4444; color: #ffaaaa; }
+    .m1-quiz-opt.locked  { cursor: default; }
+    .m1-quiz-next {
+      align-self: flex-end; padding: 9px 22px; border-radius: 10px; border: none;
+      background: rgba(0,229,255,.13); border: 1px solid rgba(0,229,255,.28);
+      color: #00e5ff; font-family: 'Orbitron', monospace; font-size: .6rem; letter-spacing: .12em;
+      cursor: pointer; display: none; transition: background .18s;
+    }
+    .m1-quiz-next:hover { background: rgba(0,229,255,.26); }
+    #m1-confetti {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      pointer-events: none; z-index: 50;
+    }
 
     /* "Energia elétrica" — entrada elétrica (flicker neon) */
     .eletrica-label {
@@ -1661,7 +1721,32 @@
   <audio id="dialogo1_4" src="audio/dialogo1.4.mp3" preload="auto"></audio>
   <audio id="dialogo1_5" src="audio/dialogo1.5.mp3" preload="auto"></audio>
   <audio id="dialogo1_6" src="audio/dialogo1.6.mp3" preload="auto"></audio>
+  <audio id="ex0"        src="audio/ex0.mp3"        preload="auto"></audio>
+  <audio id="ex1"        src="audio/ex1.mp3"        preload="auto"></audio>
+  <audio id="ex2"        src="audio/ex2.mp3"        preload="auto"></audio>
+  <audio id="ex3"        src="audio/ex3.mp3"        preload="auto"></audio>
+  <audio id="ex4"        src="audio/ex4.mp3"        preload="auto"></audio>
+  <audio id="ex5"        src="audio/ex5.mp3"        preload="auto"></audio>
+  <audio id="m1-applause" src="audio/applause.mp3"  preload="auto"></audio>
+  <audio id="m1-yes"      src="audio/yes.mp3"       preload="auto"></audio>
+
   <button class="btn-action" id="m1-play">▶</button>
+
+  <!-- Botão quiz — aparece após dialogo1.6 terminar -->
+  <button id="m1-quiz-btn" onclick="m1QuizOpen()">QUIZ</button>
+
+  <!-- Overlay do quiz -->
+  <div id="m1-quiz">
+    <div class="m1-quiz-card">
+      <div class="m1-quiz-counter" id="m1-qcounter">1 / 5</div>
+      <p class="m1-quiz-q" id="m1-qtxt"></p>
+      <div class="m1-quiz-opts" id="m1-qopts"></div>
+      <button class="m1-quiz-next" id="m1-qnext" onclick="m1QuizNext()">PRÓXIMA →</button>
+    </div>
+  </div>
+
+  <!-- Canvas de confetes -->
+  <canvas id="m1-confetti"></canvas>
 
 </div>
 
@@ -2035,6 +2120,9 @@
       const bat = document.getElementById('m1-batteries');
       if (bat) { bat.style.pointerEvents = 'auto'; bat.style.cursor = 'pointer'; }
       buzz([25, 60]);
+    } else if (endedIdx === 6) {
+      // dialogo1.6 acabou → toca ex0 e exibe botão quiz pulsando
+      m1QuizShowBtn();
     }
   }
 
@@ -2534,7 +2622,7 @@
       if (pb) { pb.classList.remove('in'); void pb.offsetWidth; pb.classList.add('in'); }
       buzz(30);
     }
-    // 45s — "Processo espontâneo" entra da direita logo acima da seta (abaixo de "Pilhas ou baterias")
+    // 45s — "Processo espontâneo" entra da esquerda logo acima da seta (abaixo de "Pilhas ou baterias")
     if (tt >= 45 && !s.espontaneo2) {
       s.espontaneo2 = true;
       const esp6 = document.getElementById('m1-esp6');
@@ -3032,6 +3120,7 @@
       el.style.transition = ''; el.style.transform = '';
       el.style.opacity = ''; el.style.pointerEvents = ''; el.style.animation = '';
     });
+    if (typeof m1QuizReset === 'function') m1QuizReset();
   }
 
   /* reset total ao (re)entrar no módulo */
@@ -3049,7 +3138,7 @@
   }
 
   // listeners de fim de faixa
-  ['dialogo1', 'dialogo1_1', 'dialogo1_2', 'dialogo1_3', 'dialogo1_4', 'dialogo1_5'].forEach(id => {
+  ['dialogo1', 'dialogo1_1', 'dialogo1_2', 'dialogo1_3', 'dialogo1_4', 'dialogo1_5', 'dialogo1_6'].forEach(id => {
     const a = document.getElementById(id);
     if (a) a.addEventListener('ended', m1Ended);
   });
@@ -3837,6 +3926,179 @@
     if (b) b.style.display = 'none';
     deferredPrompt = null;
   });
+
+  /* ═══════════════════════════════════════
+     QUIZ — Módulo 1
+  ═══════════════════════════════════════ */
+  const M1Q = {
+    idx: 0,
+    answered: false,
+    qs: [
+      {
+        q: 'O que a eletroquímica estuda?',
+        opts: [
+          'As transformações físicas das substâncias',
+          'As relações entre eletricidade e substâncias químicas',
+          'Os fenômenos de temperatura em reações'
+        ],
+        c: 1
+      },
+      {
+        q: 'Qual partícula do átomo carrega energia química?',
+        opts: ['Próton', 'Nêutron', 'Elétron'],
+        c: 2
+      },
+      {
+        q: 'Dispositivos que usam reações químicas para gerar eletricidade chamam-se:',
+        opts: [
+          'Geradores termoelétricos',
+          'Pilhas, baterias ou células voltaicas',
+          'Células eletrolíticas'
+        ],
+        c: 1
+      },
+      {
+        q: 'Nas pilhas, o processo de geração de eletricidade é:',
+        opts: [
+          'Forçado — requer energia elétrica externa',
+          'Espontâneo — ocorre naturalmente',
+          'Controlado — depende de aquecimento'
+        ],
+        c: 1
+      },
+      {
+        q: 'O processo em que eletricidade força uma reação química chama-se:',
+        opts: ['Eletrólise', 'Oxidação', 'Galvanização'],
+        c: 0
+      }
+    ]
+  };
+
+  function m1QuizShowBtn() {
+    const qb = document.getElementById('m1-quiz-btn');
+    if (qb) qb.classList.add('show');
+    const ex0 = document.getElementById('ex0');
+    if (ex0) { ex0.currentTime = 0; ex0.play().catch(() => {}); }
+    buzz(40);
+  }
+
+  function m1QuizOpen() {
+    const qb = document.getElementById('m1-quiz-btn');
+    if (qb) qb.classList.remove('show');
+    M1Q.idx = 0; M1Q.answered = false;
+    const qd = document.getElementById('m1-quiz');
+    if (qd) qd.classList.add('show');
+    m1QuizLoad(0);
+    buzz(30);
+  }
+
+  function m1QuizLoad(n) {
+    const data    = M1Q.qs[n];
+    const counter = document.getElementById('m1-qcounter');
+    const qtxt    = document.getElementById('m1-qtxt');
+    const qopts   = document.getElementById('m1-qopts');
+    const qnext   = document.getElementById('m1-qnext');
+    if (!data || !counter || !qtxt || !qopts) return;
+    counter.textContent = (n + 1) + ' / ' + M1Q.qs.length;
+    qtxt.textContent    = data.q;
+    qopts.innerHTML     = '';
+    data.opts.forEach((opt, i) => {
+      const btn = document.createElement('button');
+      btn.className   = 'm1-quiz-opt';
+      btn.textContent = opt;
+      btn.onclick     = () => m1QuizAnswer(i);
+      qopts.appendChild(btn);
+    });
+    if (qnext) qnext.style.display = 'none';
+    M1Q.answered = false;
+    const exA = document.getElementById('ex' + (n + 1));
+    if (exA) { exA.currentTime = 0; exA.play().catch(() => {}); }
+  }
+
+  function m1QuizAnswer(chosen) {
+    if (M1Q.answered) return;
+    M1Q.answered = true;
+    const data = M1Q.qs[M1Q.idx];
+    document.querySelectorAll('.m1-quiz-opt').forEach((btn, i) => {
+      btn.classList.add('locked');
+      if (i === data.c)    btn.classList.add('correct');
+      else if (i === chosen) btn.classList.add('wrong');
+    });
+    if (chosen === data.c) {
+      buzz([20, 40, 20, 60]);
+      const applause = document.getElementById('m1-applause');
+      if (applause) { applause.currentTime = 0; applause.play().catch(() => {}); }
+      m1ConfettiStart();
+      setTimeout(() => {
+        const yes = document.getElementById('m1-yes');
+        if (yes) { yes.currentTime = 0; yes.play().catch(() => {}); }
+      }, 1200);
+      setTimeout(m1QuizNext, 2800);
+    } else {
+      buzz([60, 30, 60]);
+      const qnext = document.getElementById('m1-qnext');
+      if (qnext) qnext.style.display = 'block';
+    }
+  }
+
+  function m1QuizNext() {
+    M1Q.idx++;
+    if (M1Q.idx >= M1Q.qs.length) {
+      const qd = document.getElementById('m1-quiz');
+      if (qd) qd.classList.remove('show');
+      buzz([30, 60, 30, 60, 80]);
+      return;
+    }
+    m1QuizLoad(M1Q.idx);
+  }
+
+  function m1ConfettiStart() {
+    const cv = document.getElementById('m1-confetti');
+    if (!cv) return;
+    const par = cv.parentElement;
+    cv.width  = par ? par.offsetWidth  : 400;
+    cv.height = par ? par.offsetHeight : 700;
+    const ctx2 = cv.getContext('2d');
+    const COLORS = ['#00e5ff', '#ffd23f', '#a78bfa', '#ff6b6b', '#00ff88'];
+    const pieces = Array.from({ length: 72 }, () => ({
+      x: Math.random() * cv.width,
+      y: -20 - Math.random() * 40,
+      vx: (Math.random() - .5) * 5,
+      vy: 2.5 + Math.random() * 3,
+      w: 7 + Math.random() * 6, h: 4 + Math.random() * 3,
+      color: COLORS[Math.floor(Math.random() * COLORS.length)],
+      angle: Math.random() * 360,
+      spin: (Math.random() - .5) * 8
+    }));
+    const t0 = performance.now();
+    let raf2;
+    function draw2(ts) {
+      ctx2.clearRect(0, 0, cv.width, cv.height);
+      for (const p of pieces) {
+        ctx2.save();
+        ctx2.translate(p.x, p.y);
+        ctx2.rotate(p.angle * Math.PI / 180);
+        ctx2.fillStyle = p.color;
+        ctx2.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+        ctx2.restore();
+        p.x += p.vx; p.y += p.vy; p.angle += p.spin;
+      }
+      if (ts - t0 < 3200) raf2 = requestAnimationFrame(draw2);
+      else ctx2.clearRect(0, 0, cv.width, cv.height);
+    }
+    raf2 = requestAnimationFrame(draw2);
+  }
+
+  function m1QuizReset() {
+    M1Q.idx = 0; M1Q.answered = false;
+    const qb = document.getElementById('m1-quiz-btn'); if (qb) qb.classList.remove('show');
+    const qd = document.getElementById('m1-quiz');     if (qd) qd.classList.remove('show');
+    ['ex0','ex1','ex2','ex3','ex4','ex5','m1-applause','m1-yes'].forEach(id => {
+      const a = document.getElementById(id); if (a) { a.pause(); a.currentTime = 0; }
+    });
+    const cv = document.getElementById('m1-confetti');
+    if (cv) { const ctx2 = cv.getContext('2d'); ctx2.clearRect(0, 0, cv.width, cv.height); }
+  }
 </script>
 </body>
 </html>
