@@ -1515,7 +1515,7 @@
       align-items: center; justify-content: center; gap: 6px;
       transform: translateX(110%);
     }
-    .m2-dev-slot .m2-dev-icon  { font-size: 5.1rem; line-height: 1; }
+    .m2-dev-slot .m2-dev-icon  { font-size: 5.9rem; line-height: 1; }
     .m2-dev-slot .m2-dev-label {
       font-family: 'Orbitron', monospace; font-size: .7rem;
       color: #00e5ff; letter-spacing: .1em;
@@ -1528,19 +1528,18 @@
     .m2-galvani {
       position: absolute; top: 2%; left: 50%;
       transform: translateX(-50%);
-      width: 100%; max-height: 57%; object-fit: contain;
+      width: 100%; max-height: 66%; object-fit: contain;
       border-radius: 8px; border: 1px solid rgba(0,229,255,.3);
       opacity: 0; transition: opacity .7s;
     }
     .m2-galvani.show { opacity: 1; }
-    .m2-ra-wrap {
+    .m2-ra1 {
       position: absolute; top: 50%; left: 50%;
-      transform: translate(-50%, calc(-50% - 0.75rem));
-      width: min(330px, 100%);
+      transform: translateX(-50%);
+      width: min(383px, 100%); border-radius: 8px;
       opacity: 0; transition: opacity .7s;
     }
-    .m2-ra-wrap.show { opacity: 1; }
-    .m2-ra-wrap img { width: 100%; border-radius: 8px; display: block; }
+    .m2-ra1.show { opacity: 1; }
     /* bisturi de zinco */
     .m2-bisturi {
       position: absolute; top: 52%; left: 50%;
@@ -1553,16 +1552,18 @@
     .m2-bisturi.show      { opacity: 1; }
     .m2-bisturi.draggable { pointer-events: auto; cursor: grab; }
     .m2-bisturi.dragging  { cursor: grabbing !important; z-index: 5; }
-    /* fio de cobre — fixo na anca da rã */
+    /* fio de cobre */
     .m2-cobre {
-      position: absolute; top: 33%; left: 50%;
-      transform: translate(-50%, -50%) rotate(20deg);
+      position: absolute; top: 72%; left: 34%;
+      transform: rotate(20deg);
       opacity: 0; transition: opacity .5s;
       pointer-events: none;
       -webkit-user-select: none; user-select: none; touch-action: none;
       filter: drop-shadow(0 1px 3px rgba(0,0,0,.5));
     }
-    .m2-cobre.show { opacity: 1; }
+    .m2-cobre.show      { opacity: 1; }
+    .m2-cobre.draggable { pointer-events: auto; cursor: grab; }
+    .m2-cobre.dragging  { cursor: grabbing !important; z-index: 5; }
     /* faísca de contato */
     .m2-spark {
       position: absolute; font-size: 1.8rem;
@@ -2062,17 +2063,8 @@
       <!-- Retrato de Galvani -->
       <img class="m2-galvani" id="m2-galvani" src="images/galvani.jpeg" alt="Luigi Galvani">
 
-      <!-- Experimento da rã + fio de cobre (posição fixa na anca) -->
-      <div class="m2-ra-wrap" id="m2-ra-wrap">
-        <img id="m2-ra1" src="images/rã1.png" alt="Experimento da rã">
-        <svg class="m2-cobre" id="m2-cobre" viewBox="0 0 130 26" width="130" height="26"
-             xmlns="http://www.w3.org/2000/svg">
-          <path d="M 5,13 Q 20,3 35,13 Q 50,23 65,13 Q 80,3 95,13 Q 110,23 125,13"
-                fill="none" stroke="#b87333" stroke-width="3.5" stroke-linecap="round"/>
-          <text x="65" y="9" text-anchor="middle" font-family="Orbitron,monospace"
-                font-size="5.5" fill="#b87333" font-weight="700">Cu</text>
-        </svg>
-      </div>
+      <!-- Experimento da rã -->
+      <img class="m2-ra1" id="m2-ra1" src="images/rã1.png" alt="Experimento da rã">
 
       <!-- Bisturi de zinco (arrastável após t=36s) -->
       <svg class="m2-bisturi" id="m2-bisturi" viewBox="0 0 170 22" width="119" height="15"
@@ -2097,6 +2089,14 @@
       <!-- Faísca de contato Zn/Cu -->
       <div class="m2-spark" id="m2-spark">⚡</div>
 
+      <!-- Fio de cobre (arrastável após t=36s) -->
+      <svg class="m2-cobre" id="m2-cobre" viewBox="0 0 130 26" width="130" height="26" data-rotate="20"
+           xmlns="http://www.w3.org/2000/svg">
+        <path d="M 5,13 Q 20,3 35,13 Q 50,23 65,13 Q 80,3 95,13 Q 110,23 125,13"
+              fill="none" stroke="#b87333" stroke-width="3.5" stroke-linecap="round"/>
+        <text x="65" y="9" text-anchor="middle" font-family="Orbitron,monospace"
+              font-size="5.5" fill="#b87333" font-weight="700">Cu</text>
+      </svg>
 
     </div>
   </div>
@@ -4721,7 +4721,7 @@
     // 27s — rã1 abaixo do galvani
     if (!f.ra1 && tt >= 27) {
       f.ra1 = true;
-      document.getElementById('m2-ra-wrap')?.classList.add('show');
+      document.getElementById('m2-ra1')?.classList.add('show');
     }
     // 31.4s — bisturi de zinco
     if (!f.bisturi && tt >= 31.4) {
@@ -4733,6 +4733,7 @@
       f.cobre = true;
       document.getElementById('m2-cobre')?.classList.add('show');
       enableDrag('m2-bisturi');
+      enableDrag('m2-cobre');
       m2StartContactLoop();
     }
   }
@@ -4865,18 +4866,17 @@
     document.getElementById('m2-slot-0')?.setAttribute('class', 'm2-dev-slot');
     document.getElementById('m2-slot-1')?.setAttribute('class', 'm2-dev-slot');
     document.getElementById('m2-galvani')?.classList.remove('show');
-    document.getElementById('m2-ra-wrap')?.classList.remove('show');
     const ra1 = document.getElementById('m2-ra1');
-    if (ra1) ra1.src = 'images/rã1.png';
-    document.getElementById('m2-cobre')?.classList.remove('show');
+    if (ra1) { ra1.classList.remove('show'); ra1.src = 'images/rã1.png'; }
     document.getElementById('m2-spark')?.classList.remove('flash');
-    const bisturi = document.getElementById('m2-bisturi');
-    if (bisturi) {
-      if (bisturi._dragAC) { bisturi._dragAC.abort(); delete bisturi._dragAC; }
-      delete bisturi.dataset.draggable;
-      bisturi.classList.remove('show', 'draggable', 'dragging');
-      bisturi.style.cssText = '';
-    }
+    ['m2-bisturi', 'm2-cobre'].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (el._dragAC) { el._dragAC.abort(); delete el._dragAC; }
+      delete el.dataset.draggable;
+      el.classList.remove('show', 'draggable', 'dragging');
+      el.style.cssText = '';
+    });
   }
 
   function goToPilhas() {
