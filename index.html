@@ -1515,7 +1515,7 @@
       align-items: center; justify-content: center; gap: 6px;
       transform: translateX(110%);
     }
-    .m2-dev-slot .m2-dev-icon  { font-size: 2.6rem; line-height: 1; }
+    .m2-dev-slot .m2-dev-icon  { font-size: 3.9rem; line-height: 1; }
     .m2-dev-slot .m2-dev-label {
       font-family: 'Orbitron', monospace; font-size: .7rem;
       color: #00e5ff; letter-spacing: .1em;
@@ -1526,24 +1526,24 @@
     .m2-dev-slot.out { animation: m2DevOut .35s ease forwards; }
     /* cena Galvani */
     .m2-galvani {
-      position: absolute; top: 5%; left: 50%;
+      position: absolute; top: 2%; left: 50%;
       transform: translateX(-50%);
-      width: min(100px, 30%); border-radius: 8px;
-      border: 1px solid rgba(0,229,255,.3);
+      width: 100%; max-height: 44%; object-fit: contain;
+      border-radius: 8px; border: 1px solid rgba(0,229,255,.3);
       opacity: 0; transition: opacity .7s;
     }
     .m2-galvani.show { opacity: 1; }
     .m2-ra1 {
-      position: absolute; top: 42%; left: 50%;
+      position: absolute; top: 50%; left: 50%;
       transform: translateX(-50%);
-      width: min(170px, 52%); border-radius: 8px;
+      width: min(255px, 78%); border-radius: 8px;
       opacity: 0; transition: opacity .7s;
     }
     .m2-ra1.show { opacity: 1; }
     /* bisturi de zinco */
     .m2-bisturi {
-      position: absolute; top: 34%; left: 50%;
-      transform: translateX(-50%);
+      position: absolute; top: 52%; left: 50%;
+      transform: translateX(-50%) rotate(-20deg);
       opacity: 0; transition: opacity .5s;
       pointer-events: none;
       -webkit-user-select: none; user-select: none; touch-action: none;
@@ -1554,7 +1554,7 @@
     .m2-bisturi.dragging  { cursor: grabbing !important; z-index: 5; }
     /* fio de cobre */
     .m2-cobre {
-      position: absolute; top: 68%; left: 36%;
+      position: absolute; top: 72%; left: 34%;
       opacity: 0; transition: opacity .5s;
       pointer-events: none;
       -webkit-user-select: none; user-select: none; touch-action: none;
@@ -1563,6 +1563,24 @@
     .m2-cobre.show      { opacity: 1; }
     .m2-cobre.draggable { pointer-events: auto; cursor: grab; }
     .m2-cobre.dragging  { cursor: grabbing !important; z-index: 5; }
+    /* faísca de contato */
+    .m2-spark {
+      position: absolute; font-size: 1.8rem;
+      opacity: 0; pointer-events: none; z-index: 10;
+    }
+    @keyframes m2Spark {
+      0%   { opacity: 1; transform: scale(1.2); filter: brightness(2.5); }
+      45%  { opacity: 1; transform: scale(2);   filter: brightness(4); }
+      100% { opacity: 0; transform: scale(.7);  filter: brightness(1); }
+    }
+    .m2-spark.flash { animation: m2Spark .5s ease forwards; }
+    @keyframes m2ContactFlash {
+      0%,100% { background: transparent; }
+      18%     { background: rgba(255,230,50,.28); }
+      36%     { background: transparent; }
+      55%     { background: rgba(255,230,50,.18); }
+    }
+    .m2-stage.m2-flash { animation: m2ContactFlash .45s ease; }
 
     /* ── Diagram SVG Animations ── */
     @keyframes orbit1 {
@@ -2048,8 +2066,8 @@
       <img class="m2-ra1" id="m2-ra1" src="images/rã1.png" alt="Experimento da rã">
 
       <!-- Bisturi de zinco (arrastável após t=36s) -->
-      <svg class="m2-bisturi" id="m2-bisturi" viewBox="0 0 170 22" width="170" height="22"
-           xmlns="http://www.w3.org/2000/svg">
+      <svg class="m2-bisturi" id="m2-bisturi" viewBox="0 0 170 22" width="119" height="15"
+           data-rotate="-20" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <linearGradient id="m2bsG" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%"   stop-color="#d8e0e8"/>
@@ -2066,6 +2084,9 @@
         <line x1="74" y1="6" x2="74" y2="16" stroke="#aaa" stroke-width=".5"/>
         <line x1="80" y1="6" x2="80" y2="16" stroke="#aaa" stroke-width=".5"/>
       </svg>
+
+      <!-- Faísca de contato Zn/Cu -->
+      <div class="m2-spark" id="m2-spark">⚡</div>
 
       <!-- Fio de cobre (arrastável após t=36s) -->
       <svg class="m2-cobre" id="m2-cobre" viewBox="0 0 130 26" width="130" height="26"
@@ -4583,7 +4604,7 @@
     { icon: '🔦', label: 'Lanterna' },
     { icon: '🎮', label: 'Controle' },
     { icon: '⌚', label: 'Relógio' },
-    { icon: '🖩', label: 'Calculadora' },
+    { icon: '📻', label: 'Rádio' },
   ];
 
   const M2 = { raf: 0, f: {}, deviceIdx: -1, activeSlot: -1 };
@@ -4647,12 +4668,13 @@
       f.bisturi = true;
       document.getElementById('m2-bisturi')?.classList.add('show');
     }
-    // 36s — fio de cobre + habilita arraste nos dois
+    // 36s — fio de cobre + habilita arraste nos dois + inicia detecção de contato
     if (!f.cobre && tt >= 36) {
       f.cobre = true;
       document.getElementById('m2-cobre')?.classList.add('show');
       enableDrag('m2-bisturi');
       enableDrag('m2-cobre');
+      m2StartContactLoop();
     }
   }
 
@@ -4682,7 +4704,8 @@
     const prect = el.parentElement.getBoundingClientRect();
     el.style.left = (rect.left - prect.left) + 'px';
     el.style.top  = (rect.top  - prect.top)  + 'px';
-    el.style.transform = 'none';
+    const rot = el.dataset.rotate ? `rotate(${el.dataset.rotate}deg)` : 'none';
+    el.style.transform = rot;
     const ac = new AbortController();
     el._dragAC = ac;
     const sig = { signal: ac.signal };
@@ -4706,15 +4729,86 @@
     el.addEventListener('pointercancel', end, sig);
   }
 
+  let m2ContactInterval = null;
+  let m2ContactTimer    = null;
+  let m2ContactActive   = false;
+  let m2ShowingRa       = 1;
+
+  function m2StartContactLoop() {
+    if (m2ContactInterval) return;
+    m2ContactInterval = setInterval(m2CheckContact, 80);
+  }
+
+  function m2CheckContact() {
+    const b = document.getElementById('m2-bisturi');
+    const c = document.getElementById('m2-cobre');
+    if (!b || !c || !b.dataset.draggable || !c.dataset.draggable) return;
+    const rb = b.getBoundingClientRect();
+    const rc = c.getBoundingClientRect();
+    const touching = !(rb.right < rc.left || rc.right < rb.left ||
+                       rb.bottom < rc.top  || rc.bottom < rb.top);
+    if (touching && !m2ContactActive) {
+      m2ContactActive = true;
+      m2ContactOn();
+    } else if (!touching && m2ContactActive) {
+      m2ContactActive = false;
+      m2ContactOff();
+    }
+  }
+
+  function m2ContactOn() {
+    m2TriggerSpark();
+    m2ShowingRa = 2; m2SetRa(2);
+    m2ContactTimer = setInterval(() => {
+      m2ShowingRa = m2ShowingRa === 1 ? 2 : 1;
+      m2SetRa(m2ShowingRa);
+      if (m2ShowingRa === 2) m2TriggerSpark();
+    }, 3000);
+  }
+
+  function m2ContactOff() {
+    if (m2ContactTimer) { clearInterval(m2ContactTimer); m2ContactTimer = null; }
+    m2SetRa(1);
+  }
+
+  function m2SetRa(num) {
+    const el = document.getElementById('m2-ra1');
+    if (el) el.src = `images/rã${num}.png`;
+  }
+
+  function m2TriggerSpark() {
+    const b     = document.getElementById('m2-bisturi');
+    const stage = document.getElementById('m2-stage');
+    const spark = document.getElementById('m2-spark');
+    if (!b || !stage || !spark) return;
+    const rb = b.getBoundingClientRect();
+    const rs = stage.getBoundingClientRect();
+    spark.style.left = (rb.right - rs.left - 14) + 'px';
+    spark.style.top  = (rb.top + rb.height / 2 - rs.top - 14) + 'px';
+    spark.classList.remove('flash');
+    void spark.offsetWidth;
+    spark.classList.add('flash');
+    stage.classList.remove('m2-flash');
+    void stage.offsetWidth;
+    stage.classList.add('m2-flash');
+    setTimeout(() => stage.classList.remove('m2-flash'), 450);
+    buzz([40, 20, 40, 20, 60]);
+  }
+
   function m2Reset() {
     if (M2.raf) { cancelAnimationFrame(M2.raf); M2.raf = 0; }
+    if (m2ContactInterval) { clearInterval(m2ContactInterval); m2ContactInterval = null; }
+    if (m2ContactTimer)    { clearInterval(m2ContactTimer);    m2ContactTimer    = null; }
+    m2ContactActive = false; m2ShowingRa = 1;
     M2.f = {}; M2.deviceIdx = -1; M2.activeSlot = -1;
     document.getElementById('m2-battery')?.setAttribute('class', 'm2-battery');
     document.getElementById('m2-dev-wrap')?.setAttribute('class', 'm2-dev-wrap');
     document.getElementById('m2-slot-0')?.setAttribute('class', 'm2-dev-slot');
     document.getElementById('m2-slot-1')?.setAttribute('class', 'm2-dev-slot');
     document.getElementById('m2-galvani')?.classList.remove('show');
-    document.getElementById('m2-ra1')?.classList.remove('show');
+    const ra1 = document.getElementById('m2-ra1');
+    if (ra1) { ra1.classList.remove('show'); ra1.src = 'images/rã1.png'; }
+    document.getElementById('m2-spark')?.classList.remove('flash');
     ['m2-bisturi', 'm2-cobre'].forEach(id => {
       const el = document.getElementById(id);
       if (!el) return;
