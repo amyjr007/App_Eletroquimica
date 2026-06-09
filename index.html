@@ -1105,6 +1105,82 @@
       pointer-events: none; z-index: 50;
     }
 
+    /* Tela de nome do aluno */
+    #m1-quiz-name {
+      position: absolute; inset: 0; z-index: 42;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(4,13,26,.93); backdrop-filter: blur(5px);
+      opacity: 0; pointer-events: none; transition: opacity .35s ease;
+    }
+    #m1-quiz-name.show { opacity: 1; pointer-events: auto; }
+    .m1-name-input {
+      background: rgba(255,255,255,.07); border: 1px solid rgba(0,229,255,.3);
+      border-radius: 12px; padding: 14px 16px;
+      font-size: 1rem; color: #e8edf4; font-family: 'Inter', sans-serif;
+      outline: none; width: 100%; box-sizing: border-box;
+      transition: border-color .2s;
+    }
+    .m1-name-input:focus { border-color: rgba(0,229,255,.7); }
+    .m1-name-input::placeholder { color: rgba(200,220,240,.3); }
+    .m1-name-start {
+      align-self: flex-end; padding: 12px 24px; border-radius: 12px; border: none;
+      background: linear-gradient(135deg, #00e5ff, #0099cc);
+      color: #040d1a; font-family: 'Orbitron', monospace;
+      font-size: .68rem; font-weight: 700; letter-spacing: .1em;
+      cursor: pointer; box-shadow: 0 0 20px rgba(0,229,255,.45);
+      transition: transform .15s, box-shadow .15s;
+    }
+    .m1-name-start:hover { transform: scale(1.04); box-shadow: 0 0 32px rgba(0,229,255,.65); }
+    .m1-name-start:active { transform: scale(.96); }
+
+    /* Card de resultado */
+    #m1-quiz-result {
+      position: absolute; inset: 0; z-index: 45;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(4,13,26,.93); backdrop-filter: blur(5px);
+      opacity: 0; pointer-events: none; transition: opacity .4s ease;
+    }
+    #m1-quiz-result.show { opacity: 1; pointer-events: auto; }
+    .m1-result-card {
+      background: rgba(0,0,0,.45); border: 2px solid rgba(0,229,255,.5);
+      border-radius: 22px; padding: 26px 24px 20px;
+      width: min(430px, 92vw); display: flex; flex-direction: column; gap: 14px;
+      box-shadow: 0 0 44px rgba(0,229,255,.22), inset 0 0 60px rgba(0,229,255,.04);
+    }
+    .m1-result-name {
+      font-family: 'Orbitron', monospace; font-size: 1rem; font-weight: 700;
+      color: #00e5ff; text-align: center; letter-spacing: .04em;
+      text-shadow: 0 0 22px rgba(0,229,255,.6);
+    }
+    .m1-result-stats { display: flex; align-items: center; gap: 10px; }
+    .m1-result-stat  { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+    .m1-stat-label   { font-family: 'Orbitron', monospace; font-size: .6rem; letter-spacing: .1em; color: rgba(200,220,240,.65); }
+    .m1-stat-val     { font-family: 'Orbitron', monospace; font-size: 1.55rem; font-weight: 700; }
+    .acertos .m1-stat-val { color: #00c864; }
+    .erros   .m1-stat-val { color: #ff5555; }
+    .m1-nota-badge {
+      width: 84px; height: 84px; border-radius: 50%;
+      border: 3px solid #ffd23f; box-shadow: 0 0 22px rgba(255,210,63,.5);
+      background: rgba(255,210,63,.06); flex-shrink: 0;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+    .m1-nota-label { font-family: 'Orbitron', monospace; font-size: .52rem; letter-spacing: .1em; color: #ffd23f; }
+    .m1-nota-val   { font-family: 'Orbitron', monospace; font-size: 1.3rem; font-weight: 700; color: #ffd23f; text-shadow: 0 0 14px rgba(255,210,63,.7); }
+    .m1-result-msg { font-size: .92rem; color: #e8edf4; line-height: 1.45; text-align: center; font-weight: 500; }
+    .m1-result-sub { font-family: 'Orbitron', monospace; font-size: .58rem; letter-spacing: .12em; color: rgba(200,220,240,.45); text-align: center; margin-top: -6px; }
+    .m1-result-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 2px; }
+    .m1-res-btn {
+      flex: 1; padding: 11px 12px; border-radius: 12px; border: none;
+      font-family: 'Orbitron', monospace; font-size: .58rem; font-weight: 700;
+      letter-spacing: .07em; cursor: pointer; transition: transform .15s, box-shadow .15s;
+      white-space: nowrap;
+    }
+    .m1-res-btn.secondary { background: rgba(0,229,255,.1); border: 1px solid rgba(0,229,255,.28); color: #00e5ff; }
+    .m1-res-btn.secondary:hover { background: rgba(0,229,255,.2); }
+    .m1-res-btn.primary   { background: linear-gradient(135deg, #00e5ff, #0099cc); color: #040d1a; box-shadow: 0 0 18px rgba(0,229,255,.4); }
+    .m1-res-btn.primary:hover { transform: scale(1.03); box-shadow: 0 0 28px rgba(0,229,255,.65); }
+    .m1-res-btn:active { transform: scale(.96); }
+
     /* "Energia elétrica" — entrada elétrica (flicker neon) */
     .eletrica-label {
       display: flex; flex-direction: column; align-items: flex-start;
@@ -1731,13 +1807,54 @@
   <audio id="ex3"        src="audio/ex3.mp3"        preload="auto"></audio>
   <audio id="ex4"        src="audio/ex4.mp3"        preload="auto"></audio>
   <audio id="ex5"        src="audio/ex5.mp3"        preload="auto"></audio>
-  <audio id="m1-applause" src="audio/applause.mp3"  preload="auto"></audio>
-  <audio id="m1-yes"      src="audio/yes.mp3"       preload="auto"></audio>
+  <audio id="m1-applause"   src="audio/applause.mp3"   preload="auto"></audio>
+  <audio id="m1-yes"        src="audio/yes.mp3"        preload="auto"></audio>
+  <audio id="m1-statistics" src="audio/statistics.mp3" preload="auto"></audio>
+  <audio id="m1-lowscore"   src="audio/lowscore.mp3"   preload="auto"></audio>
 
   <button class="btn-action" id="m1-play">▶</button>
 
   <!-- Botão quiz — aparece após dialogo1.6 terminar -->
   <button id="m1-quiz-btn" onclick="m1QuizOpen()">QUIZ</button>
+
+  <!-- Tela de nome do aluno -->
+  <div id="m1-quiz-name">
+    <div class="m1-quiz-card" style="gap:18px">
+      <div class="m1-quiz-counter">QUIZ — MÓDULO 1</div>
+      <p class="m1-quiz-q">Qual é o seu nome?</p>
+      <input class="m1-name-input" id="m1-name-input" type="text"
+             placeholder="Digite seu nome..." maxlength="30" autocomplete="off"
+             onkeydown="if(event.key==='Enter') m1QuizStart()">
+      <button class="m1-name-start" onclick="m1QuizStart()">COMEÇAR →</button>
+    </div>
+  </div>
+
+  <!-- Card de resultado -->
+  <div id="m1-quiz-result">
+    <div class="m1-result-card">
+      <div class="m1-result-name" id="m1-result-name">Aluno: —</div>
+      <div class="m1-result-stats">
+        <div class="m1-result-stat acertos">
+          <span class="m1-stat-label">Acertos:</span>
+          <span class="m1-stat-val" id="m1-res-acertos">0 ✓</span>
+        </div>
+        <div class="m1-result-stat erros">
+          <span class="m1-stat-label">Erros:</span>
+          <span class="m1-stat-val" id="m1-res-erros">0 ×</span>
+        </div>
+        <div class="m1-nota-badge">
+          <span class="m1-nota-label">Nota:</span>
+          <span class="m1-nota-val" id="m1-res-nota">0.0</span>
+        </div>
+      </div>
+      <p class="m1-result-msg" id="m1-result-msg"></p>
+      <p class="m1-result-sub" id="m1-result-sub"></p>
+      <div class="m1-result-actions">
+        <button class="m1-res-btn secondary" onclick="m1QuizRestart()">● REVISAR RESPOSTAS</button>
+        <button class="m1-res-btn primary"   onclick="m1QuizFinish()">▶ PRÓXIMO DESAFIO</button>
+      </div>
+    </div>
+  </div>
 
   <!-- Overlay do quiz -->
   <div id="m1-quiz">
@@ -3942,6 +4059,10 @@
   const M1Q = {
     idx: 0,
     answered: false,
+    currentCorrect: 0,
+    studentName: '',
+    acertos: 0,
+    erros: 0,
     qs: [
       {
         q: 'O que a eletroquímica estuda?',
@@ -3994,7 +4115,19 @@
   function m1QuizOpen() {
     const qb = document.getElementById('m1-quiz-btn');
     if (qb) qb.classList.remove('show');
-    M1Q.idx = 0; M1Q.answered = false;
+    const nd = document.getElementById('m1-quiz-name');
+    if (nd) nd.classList.add('show');
+    const inp = document.getElementById('m1-name-input');
+    if (inp) { inp.value = M1Q.studentName || ''; setTimeout(() => inp.focus(), 100); }
+    buzz(30);
+  }
+
+  function m1QuizStart() {
+    const inp = document.getElementById('m1-name-input');
+    M1Q.studentName = (inp ? inp.value.trim() : '') || 'Aluno';
+    M1Q.idx = 0; M1Q.answered = false; M1Q.acertos = 0; M1Q.erros = 0;
+    const nd = document.getElementById('m1-quiz-name');
+    if (nd) nd.classList.remove('show');
     const qd = document.getElementById('m1-quiz');
     if (qd) qd.classList.add('show');
     m1QuizLoad(0);
@@ -4042,6 +4175,7 @@
       else if (i === chosen) btn.classList.add('wrong');
     });
     if (chosen === correct) {
+      M1Q.acertos++;
       buzz([20, 40, 20, 60]);
       const yes = document.getElementById('m1-yes');
       if (yes) { yes.currentTime = 0; yes.play().catch(() => {}); }
@@ -4050,6 +4184,7 @@
       m1ConfettiStart();
       setTimeout(m1QuizNext, 2800);
     } else {
+      M1Q.erros++;
       buzz([60, 30, 60]);
       const qnext = document.getElementById('m1-qnext');
       if (qnext) qnext.style.display = 'block';
@@ -4061,10 +4196,69 @@
     if (M1Q.idx >= M1Q.qs.length) {
       const qd = document.getElementById('m1-quiz');
       if (qd) qd.classList.remove('show');
-      buzz([30, 60, 30, 60, 80]);
+      m1QuizShowResult();
       return;
     }
     m1QuizLoad(M1Q.idx);
+  }
+
+  function m1QuizShowResult() {
+    const total = M1Q.qs.length;
+    const nota  = (M1Q.acertos / total) * 10;
+    document.getElementById('m1-result-name').textContent    = 'Aluno: ' + M1Q.studentName;
+    document.getElementById('m1-res-acertos').textContent    = M1Q.acertos + ' ✓';
+    document.getElementById('m1-res-erros').textContent      = M1Q.erros   + ' ×';
+    document.getElementById('m1-res-nota').textContent       = nota.toFixed(1);
+    let msg, sub;
+    if (nota === 10) {
+      msg = 'Perfeito, ' + M1Q.studentName + '! Nota máxima!';
+      sub = 'Você dominou a Eletroquímica!';
+    } else if (nota >= 8) {
+      msg = 'Ótimo progresso, ' + M1Q.studentName + '! Continue explorando o fascinante mundo da Eletroquímica.';
+      sub = 'Rumo ao Próximo Nível!';
+    } else if (nota >= 6) {
+      msg = 'Muito bem, ' + M1Q.studentName + '! Você está no caminho certo.';
+      sub = 'Continue estudando!';
+    } else if (nota >= 5) {
+      msg = 'Você passou, ' + M1Q.studentName + '! Com mais um pouco de estudo, você vai longe.';
+      sub = 'Continue explorando!';
+    } else {
+      msg = 'Continue praticando, ' + M1Q.studentName + '! Cada tentativa é um passo em direção ao conhecimento.';
+      sub = 'Tente novamente!';
+    }
+    document.getElementById('m1-result-msg').textContent = msg;
+    document.getElementById('m1-result-sub').textContent = sub;
+    const rd = document.getElementById('m1-quiz-result');
+    if (rd) rd.classList.add('show');
+    if (nota >= 5) {
+      buzz([20, 40, 20, 60, 20]);
+      const stat = document.getElementById('m1-statistics');
+      if (stat) { stat.currentTime = 0; stat.play().catch(() => {}); }
+      const appl = document.getElementById('m1-applause');
+      if (appl) { appl.currentTime = 0; appl.play().catch(() => {}); }
+      m1ConfettiStart();
+    } else {
+      buzz([60, 30, 60, 30]);
+      const low = document.getElementById('m1-lowscore');
+      if (low) { low.currentTime = 0; low.play().catch(() => {}); }
+    }
+  }
+
+  function m1QuizRestart() {
+    const rd = document.getElementById('m1-quiz-result');
+    if (rd) rd.classList.remove('show');
+    M1Q.idx = 0; M1Q.answered = false; M1Q.acertos = 0; M1Q.erros = 0;
+    const qd = document.getElementById('m1-quiz');
+    if (qd) qd.classList.add('show');
+    m1QuizLoad(0);
+    buzz(20);
+  }
+
+  function m1QuizFinish() {
+    const rd = document.getElementById('m1-quiz-result');
+    if (rd) rd.classList.remove('show');
+    goTo('section2');
+    buzz(30);
   }
 
   function m1ConfettiStart() {
@@ -4105,10 +4299,12 @@
   }
 
   function m1QuizReset() {
-    M1Q.idx = 0; M1Q.answered = false;
-    const qb = document.getElementById('m1-quiz-btn'); if (qb) qb.classList.remove('show');
-    const qd = document.getElementById('m1-quiz');     if (qd) qd.classList.remove('show');
-    ['ex0','ex1','ex2','ex3','ex4','ex5','m1-applause','m1-yes'].forEach(id => {
+    M1Q.idx = 0; M1Q.answered = false; M1Q.acertos = 0; M1Q.erros = 0;
+    const qb = document.getElementById('m1-quiz-btn');    if (qb) qb.classList.remove('show');
+    const qd = document.getElementById('m1-quiz');        if (qd) qd.classList.remove('show');
+    const nd = document.getElementById('m1-quiz-name');   if (nd) nd.classList.remove('show');
+    const rd = document.getElementById('m1-quiz-result'); if (rd) rd.classList.remove('show');
+    ['ex0','ex1','ex2','ex3','ex4','ex5','m1-applause','m1-yes','m1-statistics','m1-lowscore'].forEach(id => {
       const a = document.getElementById(id); if (a) { a.pause(); a.currentTime = 0; }
     });
     const cv = document.getElementById('m1-confetti');

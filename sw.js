@@ -1,5 +1,5 @@
 /* Service Worker — Eletroquímica PWA */
-const CACHE = 'eletroquimica-v55';
+const CACHE = 'eletroquimica-v56';
 
 const ASSETS = [
   './',
@@ -24,7 +24,9 @@ const ASSETS = [
   './audio/ex4.mp3',
   './audio/ex5.mp3',
   './audio/applause.mp3',
-  './audio/yes.mp3'
+  './audio/yes.mp3',
+  './audio/statistics.mp3',
+  './audio/lowscore.mp3'
 ];
 
 // Instala: pré-carrega todos os arquivos para uso offline
