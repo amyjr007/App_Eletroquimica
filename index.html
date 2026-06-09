@@ -1515,7 +1515,7 @@
       align-items: center; justify-content: center; gap: 6px;
       transform: translateX(110%);
     }
-    .m2-dev-slot .m2-dev-icon  { font-size: 3.9rem; line-height: 1; }
+    .m2-dev-slot .m2-dev-icon  { font-size: 5.1rem; line-height: 1; }
     .m2-dev-slot .m2-dev-label {
       font-family: 'Orbitron', monospace; font-size: .7rem;
       color: #00e5ff; letter-spacing: .1em;
@@ -1528,7 +1528,7 @@
     .m2-galvani {
       position: absolute; top: 2%; left: 50%;
       transform: translateX(-50%);
-      width: 100%; max-height: 44%; object-fit: contain;
+      width: 100%; max-height: 57%; object-fit: contain;
       border-radius: 8px; border: 1px solid rgba(0,229,255,.3);
       opacity: 0; transition: opacity .7s;
     }
@@ -1536,7 +1536,7 @@
     .m2-ra1 {
       position: absolute; top: 50%; left: 50%;
       transform: translateX(-50%);
-      width: min(255px, 78%); border-radius: 8px;
+      width: min(330px, 100%); border-radius: 8px;
       opacity: 0; transition: opacity .7s;
     }
     .m2-ra1.show { opacity: 1; }
@@ -1555,6 +1555,7 @@
     /* fio de cobre */
     .m2-cobre {
       position: absolute; top: 72%; left: 34%;
+      transform: rotate(20deg);
       opacity: 0; transition: opacity .5s;
       pointer-events: none;
       -webkit-user-select: none; user-select: none; touch-action: none;
@@ -2089,7 +2090,7 @@
       <div class="m2-spark" id="m2-spark">⚡</div>
 
       <!-- Fio de cobre (arrastável após t=36s) -->
-      <svg class="m2-cobre" id="m2-cobre" viewBox="0 0 130 26" width="130" height="26"
+      <svg class="m2-cobre" id="m2-cobre" viewBox="0 0 130 26" width="130" height="26" data-rotate="20"
            xmlns="http://www.w3.org/2000/svg">
         <path d="M 5,13 Q 20,3 35,13 Q 50,23 65,13 Q 80,3 95,13 Q 110,23 125,13"
               fill="none" stroke="#b87333" stroke-width="3.5" stroke-linecap="round"/>
